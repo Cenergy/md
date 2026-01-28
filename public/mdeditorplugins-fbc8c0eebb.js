@@ -1,0 +1,1 @@
+"use strict";function registerMdPlugins(){var e=window.mdpress,r=window.prettier,i=window.prettierPlugins;r.prettierPlugins=i,e.registerPrettier(r),e.registerSwiper(window.Swiper),e.registerQRCode(window.QRCode),e.registerMermaid(window.mermaid),e.registerXLSX(window.XLSX),e.registerX_spreadsheet(window.x_spreadsheet),e.registerFlowChart(window.flowchart)}
