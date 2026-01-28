@@ -158,7 +158,7 @@
 import { defineComponent } from 'vue'
 import { Container, Draggable } from 'vue3-smooth-dnd'
 import { get, post, getToken, removeToken, wrapUrl, getHost } from '@/utils'
-import * as monaco from 'monaco-editor'
+import { loadMonaco, createEditor, getEditor } from '@/utils/editor'
 import { ElMessage } from 'element-plus'
 import { pinyin } from 'pinyin-pro'
 import useClipboard from 'vue-clipboard3'
@@ -201,7 +201,6 @@ export default defineComponent({
       docEditDialog: false,
       docEditData: null,
       docEditTitle: "",
-      mdEditor: null,
       isLogin: false
     }
   },
@@ -434,8 +433,6 @@ export default defineComponent({
            if(s.children) s.children.forEach(c => c.isActive = false);
        });
        slider.isActive = true;
-       // Move to top logic was in original but might be annoying if list is long? 
-       // Original: this.sliders.splice(0,0); ?? This line looks wrong in original source `this.sliders.splice(0,0)` does nothing.
        
        let t = slider.link;
        let n = this.currentLink ? this.currentLink.split("/").slice(0,2) : ["", ""];
@@ -450,81 +447,19 @@ export default defineComponent({
            item: slider.link, 
            name: slider.name
        }).then(res => {
-           this.createEditor(() => {
-               if(this.mdEditor) this.mdEditor.setValue(res)
+           createEditor("#editor", this, () => {
+               if(getEditor()) getEditor().setValue(res)
            })
        })
     },
-    createEditor(cb){
-        if(this.mdEditor){
-            cb()
-            return
-        }
-        if(!window.mdpress || !window.mdpress.MDEditor) {
-            console.error("mdpress not found")
-            return
-        }
-        let t = this.hero.theme || "vitepress";
-        this.mdEditor = new window.mdpress.MDEditor("#editor", {
-            autoParseVSCodePasteData: true,
-            themeURL: "./theme/",
-            monacoOptions: { minimap: { enabled: false } }
-        });
-        this.mdEditor.setTheme(t);
-        
-        // Add listeners
-        this.mdEditor.on("closefullscreen", () => {
-            if(this.$refs.leftnav){
-                this.$refs.leftnav.classList.remove("left-nav-float");
-                this.$refs.leftnav.classList.remove("animate__fadeInLeft");
-            }
-        });
-        
-        // Paste handler omitted for brevity but can be added if needed
-        
-        // Add tool icons
-        this.addToolicons();
-        
-        cb();
-    },
-    addToolicons(){
-        if(!window.mdpress || !window.mdpress.ToolIcon) return;
-        const className = "majoricon";
-        const icons = [
-            {icon:"icon-zhankaicaidan",title:"打开左侧侧边栏",className:className,position:"right"},
-            {icon:"icon-file-markdown1",title:"导入markdown",className:className},
-            {icon:"icon-fujian1",title:"托管附件",className:className,position:"right"},
-            {icon:"icon-baocun1",title:"保存文档",className:className,position:"right"}
-        ].map(e => new window.mdpress.ToolIcon(e));
-        
-        icons.forEach(e => e.addTo(this.mdEditor));
-        
-        icons[0].on("click", () => {
-            if(this.mdEditor.isFullScreen()){
-                let cl = this.$refs.leftnav.classList;
-                if(cl.contains("left-nav-float")){
-                    cl.remove("left-nav-float");
-                    cl.remove("animate__fadeInLeft");
-                } else {
-                    cl.add("left-nav-float");
-                    cl.add("animate__fadeInLeft");
-                }
-            } else {
-                this.info("当编辑器全屏时才可以进行该操作");
-            }
-        });
-        icons[1].on("click", () => this.importMd());
-        icons[2].on("click", () => this.openUploadPanel());
-        icons[3].on("click", () => this.saveDoc());
-    },
     saveDoc(){
        if(!this.currentMenu || !this.currentDoc) return;
-       if(!this.mdEditor) return;
+       if(!getEditor()) return;
        post("/slider/item/save",{
            projectId: this.projectId,
            link: this.currentMenu.link,
            item: this.currentDoc.link,
-           data: this.mdEditor.getValue()
+           data: getEditor().getValue()
        }).then(res => {
            this.success(`(${this.currentMenu.name}/${this.currentDoc.name})文档保存成功`)
        })
@@ -559,7 +494,7 @@ export default defineComponent({
                let file = input.files[0];
                let reader = new FileReader();
                reader.onload = () => {
-                   if(this.mdEditor && reader.result) this.mdEditor.setValue(reader.result);
+                   if(getEditor() && reader.result) getEditor().setValue(reader.result);
                };
                reader.readAsText(file);
            } else {
@@ -613,9 +548,7 @@ export default defineComponent({
     }
     
     // Register monaco if needed by mdpress
-    if(window.mdpress && window.mdpress.registerMonaco){
-       window.mdpress.registerMonaco(monaco)
-    }
+    loadMonaco()
 
     // Initialize FileDND
     if(window.filednd && window.filednd.FileDND){
