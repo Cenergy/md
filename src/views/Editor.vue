@@ -252,7 +252,10 @@ export default defineComponent({
     getMenus(){
       queryMenu({projectId: this.projectId, token: getToken()}).then(res=>{
          this.menus=res || []
-         if(this.menus.length === 0) this.loadMockMenus()
+         if (this.menus.length > 0) {
+            // Automatically select the first menu if available
+            this.menuClick(this.menus[0]);
+         }
       }).catch(() => {
          this.loadMockMenus()
       })
@@ -267,6 +270,8 @@ export default defineComponent({
               { name: '插件', link: 'chajian', isActive: false },
               { name: '关于', link: 'guanyu', isActive: false }
         ]
+        // Select the first mock menu
+        this.menuClick(this.menus[0]);
     },
     _reset(){
       this.menuName="";
@@ -541,8 +546,7 @@ export default defineComponent({
   },
   mounted() {
     this.userValidate();
-    const urlParams = new URLSearchParams(window.location.search);
-    const p = urlParams.get('p');
+    const p = this.$route.query.p;
     if(p){
       this.projectId = p
       this.getProject()
