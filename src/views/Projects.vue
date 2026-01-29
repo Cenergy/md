@@ -281,7 +281,7 @@ const handleDocs = (project) => {
     // Navigate to Editor with project ID
     // In legacy: window.open("./edit.html?p=".concat(e));
     // In Vue 3 app: push to router with query
-    router.push({ path: '/', query: { p: project.id } });
+    router.push({ path: '/editor', query: { p: project.id } });
 };
 
 const handleBuild = async (project) => {

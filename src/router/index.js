@@ -4,12 +4,12 @@ import Projects from '../views/Projects.vue'
 
 const routes = [
   {
-    path: '/',
+    path: '/editor',
     name: 'Editor',
     component: Editor
   },
   {
-    path: '/projects',
+    path: '/',
     name: 'Projects',
     component: Projects
   }
