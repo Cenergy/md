@@ -52,16 +52,23 @@
         <div class="slider-content">
           <Container @drop="sliderDrop" class="smooth-dnd-container vertical">
             <Draggable v-for="(slider, index) in sliders" :key="index">
-              <div class="slider-item" :class="{active: slider.isActive}" @click="docItemClick(slider)">
-                 <i class="column-drag-handle iconfont icon-tuozhuaicaidandaohang"></i>
-                 <button class="btn" @click.stop="editDocItem(slider)"><i class="iconfont icon-xiugai"></i></button>
-                 <span>{{ slider.name }}</span>
+              <div class="slider-item" :class="{active: slider.isActive, group: slider.group}" @click="docItemClick(slider)">
+                 <div class="slider-header">
+                    <i class="column-drag-handle iconfont icon-tuozhuaicaidandaohang"></i>
+                    <button class="btn" @click.stop="editDocItem(slider)"><i class="iconfont icon-xiugai"></i></button>
+                    <span :class="{label: slider.group}">{{ slider.name }}</span>
+                    <button class="btn" v-if="slider.group" @click.stop="groupAddDocItem(slider)" style="margin-left: 5px;"><i class="iconfont icon-tianjia"></i>+</button>
+                 </div>
                  <!-- Simplified group handling -->
-                 <div v-if="slider.children && slider.children.length > 0" class="group-children">
-                    <Container @drop="(e) => sliderItemDrop(e, slider)">
-                        <Draggable v-for="(child, cIndex) in slider.children" :key="cIndex">
+                 <div v-if="slider.group" class="group-children">
+                    <Container @drop="(e) => sliderItemDrop(e, slider)" :min-height="10">
+                        <Draggable v-for="(child, cIndex) in (slider.children || [])" :key="cIndex">
                            <div class="slider-item child-item" :class="{active: child.isActive}" @click.stop="docItemClick(child)">
-                              <span>{{ child.name }}</span>
+                              <div class="slider-header">
+                                <i class="column-drag-handle iconfont icon-tuozhuaicaidandaohang"></i>
+                                <button class="btn" @click.stop="editDocItem(child)"><i class="iconfont icon-xiugai"></i></button>
+                                <span>{{ child.name }}</span>
+                              </div>
                            </div>
                         </Draggable>
                     </Container>
@@ -157,7 +164,8 @@
 <script>
 import { defineComponent } from 'vue'
 import { Container, Draggable } from 'vue3-smooth-dnd'
-import { get, post, getToken, removeToken, wrapUrl, getHost } from '@/utils'
+import { getToken, wrapUrl, getHost } from '@/utils'
+import { validateToken, queryProject, queryMenu, querySlider, sortMenu, saveMenu, saveSlider, queryDoc, saveDoc,querySliderList } from '@/request/http'
 import { loadMonaco, createEditor, getEditor } from '@/utils/editor'
 import { ElMessage } from 'element-plus'
 import { pinyin } from 'pinyin-pro'
@@ -211,15 +219,12 @@ export default defineComponent({
     error(msg) { ElMessage.error(msg) },
 
     userValidate(){
-       const token = getToken();
        this.isLogin = false;
-       if(token){
-           get("/tokenvalidate").then(res => {
-               this.isLogin = res;
-           }).catch(() => {
-               this.isLogin = false;
-           })
-       }
+       validateToken(getToken()).then(res => {
+           this.isLogin = res;
+       }).catch(() => {
+           this.isLogin = false;
+       })
     },
 
     hideHeaderChange(){
@@ -229,12 +234,10 @@ export default defineComponent({
        // Handled by reactive style binding
     },
     getProject(){
-      if(this.projectId){
-        get("/project/query",{projectId:this.projectId}).then(res=>{
-           this.projectName=res.name;
-           this.hero=res.hero||{};
-        })
-      }
+      queryProject({projectId: this.projectId, token: getToken()}).then(res=>{
+          this.projectName=res.name;
+          this.hero=res.hero||{};
+      })
     },
     menuDrop(dropResult){
       const { removedIndex, addedIndex } = dropResult
@@ -242,12 +245,12 @@ export default defineComponent({
       const item = this.menus[removedIndex]
       this.menus.splice(removedIndex, 1)
       this.menus.splice(addedIndex, 0, item)
-      post("/menu/sort",{projectId:this.projectId,data:this.menus}).then(res=>{
+      sortMenu({projectId: this.projectId, token: getToken(), data: this.menus}).then(res=>{
          console.log(res)
       })
     },
     getMenus(){
-      get("/menu/list",{projectId:this.projectId}).then(res=>{
+      queryMenu({projectId: this.projectId, token: getToken()}).then(res=>{
          this.menus=res || []
          if(this.menus.length === 0) this.loadMockMenus()
       }).catch(() => {
@@ -288,7 +291,7 @@ export default defineComponent({
         return
       }
       this.saveButtonDisabled=true
-      post("/menu/save",{name:this.menuName,link:this.menuLink,projectId:this.projectId}).then(res=>{
+      saveMenu({projectId: this.projectId, token: getToken(), name: this.menuName, link: this.menuLink}).then(res=>{
         this.saveButtonDisabled=false
         this.success(`添加菜单(${this.menuName})成功`)
         this._reset()
@@ -308,7 +311,7 @@ export default defineComponent({
       this.currentDoc=null
     },
     getAllSliders(){
-      get("/slider/all",{projectId:this.projectId}).then(res=>{
+      querySlider({projectId: this.projectId, token: getToken()}).then(res=>{
          let a = [];
          res.forEach(e => {
             let t = e.sliders, o = e.name, r = e.link;
@@ -332,13 +335,13 @@ export default defineComponent({
     },
     _saveSliders(){
       return new Promise((resolve, reject)=>{
-        post("/slider/save",{projectId:this.projectId,link:this.currentMenu.link,data:this.sliders}).then(res=>{
+        saveSlider({projectId: this.projectId, token: getToken(), link: this.currentMenu.link, data: this.sliders}).then(res=>{
           resolve()
         })
       })
     },
     getSliders(menu){
-      get("/slider/list",{projectId:this.projectId,link:menu.link,name:menu.name}).then(res=>{
+      querySliderList({projectId: this.projectId, token: getToken(), name: menu.name, link: menu.link}).then(res=>{
         res = res || []
         res.forEach(e => {
            e.isActive=false
@@ -441,10 +444,11 @@ export default defineComponent({
        this.currentDoc = slider;
        this.editorShow = true;
        
-       get("/slider/item/list", {
-           projectId: this.projectId, 
-           link: this.currentMenu.link, 
-           item: slider.link, 
+       queryDoc({
+           projectId: this.projectId,
+           token: getToken(),
+           link: this.currentMenu.link,
+           item: slider.link,
            name: slider.name
        }).then(res => {
            createEditor("#editor", this, () => {
@@ -455,8 +459,9 @@ export default defineComponent({
     saveDoc(){
        if(!this.currentMenu || !this.currentDoc) return;
        if(!getEditor()) return;
-       post("/slider/item/save",{
+       saveDoc({
            projectId: this.projectId,
+           token: getToken(),
            link: this.currentMenu.link,
            item: this.currentDoc.link,
            data: getEditor().getValue()
@@ -550,6 +555,8 @@ export default defineComponent({
     // Register monaco if needed by mdpress
     loadMonaco()
 
+    this.getAllSliders()
+
     // Initialize FileDND
     if(window.filednd && window.filednd.FileDND){
         new window.filednd.FileDND(document.querySelector(".drag-zone")).dnd((files) => {
@@ -591,8 +598,8 @@ export default defineComponent({
 <style>
 /* Add any necessary global styles or overrides here */
 .main {
-  height: 100vh;
-  width: 100vw;
+  height: 100%;
+  width: 100%;
   overflow: hidden;
 }
 .flex {
@@ -600,5 +607,31 @@ export default defineComponent({
 }
 .hidden {
   display: none;
+}
+.slider-header {
+  display: flex;
+  align-items: center;
+}
+.slider-item.group {
+    border-top: 1px solid rgba(60,60,67,.12);
+    margin-top: 12px;
+    padding-top: 10px;
+}
+.group-children {
+    padding-left: 20px;
+}
+.slider-item .label {
+    font-weight: 700;
+    color: rgba(60,60,67);
+}
+.slider-item.active span {
+    color: #10b981;
+}
+.column-drag-handle {
+    margin-right: 5px;
+    cursor: grab;
+}
+.slider-item .btn {
+    margin-right: 5px;
 }
 </style>
