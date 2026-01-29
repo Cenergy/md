@@ -175,3 +175,166 @@ export async function saveDoc({ projectId, token, link, item, data }) {
         throw error;
     }
 }
+
+// Project APIs
+
+export async function queryProjectList({ token }) {
+    try {
+        const response = await axios.get('/glicon/project/list', {
+            params: { token: resolveToken(token) }
+        });
+        return response.data.data || [];
+    } catch (error) {
+        console.error('Project list query failed:', error);
+        throw error;
+    }
+}
+
+export async function queryCollaborateProjects({ token }) {
+    try {
+        const response = await axios.get('/glicon/project/collaborate', {
+            params: { token: resolveToken(token) }
+        });
+        console.log("🚀 ~ queryCollaborateProjects ~ response:", response)
+        return response.data.data || [];
+    } catch (error) {
+        console.error('Collaborate projects query failed:', error);
+        throw error;
+    }
+}
+
+export async function saveProject({ name, token }) {
+    try {
+        const response = await axios.post('/glicon/project/save', {
+            name
+        }, {
+            params: { token: resolveToken(token) }
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Project save failed:', error);
+        throw error;
+    }
+}
+
+export async function updateProject({ id, name, token }) {
+    try {
+        const response = await axios.post('/glicon/project/update', {
+            id,
+            name
+        }, {
+            params: { token: resolveToken(token) }
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Project update failed:', error);
+        throw error;
+    }
+}
+
+export async function buildProject({ projectId, token }) {
+    try {
+        const response = await axios.get('/glicon/project/build', {
+            params: { 
+                projectId: resolveProjectId(projectId),
+                token: resolveToken(token) 
+            }
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Project build failed:', error);
+        throw error;
+    }
+}
+
+export async function queryProjectProfile({ projectId, token }) {
+    try {
+        const response = await axios.post('/glicon/project/profile', {
+            projectId: resolveProjectId(projectId),
+            query: true
+        }, {
+            params: { token: resolveToken(token) }
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Project profile query failed:', error);
+        throw error;
+    }
+}
+
+export async function saveProjectProfile({ projectId, profileData, token }) {
+    try {
+        const response = await axios.post('/glicon/project/profile', {
+            projectId: resolveProjectId(projectId),
+            ...profileData
+        }, {
+            params: { token: resolveToken(token) }
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Project profile save failed:', error);
+        throw error;
+    }
+}
+
+export async function searchUser({ keywords, token }) {
+    try {
+        const response = await axios.get('/glicon/userinfo/search', {
+            params: { 
+                keywords,
+                token: resolveToken(token) 
+            }
+        });
+        return response.data;
+    } catch (error) {
+        console.error('User search failed:', error);
+        throw error;
+    }
+}
+
+export async function queryProjectLinkUsers({ projectId, token }) {
+    try {
+        const response = await axios.get('/glicon/project_link/users', {
+            params: { 
+                projectId: resolveProjectId(projectId),
+                token: resolveToken(token) 
+            }
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Project link users query failed:', error);
+        throw error;
+    }
+}
+
+export async function saveProjectLinkUser({ projectId, uid, email, token }) {
+    try {
+        const response = await axios.post('/glicon/project_link/save', {
+            projectId: resolveProjectId(projectId),
+            uid,
+            email
+        }, {
+            params: { token: resolveToken(token) }
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Project link user save failed:', error);
+        throw error;
+    }
+}
+
+export async function deleteProjectLinkUser({ projectId, uid, token }) {
+    try {
+        const response = await axios.get('/glicon/project_link/delete', {
+            params: { 
+                projectId: resolveProjectId(projectId),
+                uid,
+                token: resolveToken(token) 
+            }
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Project link user delete failed:', error);
+        throw error;
+    }
+}
