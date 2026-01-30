@@ -191,6 +191,7 @@ hero:
         const sliders = await fetchSliders(menuLink);
         const menuSidebarItems = await processSliderItems(sliders, menuLink, menuDir);
         
+        // Use absolute path for sidebar key to support global sidebar configuration
         sidebar[`/${PROJECT_ID}/${menuLink}/`] = menuSidebarItems;
 
         // Create an index.md for the menu directory
@@ -237,6 +238,20 @@ hero:
     fs.writeFileSync(registryPath, JSON.stringify(registry, null, 2));
 
     // Construct Locales Config
+    let rootNav = [];
+    const projectIds = Object.keys(registry);
+    
+    if (projectIds.length === 1) {
+        // Single Project: Flatten menu directly to Root
+        rootNav = registry[projectIds[0]].nav;
+    } else {
+        // Multiple Projects: List projects as flat links (no dropdown)
+        rootNav = Object.entries(registry).map(([pId, pData]) => ({
+            text: pData.name,
+            link: `/${pId}/`
+        }));
+    }
+
     const locales = {
         root: {
             label: 'Home',
@@ -244,15 +259,7 @@ hero:
             title: 'MDPress Docs',
             description: 'Documentation Center',
             themeConfig: {
-                nav: [
-                    {
-                        text: 'Projects',
-                        items: Object.entries(registry).map(([pId, pData]) => ({
-                            text: pData.name,
-                            link: `/${pId}/`
-                        }))
-                    }
-                ],
+                nav: rootNav,
                 socialLinks: [
                     { icon: 'github', link: 'https://github.com/vuejs/vitepress' }
                 ]
@@ -260,7 +267,8 @@ hero:
         }
     };
     
-    // Group Nav items by Project
+    // Group Nav items by Project and Collect Global Sidebar
+    let globalSidebar = {};
     for (const [pId, pData] of Object.entries(registry)) {
         locales[`/${pId}/`] = {
             label: pData.name,
@@ -269,12 +277,28 @@ hero:
             description: `Documentation for ${pData.name}`,
             themeConfig: {
                 nav: pData.nav,
-                sidebar: pData.sidebar,
+                // Sidebar removed from locale, moved to global
                 socialLinks: [
                     { icon: 'github', link: 'https://github.com/vuejs/vitepress' }
                 ]
             }
         };
+
+        // Merge sidebar into globalSidebar, ensuring keys are absolute
+        if (pData.sidebar) {
+            for (const [key, items] of Object.entries(pData.sidebar)) {
+                // If key is already absolute (starts with /projectId/), use it
+                if (key.startsWith(`/${pId}/`)) {
+                    globalSidebar[key] = items;
+                } else {
+                    // Otherwise, prepend projectId (migration for old keys)
+                    // Remove leading slash from key if present to avoid double slash, 
+                    // but usually key is /KAISHI/, so we want /pId/KAISHI/
+                    const cleanKey = key.startsWith('/') ? key : '/' + key;
+                    globalSidebar[`/${pId}${cleanKey}`] = items;
+                }
+            }
+        }
     }
 
     // Generate Config
@@ -293,7 +317,9 @@ export default defineConfig({
     // Shared theme config if any (search, footer, etc.)
     search: {
       provider: 'local'
-    }
+    },
+    // Global Sidebar Configuration
+    sidebar: ${JSON.stringify(globalSidebar, null, 2)}
   }
 })
 `;
