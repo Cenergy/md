@@ -1,6 +1,7 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
 import Editor from '../views/Editor.vue'
 import Projects from '../views/Projects.vue'
+import Home from '../views/Home.vue'
 import User from '../views/User.vue'
 import Login from '../views/Login.vue'
 
@@ -12,12 +13,13 @@ const routes = [
   },
   {
     path: '/',
-    name: 'Projects',
-    component: Projects
+    name: 'Home',
+    component: Home
   },
   {
     path: '/projects',
-    redirect: '/'
+    name: 'Projects',
+    component: Projects
   },
   {
     path: '/user',

@@ -3,15 +3,12 @@
     <div class="header">
       <div class="container flex">
         <div class="logo item">
-          <a href="https://mdpress.glicon.design/">mdpress</a>
+            <router-link to="/">MDPRESS</router-link>
         </div>
         <div class="menu flex">
-          <div class="item"><a href="https://mdpress.glicon.design/start.html">教程</a></div>
           <div class="item">
             <router-link to="/projects" class="active">项目</router-link>
           </div>
-          <div class="item"><a href="https://mdpress.glicon.design/problem.html">常见问题</a></div>
-          <div class="item"><a href="https://mdpress.glicon.design/about.html">关于</a></div>
         </div>
         <div class="users flex">
           <div class="item green">
@@ -290,7 +287,7 @@ const handleDocs = (project) => {
     // Navigate to Editor with project ID
     // In legacy: window.open("./edit.html?p=".concat(e));
     // In Vue 3 app: push to router with query
-    router.push({ path: '/editor', query: { p: project.id } });
+    router.push({ path: '/editor', query: { p: project.id,name:project.name } });
 };
 
 const handleBuild = async (project) => {
