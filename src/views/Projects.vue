@@ -142,6 +142,8 @@ import { ref, onMounted, reactive } from 'vue';
 import Header from '@/components/Header.vue';
 import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
+import { getToken} from '@/utils'
+
 import { 
     queryProjectList, 
     queryCollaborateProjects, 
@@ -405,6 +407,13 @@ const handleDeleteLinkUser = async (user) => {
 
 
 onMounted(() => {
+    // 检查是否有有效 token
+    const token = getToken();
+    if (!token) {
+        ElMessage.error('请先登录');
+        router.push('/login');
+        return;
+    }
     loadProjects();
     loadCollaborateProjects();
 });

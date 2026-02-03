@@ -3,8 +3,8 @@ import { getToken } from '@/utils';
 
 axios.defaults.baseURL = import.meta.env.VITE_BASE_URL;
 
-const TEST_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImJVcmNNb0hKdnVsU09oaXI4ejctcyIsImlhdCI6MTc2OTA4MDA1OCwiZXhwIjoxNzcxNjcyMDU4fQ.vKgrQbI5mr9GSp41F6V2l5I6_4WCgBMfkXfOd7ZDyAw";
-const TEST_PROJECT_ID = "N-KUsUZgmt9J7JUcTITZd";
+const TEST_TOKEN = "";
+const TEST_PROJECT_ID = "";
 
 // Helper to get token (param > localStorage > test constant)
 const resolveToken = (token) => token || getToken() || TEST_TOKEN;
