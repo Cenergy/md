@@ -1,28 +1,6 @@
 <template>
   <div class="main">
-    <div class="header">
-      <div class="container flex">
-        <div class="logo item">
-          <router-link to="/">mdpress</router-link>
-        </div>
-        <div class="menu flex">
-          <div class="item">
-            <router-link to="/projects">项目</router-link>
-          </div>
-          <!-- <div class="item">
-            <a href="https://mdpress.glicon.design/problem.html">常见问题</a>
-          </div>
-          <div class="item">
-            <a href="https://mdpress.glicon.design/about.html">关于</a>
-          </div> -->
-        </div>
-        <div class="users flex">
-          <div class="item green">
-            <router-link to="/user"><i class="iconfont icon-ziyuanxhdpi"></i></router-link>
-          </div>
-        </div>
-      </div>
-    </div>
+    <Header />
     <div class="home">
       <div class="container">
         <div class="hero">
@@ -79,6 +57,7 @@
 </template>
 
 <script setup>
+import Header from '@/components/Header.vue'
 // Logic can be added here if needed
 </script>
 

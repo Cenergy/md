@@ -1,21 +1,6 @@
 <template>
   <div class="main">
-    <div class="header" v-show="!hideHeader">
-      <div class="container flex">
-        <div class="logo item">
-          <a href="https://mdpress.glicon.design/">mdpress</a>
-        </div>
-        <div class="menu flex">
-          <div class="item"><a href="https://mdpress.glicon.design/start.html">教程</a></div>
-          <div class="item"><a href="https://mdpress.glicon.design/project.html">项目</a></div>
-          <div class="item"><a href="https://mdpress.glicon.design/problem.html">常见问题</a></div>
-          <div class="item"><a href="https://mdpress.glicon.design/about.html">关于</a></div>
-        </div>
-        <div class="users flex">
-          <div class="item green"><i class="iconfont icon-ziyuanxhdpi"></i></div>
-        </div>
-      </div>
-    </div>
+    <Header :show="!hideHeader" />
 
     <div class="menu-container flex">
       <div class="project-text menu-panel">{{ projectName }}</div>
@@ -170,9 +155,10 @@ import { loadMonaco, createEditor, getEditor } from '@/utils/editor'
 import { ElMessage } from 'element-plus'
 import { pinyin } from 'pinyin-pro'
 import useClipboard from 'vue-clipboard3'
+import Header from '@/components/Header.vue'
 
 export default defineComponent({
-  components: { Container, Draggable },
+  components: { Container, Draggable, Header },
   setup() {
     const { toClipboard } = useClipboard()
     return { toClipboard }

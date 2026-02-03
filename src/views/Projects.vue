@@ -1,22 +1,6 @@
 <template>
   <div class="projects-page">
-    <div class="header">
-      <div class="container flex">
-        <div class="logo item">
-            <router-link to="/">MDPRESS</router-link>
-        </div>
-        <div class="menu flex">
-          <div class="item">
-            <router-link to="/projects" class="active">项目</router-link>
-          </div>
-        </div>
-        <div class="users flex">
-          <div class="item green">
-             <router-link to="/user"><i class="iconfont icon-ziyuanxhdpi"></i></router-link>
-          </div>
-        </div>
-      </div>
-    </div>
+    <Header />
 
     <div class="project-panel container content-container">
       <el-alert
@@ -155,6 +139,7 @@
 
 <script setup>
 import { ref, onMounted, reactive } from 'vue';
+import Header from '@/components/Header.vue';
 import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import { 
