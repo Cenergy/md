@@ -14,7 +14,9 @@
           <div class="item"><a href="https://mdpress.glicon.design/about.html">关于</a></div>
         </div>
         <div class="users flex">
-          <div class="item green"><i class="iconfont icon-ziyuanxhdpi"></i></div>
+          <div class="item green">
+             <router-link to="/user"><i class="iconfont icon-ziyuanxhdpi"></i></router-link>
+          </div>
         </div>
       </div>
     </div>
@@ -56,7 +58,11 @@
             <br /><br />项目编号:{{ project.id }}<br />
           </div>
         </el-card>
+      </div>
 
+      <el-divider content-position="center" v-if="collaborateProjects.length > 0">参与协作的项目</el-divider>
+
+      <div class="project-list" v-if="collaborateProjects.length > 0">
         <el-card v-for="(project, index) in collaborateProjects" :key="project.id" class="project-card" shadow="always">
           <template #header>
             <div class="clearfix">
@@ -68,6 +74,8 @@
               <el-button type="primary" link @click="handleDocs(project)">文档</el-button>
             </div>
             <br />
+            <el-button :loading="project.loading" @click="handleBuild(project)">编译项目</el-button>
+            &nbsp;
              <a :href="project.url" target="_blank" class="el-link el-link--default is-underline">
               <span class="el-link--inner">浏览地址</span>
             </a>
@@ -232,7 +240,8 @@ const loadCollaborateProjects = async () => {
         const data = await queryCollaborateProjects({});
         collaborateProjects.value = (data || []).map(p => ({
             ...p,
-            url: formatProjectURL(p)
+            url: formatProjectURL(p),
+            loading: false
         }));
     } catch (e) {
         // Silent fail or log

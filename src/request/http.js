@@ -299,7 +299,7 @@ export async function searchUser({ keywords, token }) {
                 token: resolveToken(token) 
             }
         });
-        return response.data;
+        return response.data.data || [];
     } catch (error) {
         console.error('User search failed:', error);
         throw error;
@@ -314,7 +314,7 @@ export async function queryProjectLinkUsers({ projectId, token }) {
                 token: resolveToken(token) 
             }
         });
-        return response.data;
+        return response.data.data || [];
     } catch (error) {
         console.error('Project link users query failed:', error);
         throw error;
@@ -349,6 +349,85 @@ export async function deleteProjectLinkUser({ projectId, uid, token }) {
         return response.data;
     } catch (error) {
         console.error('Project link user delete failed:', error);
+        throw error;
+    }
+}
+
+// User Info APIs
+export async function queryUserInfo({ token } = {}) {
+    try {
+        const response = await axios.get('/glicon/userinfo/query', {
+            params: { token: resolveToken(token) }
+        });
+        return response.data.data || {};
+    } catch (error) {
+        console.error('User info query failed:', error);
+        throw error;
+    }
+}
+
+export async function updateUserInfoName({ name, token }) {
+    try {
+        const response = await axios.post('/glicon/userinfo/updatename', {
+            name
+        }, {
+            params: { token: resolveToken(token) }
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Update user name failed:', error);
+        throw error;
+    }
+}
+
+export async function refreshUserToken({ token } = {}) {
+    try {
+        const response = await axios.post('/glicon/userinfo/refreshtoken', {}, {
+            params: { token: resolveToken(token) }
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Refresh token failed:', error);
+        throw error;
+    }
+}
+
+// Login/Register APIs
+export async function sendVerifyCode({ email }) {
+    try {
+        const response = await axios.get('/glicon/user/vercode', {
+            params: { email }
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Send verify code failed:', error);
+        throw error;
+    }
+}
+
+export async function registerUser({ email, password, code }) {
+    try {
+        const response = await axios.post('/glicon/user/register', {
+            email,
+            password,
+            code
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Register failed:', error);
+        throw error;
+    }
+}
+
+export async function loginUser({ email, password }) {
+    try {
+        const response = await axios.post('/glicon/user/login', {
+            email,
+            password
+        });
+        return response.data.data || {};
+    } catch (error) {
+        console.error('Login failed:', error);
         throw error;
     }
 }

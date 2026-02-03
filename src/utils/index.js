@@ -51,3 +51,8 @@ export const post = (url, data) => service.post(url, data)
 
 export const wrapUrl = (url) => url
 export const getHost = () => window.location.origin
+
+const EMAIL_REG = /^([a-zA-Z\d][\w-]{2,})@(\w{2,})\.([a-z]{2,})(\.[a-z]{2,})?$/;
+export function isEmail(t) {
+    return EMAIL_REG.test(t)
+}
