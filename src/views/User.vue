@@ -79,6 +79,7 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue';
+import Header from '@/components/Header.vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import useClipboard from 'vue-clipboard3';
 import { queryUserInfo, updateUserInfoName, refreshUserToken,validateToken } from '../request/http';

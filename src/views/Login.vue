@@ -1,13 +1,7 @@
 <template>
   <div class="login-page">
     <div class="main">
-      <div class="header">
-        <div class="container">
-          <div class="logo item">
-            <a href="https://mdpress.glicon.design/">mdpress</a>
-          </div>
-        </div>
-      </div>
+      <Header />
       <div class="login">
         <div class="login-container flex">
           <div class="item emial">
@@ -62,6 +56,7 @@
 
 <script setup>
 import { ref, computed } from 'vue';
+import Header from '@/components/Header.vue';
 import { ElMessage } from 'element-plus';
 import { isEmail, setToken } from '../utils';
 import { sendVerifyCode, registerUser, loginUser } from '../request/http';
