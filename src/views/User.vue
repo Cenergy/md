@@ -1,26 +1,6 @@
 <template>
   <div class="user-page">
-    <div class="header">
-      <div class="container flex">
-        <div class="logo item">
-          <a href="https://mdpress.glicon.design/">mdpress</a>
-        </div>
-        <div class="menu flex">
-          <div class="item"><a href="https://mdpress.glicon.design/start.html">教程</a></div>
-          <div class="item">
-            <router-link to="/projects">项目</router-link>
-          </div>
-          <div class="item"><a href="https://mdpress.glicon.design/problem.html">常见问题</a></div>
-          <div class="item"><a href="https://mdpress.glicon.design/about.html">关于</a></div>
-        </div>
-        <div class="users flex">
-          <div class="item green">
-             <router-link to="/user"><i class="iconfont icon-ziyuanxhdpi"></i></router-link>
-          </div>
-        </div>
-      </div>
-    </div>
-
+    <Header />
     <div class="userinfo-panel container content-container">
       <div class="el-card userinfo-card is-always-shadow">
         <div class="el-card__header">
@@ -80,10 +60,10 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
 import Header from '@/components/Header.vue';
+import { getToken,removeToken} from '@/utils'
 import { ElMessage, ElMessageBox } from 'element-plus';
 import useClipboard from 'vue-clipboard3';
 import { queryUserInfo, updateUserInfoName, refreshUserToken,validateToken } from '../request/http';
-import { removeToken } from '../utils';
 import router from '../router';
 
 const { toClipboard } = useClipboard();
