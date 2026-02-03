@@ -234,8 +234,15 @@ export default defineComponent({
        // Handled by reactive style binding
     },
     getProject(){
+      // If we already have the name from the query params, we can use it initially
+      if(this.$route.query.name){
+          this.projectName = this.$route.query.name;
+      }
+      
       queryProject({projectId: this.projectId, token: getToken()}).then(res=>{
-          this.projectName=res.name;
+          if (res.name) {
+             this.projectName = res.name;
+          }
           this.hero=res.hero||{};
       })
     },

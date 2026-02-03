@@ -79,13 +79,12 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue';
-import { useRouter } from 'vue-router';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import useClipboard from 'vue-clipboard3';
-import { queryUserInfo, updateUserInfoName, refreshUserToken, validateToken } from '../request/http';
-import { removeToken, getToken } from '../utils';
+import { queryUserInfo, updateUserInfoName, refreshUserToken,validateToken } from '../request/http';
+import { removeToken } from '../utils';
+import router from '../router';
 
-const router = useRouter();
 const { toClipboard } = useClipboard();
 
 const userInfo = ref({});
@@ -148,8 +147,24 @@ const handleLogout = () => {
     }).catch(() => {});
 };
 
-onMounted(() => {
-    getUserInfo();
+onMounted(async () => {
+    const token = getToken();
+    if (!token) {
+        router.push('/login');
+        return;
+    }
+    try {
+        const isValid = await validateToken(token);
+        if (isValid) {
+            getUserInfo();
+        } else {
+            removeToken();
+            router.push('/login');
+        }
+    } catch (e) {
+        removeToken();
+        router.push('/login');
+    }
 });
 </script>
 
