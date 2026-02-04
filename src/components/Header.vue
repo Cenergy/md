@@ -5,10 +5,10 @@
         <router-link to="/">mdpress</router-link>
       </div>
       <div class="menu flex">
-        <div class="item"><a href="https://mdpress.glicon.design/start.html">教程</a></div>
+        <div class="item"><router-link to="/start">教程</router-link></div>
         <div class="item"><router-link to="/projects">项目</router-link></div>
-        <div class="item"><a href="https://mdpress.glicon.design/problem.html">常见问题</a></div>
-        <div class="item"><a href="https://mdpress.glicon.design/about.html">关于</a></div>
+        <div class="item"><router-link to="/problem">常见问题</router-link></div>
+        <div class="item"><router-link to="/about">关于</router-link></div>
       </div>
       <div class="users flex">
         <div class="item green"><router-link to="/user"><i class="iconfont icon-ziyuanxhdpi"></i></router-link></div>
