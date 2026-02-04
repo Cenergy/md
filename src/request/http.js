@@ -44,6 +44,7 @@ const resolveToken = (token) => token || getToken() || TEST_TOKEN;
 const resolveProjectId = (projectId) => projectId || TEST_PROJECT_ID;
 
 // 验证token是否有效
+// 结果示例{ok: true}
 export async function validateToken(token) {
   try {
     const response = await get("/glicon/tokenvalidate", {
@@ -56,6 +57,20 @@ export async function validateToken(token) {
   }
 }
 
+// 结果示例
+// {
+//     "ok": true,
+//     "message": "success",
+//     "data": {
+//         "hero": {
+//             "id": "N-KUsUZgmt9J7JUcTITZd",
+//             "name": "",
+//             "text": "",
+//             "tagline": "",
+//             "features": []
+//         }
+//     }
+// }
 export async function queryProject({ projectId, token }) {
   try {
     const response = await get("/glicon/project/query", {
@@ -83,6 +98,61 @@ export async function queryMenu({ projectId, token }) {
   }
 }
 
+// {
+//     "ok": true,
+//     "message": "success",
+//     "data": [
+//         {
+//             "id": "yE9UNqhD5P6cYLaC5vpfK",
+//             "link": "YANGSHI",
+//             "name": "样式",
+//             "sliders": [
+//                 {
+//                     "name": "介绍",
+//                     "group": false,
+//                     "link": "introduce"
+//                 }
+//             ]
+//         },
+//         {
+//             "id": "MxLPcWk-XmT17d0oaJOUj",
+//             "link": "CHAJIAN",
+//             "name": "插件",
+//             "sliders": [
+//                 {
+//                     "name": "介绍",
+//                     "group": false,
+//                     "link": "introduce"
+//                 }
+//             ]
+//         },
+//         {
+//             "id": "rC3O170r9we3z59seaarI",
+//             "link": "BOKE",
+//             "name": "博客",
+//             "sliders": [
+//                 {
+//                     "name": "关于怎么写好博客的文章",
+//                     "group": false,
+//                     "link": "introduce",
+//                     "isActive": false
+//                 },
+//             ]
+//         },
+//         {
+//             "id": "daz0679cL3xtdvP6e32Sq",
+//             "link": "KAIFAJIHUA",
+//             "name": "开发计划",
+//             "sliders": [
+//                 {
+//                     "name": "介绍",
+//                     "group": false,
+//                     "link": "introduce"
+//                 }
+//             ]
+//         },
+//     ]
+// }
 export async function querySlider({ projectId, token, name, link }) {
   try {
     const response = await get("/glicon/slider/all", {
@@ -98,6 +168,35 @@ export async function querySlider({ projectId, token, name, link }) {
     throw error;
   }
 }
+
+// [
+//     {
+//         "name": "mdpress介绍",
+//         "group": false,
+//         "link": "introduce",
+//         "isActive": false
+//     },
+//     {
+//         "name": "999",
+//         "group": true,
+//         "link": "12313",
+//         "isActive": false,
+//         "children": [
+//             {
+//                 "name": "123456",
+//                 "group": false,
+//                 "link": "123456",
+//                 "isActive": false
+//             },
+//             {
+//                 "name": "789",
+//                 "group": false,
+//                 "link": "789",
+//                 "isActive": false
+//             }
+//         ]
+//     },
+// ]
 export async function querySliderList({ projectId, token, name, link }) {
   try {
     const response = await get("/glicon/slider/list", {
@@ -173,6 +272,11 @@ export async function saveSlider({ projectId, token, link, data }) {
   }
 }
 
+// {
+//     "ok": true,
+//     "message": "success",
+//     "data": "<iframe src=\"https://markdown.com.cn/cheat-sheet.html#%E6%80%BB%E8%A7%88\"></iframe>\r\n\r\n\r\n123"
+// }
 export async function queryDoc({ projectId, token, link, item, name }) {
   try {
     const response = await get("/glicon/slider/item/list", {
@@ -189,6 +293,10 @@ export async function queryDoc({ projectId, token, link, item, name }) {
   }
 }
 
+// {
+//     "ok": true,
+//     "message": "success"
+// }
 export async function saveDoc({ projectId, token, link, item, data }) {
   try {
     const response = await post(
@@ -211,7 +319,16 @@ export async function saveDoc({ projectId, token, link, item, data }) {
 }
 
 // Project APIs
-
+// {
+//     "ok": true,
+//     "message": "success",
+//     "data": [
+//         {
+//             "id": "1X3fCwkSwCBUcWFFlJvEc",
+//             "name": "test"
+//         }
+//     ]
+// }
 export async function queryProjectList({ token }) {
   try {
     const response = await get("/glicon/project/list", {
@@ -224,6 +341,16 @@ export async function queryProjectList({ token }) {
   }
 }
 
+// {
+//     "ok": true,
+//     "message": "success",
+//     "data": [
+//         {
+//             "id": "N-KUsUZgmt9J7JUcTITZd",
+//             "name": "gishai"
+//         }
+//     ]
+// }
 export async function queryCollaborateProjects({ token }) {
   try {
     const response = await get("/glicon/project/collaborate", {
@@ -274,6 +401,10 @@ export async function updateProject({ id, name, token }) {
   }
 }
 
+// {
+//     "ok": true,
+//     "message": "success"
+// }
 export async function buildProject({ projectId, token }) {
   try {
     // Try local build endpoint first (dev environment)
@@ -493,6 +624,7 @@ export async function loginUser({ email, password }) {
  * const data = new FormData();
  * data.append("token", getToken());
  * data.append("avatar", file);
+ * 结果示例
  * {
  *   "ok": true,
  *   "message": "successfully",
