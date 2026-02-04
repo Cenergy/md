@@ -330,6 +330,12 @@ async function main() {
     }
 
     // Write Config and Root Home
+    // Ensure no conflicting config.js exists
+    const oldConfigPath = path.join(VITEPRESS_DIR, 'config.js');
+    if (fs.existsSync(oldConfigPath)) {
+        fs.unlinkSync(oldConfigPath);
+    }
+
     fs.writeFileSync(path.join(VITEPRESS_DIR, 'config.mjs'), generateVitePressConfig(locales, globalSidebar));
     fs.writeFileSync(path.join(DOCS_ROOT, 'index.md'), generateRootHomeContent(projectDataList));
 
