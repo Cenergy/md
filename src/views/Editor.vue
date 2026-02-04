@@ -333,10 +333,16 @@ export default defineComponent({
       })
     },
     _saveSliders(){
+        console.log("🚀 ~ this.currentMenu:", this.currentMenu)
+        console.log("🚀 ~ this.sliders:", this.sliders)
       return new Promise((resolve, reject)=>{
+        if (!this.currentMenu) {
+            this.warn("请先选择一个菜单");
+            return reject("No menu selected");
+        }
         saveSlider({projectId: this.projectId, token: getToken(), link: this.currentMenu.link, data: this.sliders}).then(res=>{
           resolve()
-        })
+        }).catch(err => reject(err))
       })
     },
     getSliders(menu){
@@ -350,6 +356,11 @@ export default defineComponent({
       })
     },
     toggleSliderDialog(){
+      // 判断是否有当前菜单
+      if (!this.currentMenu) {
+          this.warn("请先选择一个菜单");
+          return;
+      }
       this.docTitle=""
       this.docType="doc"
       this.docLink=""
@@ -364,6 +375,10 @@ export default defineComponent({
        }
     },
     addDocItem(){
+       if (!this.currentMenu) {
+           this.warn("请先选择一个菜单");
+           return;
+       }
        let e = this.docTitle, t = this.docType, n = this.docLink;
        if(!e || e.length<2 || !t){
            this.warn("请填写文档名称和文档类别")
