@@ -1,53 +1,45 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
-import Editor from '../views/Editor.vue'
-import Projects from '../views/Projects.vue'
-import Home from '../views/Home.vue'
-import User from '../views/User.vue'
-import Login from '../views/Login.vue'
-import Problem from '../views/Problem.vue'
-import About from '../views/About.vue'
-import Start from '../views/Start.vue'
 
 const routes = [
   {
     path: '/editor',
     name: 'Editor',
-    component: Editor
+    component: () => import('../views/Editor.vue')
   },
   {
     path: '/',
     name: 'Home',
-    component: Home
+    component: () => import('../views/Home.vue')
   },
   {
     path: '/projects',
     name: 'Projects',
-    component: Projects
+    component: () => import('../views/Projects.vue')
   },
   {
     path: '/user',
     name: 'User',
-    component: User
+    component: () => import('../views/User.vue')
   },
   {
     path: '/login',
     name: 'Login',
-    component: Login
+    component: () => import('../views/Login.vue')
   },
   {
     path: '/problem',
     name: 'Problem',
-    component: Problem
+    component: () => import('../views/Problem.vue')
   },
   {
     path: '/about',
     name: 'About',
-    component: About
+    component: () => import('../views/About.vue')
   },
   {
     path: '/start',
     name: 'Start',
-    component: Start
+    component: () => import('../views/Start.vue')
   }
 ] 
 
