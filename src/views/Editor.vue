@@ -151,7 +151,7 @@ import { defineComponent } from 'vue'
 import { Container, Draggable } from 'vue3-smooth-dnd'
 import { getToken, wrapUrl, getHost } from '@/utils'
 import { validateToken, queryProject, queryMenu, querySlider, sortMenu, saveMenu, saveSlider, queryDoc, saveDoc,querySliderList } from '@/request/http'
-import { loadMonaco, createEditor, getEditor } from '@/utils/editor'
+import { loadMonaco, createEditor, getEditor, destroyEditor } from '@/utils/editor'
 import { ElMessage, ElLoading } from 'element-plus'
 import { pinyin } from 'pinyin-pro'
 import useClipboard from 'vue-clipboard3'
@@ -619,6 +619,9 @@ export default defineComponent({
     } finally {
       loading.close()
     }
+  },
+  beforeUnmount() {
+    destroyEditor()
   }
 })
 </script>
