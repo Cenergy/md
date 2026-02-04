@@ -6,6 +6,20 @@ export function getEditor() {
     return mdEditor;
 }
 
+export function destroyEditor() {
+    if (mdEditor) {
+        // Try to dispose monaco instance if exposed
+        if (mdEditor.editor && typeof mdEditor.editor.dispose === 'function') {
+            mdEditor.editor.dispose();
+        }
+        // If MDEditor has a dispose/destroy method, call it
+        if (typeof mdEditor.dispose === 'function') {
+            mdEditor.dispose();
+        }
+        mdEditor = null;
+    }
+}
+
 export function loadMonaco(callback) {
     if (window.registerMdPlugins) {
         window.registerMdPlugins();
