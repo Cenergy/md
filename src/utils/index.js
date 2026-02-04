@@ -1,58 +1,51 @@
-import axios from 'axios'
 
-export function uuid() {
-  var s = [];
-  var hexDigits = "0123456789abcdef";
-  for (var i = 0; i < 36; i++) {
-    s[i] = hexDigits.substr(Math.floor(Math.random() * 0x10), 1);
-  }
-  s[14] = "4"; 
-  s[19] = hexDigits.substr((s[19] & 0x3) | 0x8, 1);
-  s[8] = s[13] = s[18] = s[23] = "-";
-  return s.join("");
-}
+const CHARS = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split('');
 
-export const getToken = () => localStorage.getItem('token')
-export const removeToken = () => localStorage.removeItem('token')
-export const setToken = (token) => localStorage.setItem('token', token)
+// --- Validation & Type Checking ---
 
-const service = axios.create({
-  timeout: 15000
-})
+export const isFunction = (t) => !!t && (typeof t === 'function' || (t.constructor !== null && t.constructor === Function));
 
-service.interceptors.request.use(
-  config => {
-    const token = getToken()
-    if (token) {
-       // Assuming standard Bearer token or custom header. 
-       // The original code in uploadFile used formData.append('token', getToken())
-       // But for get/post it likely used headers or query params.
-       // Without seeing the original get/post implementation, I'll add it to headers.
-       config.headers['token'] = token
-    }
-    return config
-  },
-  error => {
-    return Promise.reject(error)
-  }
-)
+export const isNumber = (t) => typeof t === 'number';
 
-service.interceptors.response.use(
-  response => {
-    return response.data
-  },
-  error => {
-    return Promise.reject(error)
-  }
-)
-
-export const get = (url, params) => service.get(url, { params })
-export const post = (url, data) => service.post(url, data)
-
-export const wrapUrl = (url) => url
-export const getHost = () => window.location.origin
+export const isFireFox = () => navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
 
 const EMAIL_REG = /^([a-zA-Z\d][\w-]{2,})@(\w{2,})\.([a-z]{2,})(\.[a-z]{2,})?$/;
-export function isEmail(t) {
-    return EMAIL_REG.test(t)
-}
+export const isEmail = (t) => EMAIL_REG.test(t);
+
+// --- Auth & Storage ---
+
+export const setToken = (t) => localStorage.setItem('token', t);
+export const getToken = () => localStorage.getItem('token');
+export const removeToken = () => localStorage.removeItem('token');
+
+// --- URL & Environment ---
+
+export const getHost = () => window.location.origin;
+
+export const wrapUrl = (t) => t;
+
+export const getURLParams = (name) => {
+  const reg = new RegExp(`(^|&)${name}=([^&]*)(&|$)`, 'i');
+  const r = window.location.search.substr(1).match(reg);
+  return r != null ? unescape(r[2]) : null;
+};
+
+// --- Generators ---
+
+export const uuid = () => {
+  const e = new Array(36);
+  let r = 0;
+  for (let n = 0; n < 36; n++) {
+    if (n === 8 || n === 13 || n === 18 || n === 23) {
+      e[n] = '-';
+    } else if (n === 14) {
+      e[n] = '4';
+    } else {
+      if (r <= 0x02) r = (0x2000000 + Math.random() * 0x1000000) | 0;
+      let t = r & 0xf;
+      r >>= 4;
+      e[n] = CHARS[(n === 19) ? (t & 0x3) | 0x8 : t];
+    }
+  }
+  return e.join('');
+};

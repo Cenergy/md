@@ -152,10 +152,11 @@ import { Container, Draggable } from 'vue3-smooth-dnd'
 import { getToken, wrapUrl, getHost } from '@/utils'
 import { validateToken, queryProject, queryMenu, querySlider, sortMenu, saveMenu, saveSlider, queryDoc, saveDoc,querySliderList } from '@/request/http'
 import { loadMonaco, createEditor, getEditor } from '@/utils/editor'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElLoading } from 'element-plus'
 import { pinyin } from 'pinyin-pro'
 import useClipboard from 'vue-clipboard3'
 import Header from '@/components/Header.vue'
+import { loadEditorPlugins } from '@/utils/lazy-loader'
 
 export default defineComponent({
   components: { Container, Draggable, Header },
@@ -537,57 +538,72 @@ export default defineComponent({
       })
     }
   },
-  mounted() {
-    this.userValidate();
-    const p = this.$route.query.p;
-    if(p){
-      this.projectId = p
-      this.getProject()
-      this.getMenus()
-    } else {
-      // Local fallback
-      this.getMenus()
-    }
-    
-    // Register monaco if needed by mdpress
-    loadMonaco()
+  async mounted() {
+    const loading = ElLoading.service({
+      lock: true,
+      text: 'Initializing Editor...',
+      background: 'rgba(0, 0, 0, 0.7)',
+    })
 
-    this.getAllSliders()
+    try {
+      await loadEditorPlugins()
 
-    // Initialize FileDND
-    if(window.filednd && window.filednd.FileDND){
-        new window.filednd.FileDND(document.querySelector(".drag-zone")).dnd((files) => {
-            if(files.length){
-                let i = 0;
-                let list = [];
-                this.uploading = true;
-                const process = () => {
-                    if(i < files.length){
-                        let n = files[i];
-                        this.uploadFile(n, (url) => {
-                            list.push({path: n.path, url: url, type: n.type});
-                            i++;
-                            process();
-                        });
-                    } else {
-                        setTimeout(() => { this.uploading = false }, 200);
-                        this.uploadFiles = this.uploadFiles.concat(list);
-                    }
-                };
-                process();
-            } else {
-                this.warn("你拖拽的文件里没有找到任何的文件");
-            }
-        });
+      this.userValidate();
+      const p = this.$route.query.p;
+      if(p){
+        this.projectId = p
+        this.getProject()
+        this.getMenus()
+      } else {
+        // Local fallback
+        this.getMenus()
+      }
+      
+      // Register monaco if needed by mdpress
+      loadMonaco()
+
+      this.getAllSliders()
+
+      // Initialize FileDND
+      if(window.filednd && window.filednd.FileDND){
+          new window.filednd.FileDND(document.querySelector(".drag-zone")).dnd((files) => {
+              if(files.length){
+                  let i = 0;
+                  let list = [];
+                  this.uploading = true;
+                  const process = () => {
+                      if(i < files.length){
+                          let fileItem = files[i];
+                          this.uploadFile(fileItem, (url) => {
+                              list.push({path: fileItem.path, url: url, type: fileItem.type});
+                              i++;
+                              process();
+                          });
+                      } else {
+                          setTimeout(() => { this.uploading = false }, 200);
+                          this.uploadFiles = this.uploadFiles.concat(list);
+                      }
+                  };
+                  process();
+              } else {
+                  this.warn("你拖拽的文件里没有找到任何的文件");
+              }
+          });
+      }
+      
+      // Key binding
+      document.addEventListener("keydown", (e) => {
+          if(e.ctrlKey && e.keyCode === 83){
+              e.preventDefault();
+              this.saveDoc();
+          }
+      });
+    } catch (e) {
+      console.error(e)
+      this.error("Failed to load editor resources")
+    } finally {
+      loading.close()
     }
-    
-    // Key binding
-    document.addEventListener("keydown", (e) => {
-        if(e.ctrlKey && e.keyCode === 83){
-            e.preventDefault();
-            this.saveDoc();
-        }
-    });
   }
 })
 </script>
