@@ -228,7 +228,8 @@
           {{ file.path }}
           <div class="el-row">
             <div class="el-col el-col-16">
-              <button class="green" @click="copyUploadFile(file)"><i class="iconfont icon-fuzhi1"></i></button
+              <button class="green" @click="copyUploadFile(file)">
+                <i class="iconfont icon-fuzhi1"></i></button
               ><button class="red" @click="deleteUploadFile(index)">
                 <i class="iconfont icon-shanchu"></i>
               </button>
@@ -690,21 +691,9 @@ export default defineComponent({
         .then((res) => {
           console.log("🚀 ~ res:", res);
           if (res && (res.fileName || res.url)) {
-            let url = res.fileName;
+            let url = res.fileName || res.url;
             if (!url && res.fileName) {
               let t = getHost();
-              // If getHost is just origin, we might need to handle it carefully.
-              // But sticking to the logic that was commented out (implied intent):
-              // t.substring(0, t.lastIndexOf("/")) + "/p/" + res.fileName;
-              // If t is "http://localhost:3000", lastIndexOf("/") is 6 (//).
-              // This logic seems to want to strip the last path segment?
-              // If t was "http://domain.com/app", it becomes "http://domain.com/p/..."
-              // Since getHost() is now just origin, we can probably just append.
-
-              // However, let's look at getHost usage again.
-              // It is imported from '@/utils'.
-
-              // I will just use origin + /p/ for now.
               url = `${t}/p/${res.fileName}`;
             }
             cb(url);
@@ -736,10 +725,12 @@ export default defineComponent({
         this.warn("文件链接无效");
         return;
       }
-      const prefixURL="//mdpress.glicon.design/p/";
-      const isImage = file.type && file.type.startsWith('image/');
+      const prefixURL = "";
+      const isImage = file.type && file.type.startsWith("image/");
       const name = file.path ? file.path.split(/[\\/]/).pop() : "file";
-      const text = isImage ? `![${name}](${prefixURL}${file.url})` : `[${name}](${prefixURL}${file.url})`;
+      const text = isImage
+        ? `![${name}](${prefixURL}${file.url})`
+        : `[${name}](${prefixURL}${file.url})`;
       this.copyValue(text);
     },
     deleteUploadFile(index) {

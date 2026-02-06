@@ -86,8 +86,12 @@ const getValidateCode = async () => {
     const t = email.value;
     if (!checkEmailValid(t)) return;
     try {
-        await sendVerifyCode({ email: t });
-        ElMessage.success("验证码发送成功");
+        const res = await sendVerifyCode({ email: t });
+        if (res && res.ok) {
+            ElMessage.success("验证码发送成功");
+        } else {
+            ElMessage.error(res.message || "发送失败");
+        }
     } catch (e) {
         ElMessage.error(e.message || "发送失败");
     }
@@ -104,15 +108,19 @@ const submitInfo = async () => {
         
         if (r) {
             // Register logic
-            if (n && n.length === 4) {
+            if (n && n.length >= 4) {
                 if (s.length >= 6 && s.length <= 15) {
                     try {
-                        await registerUser({ email: i, password: s, code: n });
-                        ElMessage.success("注册成功,系统正在帮你自动登录,稍等片刻");
-                        register.value = false;
-                        setTimeout(() => {
-                            submitInfo();
-                        }, 2000);
+                        const res = await registerUser({ email: i, password: s, code: n });
+                        if (res && res.ok) {
+                            ElMessage.success(res.message || "注册成功,系统正在帮你自动登录,稍等片刻");
+                            register.value = false;
+                            setTimeout(() => {
+                                submitInfo();
+                            }, 2000);
+                        } else {
+                            ElMessage.error(res.message || "注册失败");
+                        }
                     } catch (e) {
                         ElMessage.error(e.message || "注册失败");
                     }
@@ -125,9 +133,13 @@ const submitInfo = async () => {
         } else {
             // Login logic
             try {
-                const token = await loginUser({ email: i, password: s });
-                setToken(token);
-                window.location.href = "./";
+                const res = await loginUser({ email: i, password: s });
+                if (res && res.token) {
+                    setToken(res.token);
+                    window.location.href = "./";
+                } else {
+                    throw new Error("Login failed: No token received");
+                }
             } catch (e) {
                 ElMessage.error(e.message || "登录失败");
             }
