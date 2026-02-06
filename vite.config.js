@@ -56,7 +56,6 @@ export default defineConfig({
         // rewrite: (path) => path.replace(/^\/glicon/, ''),
         changeOrigin: true,
         secure: false,
-        changeOrigin: true,
       },
     },
   },
