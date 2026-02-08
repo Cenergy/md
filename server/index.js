@@ -9,9 +9,10 @@ const fs = require('fs');
 const { initDB, getDB } = require('./db');
 
 const nodemailer = require('nodemailer');
+require('dotenv').config();
 
 const app = express();
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 
 // Ensure uploads directory exists
 const uploadDir = path.join(__dirname, 'uploads');
@@ -19,15 +20,15 @@ if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir);
 }
 
-const SECRET_KEY = 'md-test-secret-key';
+const SECRET_KEY = process.env.SECRET_KEY || 'md-test-secret-key';
 
-const SMTP_TLS=true
-const SMTP_PORT=465
-const SMTP_HOST="smtp.sina.com"
-const SMTP_USER="helloaigis@sina.com"
-const SMTP_PASSWORD="400b969ebdce0144"
-const EMAILS_FROM_EMAIL="helloaigis@sina.com"
-const EMAILS_FROM_NAME="FastAPI Admin"
+const SMTP_TLS = process.env.SMTP_TLS === 'true';
+const SMTP_PORT = process.env.SMTP_PORT || 465;
+const SMTP_HOST = process.env.SMTP_HOST;
+const SMTP_USER = process.env.SMTP_USER;
+const SMTP_PASSWORD = process.env.SMTP_PASSWORD;
+const EMAILS_FROM_EMAIL = process.env.EMAILS_FROM_EMAIL;
+const EMAILS_FROM_NAME = process.env.EMAILS_FROM_NAME || "FastAPI Admin";
 
 const transporter = nodemailer.createTransport({
     host: SMTP_HOST,
