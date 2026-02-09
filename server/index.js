@@ -520,9 +520,42 @@ app.get('/glicon/project/build', verifyToken, (req, res) => {
 });
 
 
-// Start server
-initDB().then(() => {
+// Start server with Vite Middleware or Static Serving
+const startServer = async () => {
+    await initDB();
+
+    // Check environment
+    const isProduction = process.env.NODE_ENV === 'production';
+
+    if (isProduction) {
+        // Serve static files from dist (Production)
+        console.log('Running in production mode, serving static files from ../dist');
+        app.use(express.static(path.join(__dirname, '../dist')));
+        
+        // Handle SPA routing - return index.html for any unknown route
+        // excluding /glicon API routes (which are already handled above)
+        app.get('*', (req, res) => {
+            res.sendFile(path.join(__dirname, '../dist/index.html'));
+        });
+    } else {
+        // Use Vite middleware (Development)
+        console.log('Running in development mode, attaching Vite middleware');
+        try {
+            const { createServer } = await import('vite');
+            const vite = await createServer({
+                server: { middlewareMode: true },
+                appType: 'spa',
+                root: path.resolve(__dirname, '..') // Project root
+            });
+            app.use(vite.middlewares);
+        } catch (e) {
+            console.error('Failed to start Vite middleware:', e);
+        }
+    }
+
     app.listen(PORT, () => {
         console.log(`Server running on http://localhost:${PORT}`);
     });
-});
+};
+
+startServer();
