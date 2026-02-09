@@ -542,6 +542,8 @@ const startServer = async () => {
         console.log('Running in development mode, attaching Vite middleware');
         try {
             const { createServer } = await import('vite');
+            // We can optionally pass configFile: false or specific config path.
+            // By default, it will automatically look for vite.config.js in root.
             const vite = await createServer({
                 server: { middlewareMode: true },
                 appType: 'spa',
