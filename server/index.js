@@ -341,10 +341,29 @@ app.get('/glicon/slider/all', verifyToken, async (req, res) => {
 });
 
 app.get('/glicon/slider/list', verifyToken, async (req, res) => {
-    // Similar to all?
-    const { projectId } = req.query;
+    const { projectId, link } = req.query; // link is menu_link
     const db = getDB();
-    const sliders = await db.all('SELECT * FROM sliders WHERE project_id = ?', [projectId]);
+    
+    if (!link) {
+         // Fallback if no menu link provided, though Editor.vue sends it.
+         const sliders = await db.all('SELECT * FROM sliders WHERE project_id = ? ORDER BY sort_order ASC', [projectId]);
+         return res.json({ ok: true, data: sliders });
+    }
+
+    // Get top-level sliders for this menu
+    const sliders = await db.all('SELECT * FROM sliders WHERE project_id = ? AND menu_link = ? AND parent_id IS NULL ORDER BY sort_order ASC', [projectId, link]);
+    
+    // Fetch children for groups
+    for (const slider of sliders) {
+        if (slider.is_group) {
+            slider.children = await db.all('SELECT * FROM sliders WHERE project_id = ? AND parent_id = ? ORDER BY sort_order ASC', [projectId, slider.id]);
+            slider.group = true; // map is_group to group for frontend
+        } else {
+            slider.group = false;
+            slider.children = [];
+        }
+    }
+    
     res.json({ ok: true, data: sliders });
 });
 
