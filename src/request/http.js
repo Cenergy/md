@@ -610,7 +610,7 @@ export async function loginUser({ email, password }) {
       email,
       password,
     });
-    return response.data || {};
+    return response || {};
   } catch (error) {
     console.error("Login failed:", error);
     throw error;
