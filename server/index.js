@@ -128,10 +128,7 @@ app.post('/glicon/user/login', async (req, res) => {
         // Update token in user table? Not strictly needed for JWT but maybe for tracking.
         res.json({
             ok: true,
-            data: {
-                token,
-                userInfo: user
-            }
+            data:token,
         });
     } else {
         res.status(401).json({ ok: false, message: 'Invalid credentials' });

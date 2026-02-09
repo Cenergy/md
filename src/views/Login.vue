@@ -134,8 +134,8 @@ const submitInfo = async () => {
             // Login logic
             try {
                 const res = await loginUser({ email: i, password: s });
-                if (res && res.token) {
-                    setToken(res.token);
+                if (res && res.data) {
+                    setToken(res.data);
                     window.location.href = "./";
                 } else {
                     throw new Error("Login failed: No token received");
