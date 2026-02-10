@@ -1,0 +1,67 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model menus {
+  id         String    @id
+  project_id String?
+  name       String?
+  link       String?
+  sort_order Int?
+  projects   projects? @relation(fields: [project_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model project_links {
+  id         Int       @id @default(autoincrement())
+  project_id String?
+  user_id    Int?
+  email      String?
+  projects   projects? @relation(fields: [project_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model projects {
+  id            String          @id
+  name          String?
+  owner_id      Int?
+  hero          String?
+  created_at    DateTime?       @default(now())
+  menus         menus[]
+  project_links project_links[]
+  users         users?          @relation(fields: [owner_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  sliders       sliders[]
+}
+
+model sliders {
+  id         String    @id
+  project_id String?
+  menu_link  String?
+  name       String?
+  link       String?
+  is_group   Boolean?
+  parent_id  String?
+  sort_order Int?
+  content    String?
+  projects   projects? @relation(fields: [project_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model users {
+  id         Int        @id @default(autoincrement())
+  email      String?    @unique(map: "sqlite_autoindex_users_1")
+  password   String?
+  name       String?
+  avatar     String?
+  created_at DateTime?  @default(now())
+  status     Int?       @default(1)
+  projects   projects[]
+}
+
+model verify_codes {
+  email      String    @id
+  code       String?
+  expires_at DateTime?
+}
