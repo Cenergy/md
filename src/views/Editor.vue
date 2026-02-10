@@ -21,10 +21,10 @@
       </div>
       <div class="menu-panel">
         <button type="text" @click="dialog = true">+菜单</button>&nbsp;&nbsp;
-        <el-checkbox v-model="hideHeader" @change="hideHeaderChange"
+        <el-checkbox v-model="hideHeader"
           >隐藏头部菜单</el-checkbox
         >
-        <el-checkbox v-model="hideLinksPanel" @change="hideLinksPanelChange"
+        <el-checkbox v-model="hideLinksPanel"
           >隐藏右侧菜单链接面板</el-checkbox
         >
       </div>
@@ -32,7 +32,7 @@
 
     <div
       class="content flex"
-      ref="content"
+      ref="contentRef"
       :style="{
         height: hideHeader ? 'calc(100% - 32px)' : 'calc(100% - 92px)',
       }"
@@ -242,8 +242,9 @@
   </div>
 </template>
 
-<script>
-import { defineComponent } from "vue";
+<script setup>
+import { ref, reactive, onMounted, onBeforeUnmount } from "vue";
+import { useRoute, useRouter } from 'vue-router';
 import { Container, Draggable } from "vue3-smooth-dnd";
 import { getToken, wrapUrl, getHost } from "@/utils";
 import {
@@ -257,6 +258,7 @@ import {
   queryDoc,
   saveDoc,
   querySliderList,
+  uploadImageFile
 } from "@/request/http";
 import {
   loadMonaco,
@@ -269,603 +271,599 @@ import { pinyin } from "pinyin-pro";
 import useClipboard from "vue-clipboard3";
 import Header from "@/components/Header.vue";
 import { loadEditorPlugins } from "@/utils/lazy-loader";
-import { uploadImageFile } from "../request/http";
 
-export default defineComponent({
-  components: { Container, Draggable, Header },
-  setup() {
-    const { toClipboard } = useClipboard();
-    return { toClipboard };
-  },
-  data() {
-    return {
-      hideHeader: true,
-      hideLinksPanel: true,
-      dialog: false,
-      hero: {},
-      projectId: "",
-      projectName: "",
-      menus: [],
-      currentMenu: null,
-      currentLink: "",
-      menuName: "",
-      menuLink: "",
-      saveButtonDisabled: false,
-      sliders: [],
-      docDialog: false,
-      docTitle: "",
-      docLink: "",
-      docType: "doc",
-      docTypes: [
-        { value: "doc", label: "文档(markdown)" },
-        { value: "group", label: "分组(group)" },
-      ],
-      docTypeDisable: false,
-      currentGroup: null,
-      currentDoc: null,
-      editorShow: true,
-      uploading: false,
-      uploadFileURL: "",
-      sliderURLS: [],
-      showUploadPanel: false,
-      uploadFiles: [],
-      docEditDialog: false,
-      docEditData: null,
-      docEditTitle: "",
-      isLogin: false,
-    };
-  },
-  methods: {
-    info(msg) {
-      ElMessage.info(msg);
-    },
-    warn(msg) {
-      ElMessage.warning(msg);
-    },
-    success(msg) {
-      ElMessage.success(msg);
-    },
-    error(msg) {
-      ElMessage.error(msg);
-    },
+const route = useRoute();
+const router = useRouter();
+const { toClipboard } = useClipboard();
 
-    userValidate() {
-      this.isLogin = false;
-      validateToken(getToken())
-        .then((res) => {
-          this.isLogin = res;
-        })
-        .catch(() => {
-          this.isLogin = false;
-        });
-    },
+// State
+const hideHeader = ref(true);
+const hideLinksPanel = ref(true);
+const dialog = ref(false);
+const hero = ref({});
+const projectId = ref("");
+const projectName = ref("");
+const menus = ref([]);
+const currentMenu = ref(null);
+const currentLink = ref("");
+const menuName = ref("");
+const menuLink = ref("");
+const saveButtonDisabled = ref(false);
+const sliders = ref([]);
+const docDialog = ref(false);
+const docTitle = ref("");
+const docLink = ref("");
+const docType = ref("doc");
+const docTypes = [
+  { value: "doc", label: "文档(markdown)" },
+  { value: "group", label: "分组(group)" },
+];
+const docTypeDisable = ref(false);
+const currentGroup = ref(null);
+const currentDoc = ref(null);
+const editorShow = ref(true);
+const uploading = ref(false);
+const uploadFileURL = ref("");
+const sliderURLS = ref([]);
+const showUploadPanel = ref(false);
+const uploadFiles = ref([]);
+const docEditDialog = ref(false);
+const docEditData = ref(null);
+const docEditTitle = ref("");
+const isLogin = ref(false);
 
-    hideHeaderChange() {
-      // Handled by reactive style binding
-    },
-    hideLinksPanelChange() {
-      // Handled by reactive style binding
-    },
-    getProject() {
-      // If we already have the name from the query params, we can use it initially
-      if (this.$route.query.name) {
-        this.projectName = this.$route.query.name;
-      }
+const contentRef = ref(null);
+const shopcar = ref(null);
 
-      queryProject({ projectId: this.projectId, token: getToken() }).then(
-        (res) => {
-          if (res.name) {
-            this.projectName = res.name;
-          }
-          this.hero = res.hero || {};
-        },
-      );
-    },
-    menuDrop(dropResult) {
-      const { removedIndex, addedIndex } = dropResult;
-      if (removedIndex === null || addedIndex === null) return;
-      const item = this.menus[removedIndex];
-      this.menus.splice(removedIndex, 1);
-      this.menus.splice(addedIndex, 0, item);
-      sortMenu({
-        projectId: this.projectId,
-        token: getToken(),
-        data: this.menus,
-      }).then((res) => {
-        console.log(res);
-      });
-    },
-    getMenus() {
-      queryMenu({ projectId: this.projectId, token: getToken() })
-        .then((res) => {
-          this.menus = res || [];
-          if (this.menus.length > 0) {
-            // Automatically select the first menu if available
-            this.menuClick(this.menus[0]);
-          }
-        })
-        .catch(() => {
-          this.loadMockMenus();
-        });
-    },
-    loadMockMenus() {
-      this.menus = [
-        { name: "开始", link: "kaishi", isActive: true },
-        { name: "开发计划", link: "kaifajihua", isActive: false },
-        { name: "API", link: "api", isActive: false },
-        { name: "样式", link: "yangshi", isActive: false },
-        { name: "博客", link: "boke", isActive: false },
-        { name: "插件", link: "chajian", isActive: false },
-        { name: "关于", link: "guanyu", isActive: false },
-      ];
-      // Select the first mock menu
-      this.menuClick(this.menus[0]);
-    },
-    _reset() {
-      this.menuName = "";
-      this.menuLink = "";
-      this.dialog = false;
-      this.getMenus();
-    },
-    menuInput() {
-      if (this.menuName) {
-        this.menuLink = pinyin(this.menuName, {
-          toneType: "none",
-          type: "array",
-        }).join("");
-      } else {
-        this.menuLink = "";
+// Helpers
+const info = (msg) => ElMessage.info(msg);
+const warn = (msg) => ElMessage.warning(msg);
+const success = (msg) => ElMessage.success(msg);
+const error = (msg) => ElMessage.error(msg);
+
+const userValidate = () => {
+  isLogin.value = false;
+  validateToken(getToken())
+    .then((res) => {
+      isLogin.value = res;
+    })
+    .catch(() => {
+      isLogin.value = false;
+    });
+};
+
+const getProject = () => {
+  if (route.query.name) {
+    projectName.value = route.query.name;
+  }
+
+  queryProject({ projectId: projectId.value, token: getToken() }).then(
+    (res) => {
+      if (res.name) {
+        projectName.value = res.name;
       }
+      hero.value = res.hero || {};
     },
-    addMenu() {
-      if (
-        !this.menuName ||
-        this.menuName.length < 2 ||
-        !this.menuLink ||
-        this.menuLink.length < 2
-      ) {
-        this.warn("请填写你的菜单名称和连接");
-        return;
+  );
+};
+
+const menuDrop = (dropResult) => {
+  const { removedIndex, addedIndex } = dropResult;
+  if (removedIndex === null || addedIndex === null) return;
+  const item = menus.value[removedIndex];
+  menus.value.splice(removedIndex, 1);
+  menus.value.splice(addedIndex, 0, item);
+  sortMenu({
+    projectId: projectId.value,
+    token: getToken(),
+    data: menus.value,
+  }).then((res) => {
+    console.log(res);
+  });
+};
+
+const loadMockMenus = () => {
+  menus.value = [
+    { name: "开始", link: "kaishi", isActive: true },
+    { name: "开发计划", link: "kaifajihua", isActive: false },
+    { name: "API", link: "api", isActive: false },
+    { name: "样式", link: "yangshi", isActive: false },
+    { name: "博客", link: "boke", isActive: false },
+    { name: "插件", link: "chajian", isActive: false },
+    { name: "关于", link: "guanyu", isActive: false },
+  ];
+  // Select the first mock menu
+  menuClick(menus.value[0]);
+};
+
+const getMenus = () => {
+  queryMenu({ projectId: projectId.value, token: getToken() })
+    .then((res) => {
+      menus.value = res || [];
+      if (menus.value.length > 0) {
+        // Automatically select the first menu if available
+        menuClick(menus.value[0]);
       }
-      if (
-        this.menus.some(
-          (e) => e.link && e.link.toLowerCase() === this.menuLink.toLowerCase(),
-        )
-      ) {
-        this.warn(`${this.menuLink} 链接已经存在请更换别的地址`);
-        return;
-      }
-      this.saveButtonDisabled = true;
-      saveMenu({
-        projectId: this.projectId,
-        token: getToken(),
-        name: this.menuName,
-        link: this.menuLink,
-      })
-        .then((res) => {
-          this.saveButtonDisabled = false;
-          this.success(`添加菜单(${this.menuName})成功`);
-          this._reset();
-          this.getAllSliders();
-        })
-        .catch((e) => {
-          this.error(e.message || e);
-          this.saveButtonDisabled = false;
-        });
-    },
-    menuClick(menu) {
-      this.menus.forEach((e) => (e.isActive = false));
-      menu.isActive = true;
-      this.getSliders(menu);
-      this.currentMenu = menu;
-      this.currentLink = `/${menu.link}`;
-      this.editorShow = false;
-      this.currentDoc = null;
-    },
-    getAllSliders() {
-      querySlider({ projectId: this.projectId, token: getToken() }).then(
-        (res) => {
-          let a = [];
-          res.forEach((e) => {
-            let t = e.sliders,
-              o = e.name,
-              r = e.link;
-            t &&
-              t.forEach((sub) => {
-                let n = sub.name,
-                  sl = sub.link,
-                  children = sub.children,
-                  grp = sub.group;
-                if (children && grp) {
-                  children.forEach((c) => {
-                    let path = `${o}/${n}/${c.name}`;
-                    let url = `./${r}/${c.link}`;
-                    a.push({ label: path, url: url });
-                  });
-                } else {
-                  let path = `${o}/${n}`;
-                  let url = `./${r}/${sl}`;
-                  a.push({ label: path, url: url });
-                }
+    })
+    .catch(() => {
+      loadMockMenus();
+    });
+};
+
+const _reset = () => {
+  menuName.value = "";
+  menuLink.value = "";
+  dialog.value = false;
+  getMenus();
+};
+
+const menuInput = () => {
+  if (menuName.value) {
+    menuLink.value = pinyin(menuName.value, {
+      toneType: "none",
+      type: "array",
+    }).join("");
+  } else {
+    menuLink.value = "";
+  }
+};
+
+const getAllSliders = () => {
+  querySlider({ projectId: projectId.value, token: getToken() }).then(
+    (res) => {
+      let a = [];
+      res.forEach((e) => {
+        let t = e.sliders,
+          o = e.name,
+          r = e.link;
+        t &&
+          t.forEach((sub) => {
+            let n = sub.name,
+              sl = sub.link,
+              children = sub.children,
+              grp = sub.group;
+            if (children && grp) {
+              children.forEach((c) => {
+                let path = `${o}/${n}/${c.name}`;
+                let url = `./${r}/${c.link}`;
+                a.push({ label: path, url: url });
               });
+            } else {
+              let path = `${o}/${n}`;
+              let url = `./${r}/${sl}`;
+              a.push({ label: path, url: url });
+            }
           });
-          this.sliderURLS = a;
-        },
-      );
-    },
-    _saveSliders() {
-      console.log("🚀 ~ this.currentMenu:", this.currentMenu);
-      console.log("🚀 ~ this.sliders:", this.sliders);
-      return new Promise((resolve, reject) => {
-        if (!this.currentMenu) {
-          this.warn("请先选择一个菜单");
-          return reject("No menu selected");
-        }
-        saveSlider({
-          projectId: this.projectId,
-          token: getToken(),
-          link: this.currentMenu.link,
-          data: this.sliders,
-        })
-          .then((res) => {
-            resolve();
-          })
-          .catch((err) => reject(err));
       });
+      sliderURLS.value = a;
     },
-    getSliders(menu) {
-      querySliderList({
-        projectId: this.projectId,
-        token: getToken(),
-        name: menu.name,
-        link: menu.link,
-      }).then((res) => {
-        res = res || [];
-        res.forEach((e) => {
-          e.isActive = false;
-          if (e.children) e.children.forEach((c) => (c.isActive = false));
-        });
-        this.sliders = res;
-      });
-    },
-    toggleSliderDialog() {
-      // 判断是否有当前菜单
-      if (!this.currentMenu) {
-        this.warn("请先选择一个菜单");
-        return;
-      }
-      this.docTitle = "";
-      this.docType = "doc";
-      this.docLink = "";
-      this.docDialog = true;
-      this.docTypeDisable = false;
-    },
-    docNameInput() {
-      if (this.docTitle) {
-        this.docLink = pinyin(this.docTitle, {
-          toneType: "none",
-          type: "array",
-        })
-          .join("")
-          .toLowerCase();
-      } else {
-        this.docLink = "";
-      }
-    },
-    addDocItem() {
-      if (!this.currentMenu) {
-        this.warn("请先选择一个菜单");
-        return;
-      }
-      let e = this.docTitle,
-        t = this.docType,
-        n = this.docLink;
-      if (!e || e.length < 2 || !t) {
-        this.warn("请填写文档名称和文档类别");
-        return;
-      }
-      let a =
-        n ||
-        pinyin(e, { toneType: "none", type: "array" }).join("").toLowerCase();
+  );
+};
 
-      let exists = false;
-      if (this.sliders) {
-        for (let i = 0; i < this.sliders.length; i++) {
-          let s = this.sliders[i];
-          if (s.link && s.link.toLowerCase() === a) {
+const addMenu = () => {
+  if (
+    !menuName.value ||
+    menuName.value.length < 2 ||
+    !menuLink.value ||
+    menuLink.value.length < 2
+  ) {
+    warn("请填写你的菜单名称和连接");
+    return;
+  }
+  if (
+    menus.value.some(
+      (e) => e.link && e.link.toLowerCase() === menuLink.value.toLowerCase(),
+    )
+  ) {
+    warn(`${menuLink.value} 链接已经存在请更换别的地址`);
+    return;
+  }
+  saveButtonDisabled.value = true;
+  saveMenu({
+    projectId: projectId.value,
+    token: getToken(),
+    name: menuName.value,
+    link: menuLink.value,
+  })
+    .then((res) => {
+      saveButtonDisabled.value = false;
+      success(`添加菜单(${menuName.value})成功`);
+      _reset();
+      getAllSliders();
+    })
+    .catch((e) => {
+      error(e.message || e);
+      saveButtonDisabled.value = false;
+    });
+};
+
+const getSliders = (menu) => {
+  querySliderList({
+    projectId: projectId.value,
+    token: getToken(),
+    name: menu.name,
+    link: menu.link,
+  }).then((res) => {
+    res = res || [];
+    res.forEach((e) => {
+      e.isActive = false;
+      if (e.children) e.children.forEach((c) => (c.isActive = false));
+    });
+    sliders.value = res;
+  });
+};
+
+const menuClick = (menu) => {
+  menus.value.forEach((e) => (e.isActive = false));
+  menu.isActive = true;
+  getSliders(menu);
+  currentMenu.value = menu;
+  currentLink.value = `/${menu.link}`;
+  editorShow.value = false;
+  currentDoc.value = null;
+};
+
+const _saveSliders = () => {
+  console.log("🚀 ~ currentMenu:", currentMenu.value);
+  console.log("🚀 ~ sliders:", sliders.value);
+  return new Promise((resolve, reject) => {
+    if (!currentMenu.value) {
+      warn("请先选择一个菜单");
+      return reject("No menu selected");
+    }
+    saveSlider({
+      projectId: projectId.value,
+      token: getToken(),
+      link: currentMenu.value.link,
+      data: sliders.value,
+    })
+      .then((res) => {
+        resolve();
+      })
+      .catch((err) => reject(err));
+  });
+};
+
+const toggleSliderDialog = () => {
+  if (!currentMenu.value) {
+    warn("请先选择一个菜单");
+    return;
+  }
+  docTitle.value = "";
+  docType.value = "doc";
+  docLink.value = "";
+  docDialog.value = true;
+  docTypeDisable.value = false;
+};
+
+const docNameInput = () => {
+  if (docTitle.value) {
+    docLink.value = pinyin(docTitle.value, {
+      toneType: "none",
+      type: "array",
+    })
+      .join("")
+      .toLowerCase();
+  } else {
+    docLink.value = "";
+  }
+};
+
+const addDocItem = () => {
+  if (!currentMenu.value) {
+    warn("请先选择一个菜单");
+    return;
+  }
+  let e = docTitle.value,
+    t = docType.value,
+    n = docLink.value;
+  if (!e || e.length < 2 || !t) {
+    warn("请填写文档名称和文档类别");
+    return;
+  }
+  let a =
+    n ||
+    pinyin(e, { toneType: "none", type: "array" }).join("").toLowerCase();
+
+  let exists = false;
+  if (sliders.value) {
+    for (let i = 0; i < sliders.value.length; i++) {
+      let s = sliders.value[i];
+      if (s.link && s.link.toLowerCase() === a) {
+        exists = true;
+        break;
+      }
+      if (s.children) {
+        for (let j = 0; j < s.children.length; j++) {
+          if (s.children[j].link.toLowerCase() === a) {
             exists = true;
             break;
           }
-          if (s.children) {
-            for (let j = 0; j < s.children.length; j++) {
-              if (s.children[j].link.toLowerCase() === a) {
-                exists = true;
-                break;
-              }
-            }
-          }
-          if (exists) break;
         }
       }
-
-      if (!exists) {
-        let newItem = { name: e, group: t === "group", link: a };
-        let target = this.currentGroup
-          ? ((this.currentGroup.children = this.currentGroup.children || []),
-            this.currentGroup.children)
-          : this.sliders;
-        target.push(newItem);
-        this._saveSliders().then(() => {
-          this.success(`添加 ${e} 文档成功`);
-          this.docDialog = false;
-          this.currentGroup = null;
-          this.getAllSliders();
-        });
-      } else {
-        this.warn(`${this.docTitle} 链接已经存在,请更换别的名称`);
-      }
-    },
-    groupAddDocItem(slider) {
-      this.currentGroup = slider;
-      this.toggleSliderDialog();
-      this.docType = "doc";
-      this.docTypeDisable = true;
-    },
-    editDocItem(slider) {
-      this.docEditData = slider;
-      this.docEditTitle = slider.name;
-      this.docEditDialog = true;
-    },
-    saveEditDocItem() {
-      if (!this.docEditTitle || this.docEditTitle.length < 2) {
-        this.warn("请填写文档名字,长度不能小于2");
-        return;
-      }
-      if (this.docEditData) {
-        if (this.docEditData.name === this.docEditTitle) {
-          this.warn("请修改名字否则关闭该弹窗");
-          return;
-        }
-        this.docEditData.name = this.docEditTitle;
-        this._saveSliders().then(() => {
-          this.success("修改文档成功");
-          this.docEditDialog = false;
-          this.docEditData = null;
-          this.getAllSliders();
-        });
-      }
-    },
-    docItemClick(slider) {
-      this.sliders.forEach((s) => {
-        s.isActive = false;
-        if (s.children) s.children.forEach((c) => (c.isActive = false));
-      });
-      slider.isActive = true;
-
-      let t = slider.link;
-      let n = this.currentLink
-        ? this.currentLink.split("/").slice(0, 2)
-        : ["", ""];
-      n.push(t);
-      this.currentLink = n.join("/");
-      this.currentDoc = slider;
-      this.editorShow = true;
-
-      queryDoc({
-        projectId: this.projectId,
-        token: getToken(),
-        link: this.currentMenu.link,
-        item: slider.link,
-        name: slider.name,
-      }).then((res) => {
-        createEditor("#editor", this, () => {
-          if (getEditor()) getEditor().setValue(res);
-        });
-      });
-    },
-    saveDoc() {
-      if (!this.currentMenu || !this.currentDoc) return;
-      if (!getEditor()) return;
-      saveDoc({
-        projectId: this.projectId,
-        token: getToken(),
-        link: this.currentMenu.link,
-        item: this.currentDoc.link,
-        data: getEditor().getValue(),
-      }).then((res) => {
-        this.success(
-          `(${this.currentMenu.name}/${this.currentDoc.name})文档保存成功`,
-        );
-      });
-    },
-    openUploadPanel() {
-      this.showUploadPanel = !this.showUploadPanel;
-      // setTimeout(() => { this.$refs.shopcar.style.right = 0 }, 32)
-    },
-    uploadFile(file, cb) {
-      this.uploading = true;
-      let fd = new FormData();
-      fd.append("avatar", file);
-      fd.append("token", getToken());
-      uploadImageFile(fd)
-        .then((res) => {
-          console.log("🚀 ~ res:", res);
-          if (res && (res.fileName || res.url)) {
-            let url = res.fileName || res.url;
-            if (!url && res.fileName) {
-              let t = getHost();
-              url = `${t}/p/${res.fileName}`;
-            }
-            cb(url);
-          } else {
-            this.error("上传失败: 未知响应格式");
-          }
-          this.uploading = false;
-        })
-        .catch((err) => {
-          console.error(err);
-          this.uploading = false;
-          this.error("上传失败");
-        });
-
-      // fetch(wrapUrl("/file/upload"), {method: "post", body: fd})
-      //     .then(res => res.json())
-      //     .then(res => {
-      //         let t = getHost();
-      //         t = t.substring(0, t.lastIndexOf("/")) + "/p/" + res.fileName;
-      //         cb(t);
-      //     })
-      //     .catch(e => {
-      //         this.error(e.message);
-      //         cb();
-      //     });
-    },
-    copyUploadFile(file) {
-      if (!file.url) {
-        this.warn("文件链接无效");
-        return;
-      }
-      const prefixURL = "";
-      const isImage = file.type && file.type.startsWith("image/");
-      const name = file.path ? file.path.split(/[\\/]/).pop() : "file";
-      const text = isImage
-        ? `![${name}](${prefixURL}${file.url})`
-        : `[${name}](${prefixURL}${file.url})`;
-      this.copyValue(text);
-    },
-    deleteUploadFile(index) {
-      this.uploadFiles.splice(index, 1);
-    },
-    importMd() {
-      let input = document.createElement("input");
-      input.type = "file";
-      input.accept = ".md";
-      input.addEventListener("change", () => {
-        if (input.files.length) {
-          let file = input.files[0];
-          let reader = new FileReader();
-          reader.onload = () => {
-            if (getEditor() && reader.result)
-              getEditor().setValue(reader.result);
-          };
-          reader.readAsText(file);
-        } else {
-          this.error("没有发现上传文件");
-        }
-      });
-      input.click();
-    },
-    copyValue(text) {
-      this.toClipboard(text)
-        .then(() => {
-          this.success(`复制 ${text} 成功`);
-        })
-        .catch(() => {
-          this.error(`复制 ${text} 失败`);
-        });
-    },
-    sliderDrop(dropResult) {
-      const { removedIndex, addedIndex } = dropResult;
-      if (removedIndex === null || addedIndex === null) return;
-      const item = this.sliders[removedIndex];
-      this.sliders.splice(removedIndex, 1);
-      this.sliders.splice(addedIndex, 0, item);
-      this._saveSliders().then(() => {
-        this.docDialog = false;
-        this.currentGroup = null;
-      });
-    },
-    sliderItemDrop(dropResult, slider) {
-      const { removedIndex, addedIndex } = dropResult;
-      if (removedIndex === null || addedIndex === null) return;
-      const children = slider.children || [];
-      const item = children[removedIndex];
-      children.splice(removedIndex, 1);
-      children.splice(addedIndex, 0, item);
-      this._saveSliders().then(() => {
-        this.docDialog = false;
-        this.currentGroup = null;
-      });
-    },
-  },
-  async mounted() {
-    const loading = ElLoading.service({
-      lock: true,
-      text: "Initializing Editor...",
-      background: "rgba(0, 0, 0, 0.7)",
-    });
-
-    try {
-      await loadEditorPlugins();
-
-      this.userValidate();
-      const p = this.$route.query.p;
-      if (p) {
-        this.projectId = p;
-        this.getProject();
-        this.getMenus();
-      } else {
-        // Local fallback
-        this.getMenus();
-      }
-
-      // Register monaco if needed by mdpress
-      loadMonaco();
-
-      this.getAllSliders();
-
-      // Initialize FileDND
-      if (window.filednd && window.filednd.FileDND) {
-        new window.filednd.FileDND(document.querySelector(".drag-zone")).dnd(
-          (files) => {
-            if (files.length) {
-              let i = 0;
-              let list = [];
-              this.uploading = true;
-              const process = () => {
-                if (i < files.length) {
-                  let fileItem = files[i];
-                  this.uploadFile(fileItem, (url) => {
-                    list.push({
-                      path: fileItem.path,
-                      url: url,
-                      type: fileItem.type,
-                    });
-                    i++;
-                    process();
-                  });
-                } else {
-                  setTimeout(() => {
-                    this.uploading = false;
-                  }, 200);
-                  this.uploadFiles = this.uploadFiles.concat(list);
-                }
-              };
-              process();
-            } else {
-              this.warn("你拖拽的文件里没有找到任何的文件");
-            }
-          },
-        );
-      }
-
-      // Key binding
-      document.addEventListener("keydown", (e) => {
-        if (e.ctrlKey && e.keyCode === 83) {
-          e.preventDefault();
-          this.saveDoc();
-        }
-      });
-    } catch (e) {
-      console.error(e);
-      this.error("Failed to load editor resources");
-    } finally {
-      loading.close();
+      if (exists) break;
     }
-  },
-  beforeUnmount() {
-    destroyEditor();
-  },
+  }
+
+  if (!exists) {
+    let newItem = { name: e, group: t === "group", link: a };
+    let target = currentGroup.value
+      ? ((currentGroup.value.children = currentGroup.value.children || []),
+        currentGroup.value.children)
+      : sliders.value;
+    target.push(newItem);
+    _saveSliders().then(() => {
+      success(`添加 ${e} 文档成功`);
+      docDialog.value = false;
+      currentGroup.value = null;
+      getAllSliders();
+    });
+  } else {
+    warn(`${docTitle.value} 链接已经存在,请更换别的名称`);
+  }
+};
+
+const groupAddDocItem = (slider) => {
+  currentGroup.value = slider;
+  toggleSliderDialog();
+  docType.value = "doc";
+  docTypeDisable.value = true;
+};
+
+const editDocItem = (slider) => {
+  docEditData.value = slider;
+  docEditTitle.value = slider.name;
+  docEditDialog.value = true;
+};
+
+const saveEditDocItem = () => {
+  if (!docEditTitle.value || docEditTitle.value.length < 2) {
+    warn("请填写文档名字,长度不能小于2");
+    return;
+  }
+  if (docEditData.value) {
+    if (docEditData.value.name === docEditTitle.value) {
+      warn("请修改名字否则关闭该弹窗");
+      return;
+    }
+    docEditData.value.name = docEditTitle.value;
+    _saveSliders().then(() => {
+      success("修改文档成功");
+      docEditDialog.value = false;
+      docEditData.value = null;
+      getAllSliders();
+    });
+  }
+};
+
+const docItemClick = (slider) => {
+  sliders.value.forEach((s) => {
+    s.isActive = false;
+    if (s.children) s.children.forEach((c) => (c.isActive = false));
+  });
+  slider.isActive = true;
+
+  let t = slider.link;
+  let n = currentLink.value
+    ? currentLink.value.split("/").slice(0, 2)
+    : ["", ""];
+  n.push(t);
+  currentLink.value = n.join("/");
+  currentDoc.value = slider;
+  editorShow.value = true;
+
+  queryDoc({
+    projectId: projectId.value,
+    token: getToken(),
+    link: currentMenu.value.link,
+    item: slider.link,
+    name: slider.name,
+  }).then((res) => {
+    createEditor("#editor", null, () => {
+      if (getEditor()) getEditor().setValue(res);
+    });
+  });
+};
+
+const saveDoc = () => {
+  if (!currentMenu.value || !currentDoc.value) return;
+  if (!getEditor()) return;
+  saveDoc({
+    projectId: projectId.value,
+    token: getToken(),
+    link: currentMenu.value.link,
+    item: currentDoc.value.link,
+    data: getEditor().getValue(),
+  }).then((res) => {
+    success(
+      `(${currentMenu.value.name}/${currentDoc.value.name})文档保存成功`,
+    );
+  });
+};
+
+const openUploadPanel = () => {
+  showUploadPanel.value = !showUploadPanel.value;
+};
+
+const uploadFile = (file, cb) => {
+  uploading.value = true;
+  let fd = new FormData();
+  fd.append("avatar", file);
+  fd.append("token", getToken());
+  uploadImageFile(fd)
+    .then((res) => {
+      console.log("🚀 ~ res:", res);
+      if (res && (res.fileName || res.url)) {
+        let url = res.fileName || res.url;
+        if (!url && res.fileName) {
+          let t = getHost();
+          url = `${t}/p/${res.fileName}`;
+        }
+        cb(url);
+      } else {
+        error("上传失败: 未知响应格式");
+      }
+      uploading.value = false;
+    })
+    .catch((err) => {
+      console.error(err);
+      uploading.value = false;
+      error("上传失败");
+    });
+};
+
+const copyUploadFile = (file) => {
+  if (!file.url) {
+    warn("文件链接无效");
+    return;
+  }
+  const prefixURL = "";
+  const isImage = file.type && file.type.startsWith("image/");
+  const name = file.path ? file.path.split(/[\\/]/).pop() : "file";
+  const text = isImage
+    ? `![${name}](${prefixURL}${file.url})`
+    : `[${name}](${prefixURL}${file.url})`;
+  copyValue(text);
+};
+
+const deleteUploadFile = (index) => {
+  uploadFiles.value.splice(index, 1);
+};
+
+const importMd = () => {
+  let input = document.createElement("input");
+  input.type = "file";
+  input.accept = ".md";
+  input.addEventListener("change", () => {
+    if (input.files.length) {
+      let file = input.files[0];
+      let reader = new FileReader();
+      reader.onload = () => {
+        if (getEditor() && reader.result)
+          getEditor().setValue(reader.result);
+      };
+      reader.readAsText(file);
+    } else {
+      error("没有发现上传文件");
+    }
+  });
+  input.click();
+};
+
+const copyValue = (text) => {
+  toClipboard(text)
+    .then(() => {
+      success(`复制 ${text} 成功`);
+    })
+    .catch(() => {
+      error(`复制 ${text} 失败`);
+    });
+};
+
+const sliderDrop = (dropResult) => {
+  const { removedIndex, addedIndex } = dropResult;
+  if (removedIndex === null || addedIndex === null) return;
+  const item = sliders.value[removedIndex];
+  sliders.value.splice(removedIndex, 1);
+  sliders.value.splice(addedIndex, 0, item);
+  _saveSliders().then(() => {
+    docDialog.value = false;
+    currentGroup.value = null;
+  });
+};
+
+const sliderItemDrop = (dropResult, slider) => {
+  const { removedIndex, addedIndex } = dropResult;
+  if (removedIndex === null || addedIndex === null) return;
+  const children = slider.children || [];
+  const item = children[removedIndex];
+  children.splice(removedIndex, 1);
+  children.splice(addedIndex, 0, item);
+  _saveSliders().then(() => {
+    docDialog.value = false;
+    currentGroup.value = null;
+  });
+};
+
+// Lifecycle
+onMounted(async () => {
+  const loading = ElLoading.service({
+    lock: true,
+    text: "Initializing Editor...",
+    background: "rgba(0, 0, 0, 0.7)",
+  });
+
+  try {
+    await loadEditorPlugins();
+
+    userValidate();
+    const p = route.query.p;
+    if (p) {
+      projectId.value = p;
+      getProject();
+      getMenus();
+    } else {
+      // Local fallback
+      getMenus();
+    }
+
+    // Register monaco if needed by mdpress
+    loadMonaco();
+
+    getAllSliders();
+
+    // Initialize FileDND
+    if (window.filednd && window.filednd.FileDND) {
+      new window.filednd.FileDND(document.querySelector(".drag-zone")).dnd(
+        (files) => {
+          if (files.length) {
+            let i = 0;
+            let list = [];
+            uploading.value = true;
+            const process = () => {
+              if (i < files.length) {
+                let fileItem = files[i];
+                uploadFile(fileItem, (url) => {
+                  list.push({
+                    path: fileItem.path,
+                    url: url,
+                    type: fileItem.type,
+                  });
+                  i++;
+                  process();
+                });
+              } else {
+                setTimeout(() => {
+                  uploading.value = false;
+                }, 200);
+                uploadFiles.value = uploadFiles.value.concat(list);
+              }
+            };
+            process();
+          } else {
+            warn("你拖拽的文件里没有找到任何的文件");
+          }
+        },
+      );
+    }
+
+    // Key binding
+    document.addEventListener("keydown", (e) => {
+      if (e.ctrlKey && e.keyCode === 83) {
+        e.preventDefault();
+        saveDoc();
+      }
+    });
+  } catch (e) {
+    console.error(e);
+    error("Failed to load editor resources");
+  } finally {
+    loading.close();
+  }
+});
+
+onBeforeUnmount(() => {
+  destroyEditor();
 });
 </script>
 
