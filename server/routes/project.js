@@ -2,9 +2,9 @@ const express = require('express');
 const router = express.Router();
 const prisma = require('../utils/prisma');
 const verifyToken = require('../middleware/auth');
-const { generateId } = require('../utils/common');
+const { generateId, safeJSONParse } = require('../utils/common');
 const { sendEmail } = require('../utils/email');
-const { projectCreateSchema, projectUpdateSchema, projectLinkSchema } = require('../data/schemas');
+const { projectCreateSchema, projectUpdateSchema, projectProfileSchema, projectLinkSchema } = require('../data/schemas');
 
 // Project Routes
 router.get('/project/list', verifyToken, async (req, res) => {
@@ -13,7 +13,7 @@ router.get('/project/list', verifyToken, async (req, res) => {
     });
     // Parse hero
     projects.forEach(p => {
-        try { p.hero = JSON.parse(p.hero); } catch(e) {}
+        p.hero = safeJSONParse(p.hero);
     });
     res.json({ ok: true, data: projects });
 });
@@ -24,7 +24,7 @@ router.get('/project/query', verifyToken, async (req, res) => {
         where: { id: projectId }
     });
     if (project) {
-        try { project.hero = JSON.parse(project.hero); } catch(e) {}
+        project.hero = safeJSONParse(project.hero);
         res.json({ ok: true, data: project });
     } else {
         res.json({ ok: false, message: 'Project not found' });
@@ -63,23 +63,25 @@ router.post('/project/update', verifyToken, async (req, res) => {
 });
 
 router.post('/project/profile', verifyToken, async (req, res) => {
-    const { projectId, query, ...profileData } = req.body;
+    const validation = projectProfileSchema.safeParse(req.body);
+    if (!validation.success) {
+        return res.status(400).json({ ok: false, message: validation.error.issues[0].message });
+    }
+    const { projectId, query, ...profileData } = validation.data;
     
     if (query) {
         const project = await prisma.projects.findUnique({
             where: { id: projectId },
             select: { hero: true }
         });
-        let hero = {};
-        try { hero = JSON.parse(project?.hero || '{}'); } catch(e) {}
+        const hero = safeJSONParse(project?.hero);
         res.json({ ok: true, data: { hero } });
     } else {
         const p = await prisma.projects.findUnique({
             where: { id: projectId },
             select: { hero: true }
         });
-        let currentHero = {};
-        try { currentHero = JSON.parse(p?.hero || '{}'); } catch(e) {}
+        const currentHero = safeJSONParse(p?.hero);
         
         const newHero = { ...currentHero, ...profileData };
         await prisma.projects.update({

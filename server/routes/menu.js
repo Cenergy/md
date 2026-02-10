@@ -3,6 +3,7 @@ const router = express.Router();
 const prisma = require('../utils/prisma');
 const verifyToken = require('../middleware/auth');
 const { generateId } = require('../utils/common');
+const { menuSaveSchema, menuSortSchema } = require('../data/schemas');
 
 router.get('/menu/list', verifyToken, async (req, res) => {
     const { projectId } = req.query;
@@ -42,7 +43,11 @@ router.get('/menu/list', verifyToken, async (req, res) => {
 });
 
 router.post('/menu/save', verifyToken, async (req, res) => {
-    const { projectId, name, link } = req.body;
+    const validation = menuSaveSchema.safeParse(req.body);
+    if (!validation.success) {
+        return res.status(400).json({ ok: false, message: validation.error.issues[0].message });
+    }
+    const { projectId, name, link } = validation.data;
     const exists = await prisma.menus.findFirst({
         where: { project_id: projectId, link }
     });
@@ -68,7 +73,11 @@ router.post('/menu/save', verifyToken, async (req, res) => {
 });
 
 router.post('/menu/sort', verifyToken, async (req, res) => {
-    const { projectId, data } = req.body; 
+    const validation = menuSortSchema.safeParse(req.body);
+    if (!validation.success) {
+        return res.status(400).json({ ok: false, message: validation.error.issues[0].message });
+    }
+    const { projectId, data } = validation.data; 
     
     await prisma.$transaction(
         data.map((item, index) => 

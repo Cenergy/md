@@ -29,10 +29,47 @@ const projectUpdateSchema = z.object({
     name: z.string().min(1, 'Project name is required').max(100, 'Project name is too long')
 });
 
+// Project Profile Schema
+// passthrough() allows additional fields (profileData) to pass through validation
+const projectProfileSchema = z.object({
+    projectId: z.string().min(1, 'Project ID is required'),
+    query: z.any().optional()
+}).passthrough();
+
 // Project Link (Collaboration) Schema
 const projectLinkSchema = z.object({
     projectId: z.string().min(1, 'Project ID is required'),
     email: z.string().email('Invalid email address')
+});
+
+// Menu Schema
+const menuSaveSchema = z.object({
+    projectId: z.string().min(1, 'Project ID is required'),
+    name: z.string().min(1, 'Menu name is required'),
+    link: z.string().min(1, 'Menu link is required')
+});
+
+const menuSortSchema = z.object({
+    projectId: z.string().min(1, 'Project ID is required'),
+    data: z.array(z.object({
+        link: z.string().min(1)
+    }))
+});
+
+// Slider Schema
+// Recursive schema for nested sliders is tricky in Zod without type inference,
+// but for runtime validation we can use z.lazy or just validate the top level array structure
+const sliderItemSchema = z.object({
+    name: z.string().optional(),
+    link: z.string().optional(),
+    group: z.boolean().optional(),
+    children: z.array(z.any()).optional() // loose validation for children to avoid recursion complexity
+});
+
+const sliderSaveSchema = z.object({
+    projectId: z.string().min(1, 'Project ID is required'),
+    link: z.string().min(1, 'Menu link is required'),
+    data: z.array(sliderItemSchema)
 });
 
 module.exports = {
@@ -41,5 +78,9 @@ module.exports = {
     userUpdateSchema,
     projectCreateSchema,
     projectUpdateSchema,
-    projectLinkSchema
+    projectProfileSchema,
+    projectLinkSchema,
+    menuSaveSchema,
+    menuSortSchema,
+    sliderSaveSchema
 };
