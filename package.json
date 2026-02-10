@@ -1,6 +1,9 @@
 {
   "name": "md-test2-vite-vue3",
   "version": "0.0.0",
+  "prisma": {
+    "schema": "server/prisma/schema.prisma"
+  },
   "scripts": {
     "dev": "nodemon server/index.js",
     "dev:vite": "vite",
@@ -11,8 +14,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@prisma/client": "^5.22.0",
     "axios": "^1.4.0",
-    "body-parser": "^1.20.2",
     "cors": "^2.8.5",
     "dotenv": "^17.2.4",
     "element-plus": "^2.3.9",
@@ -44,6 +47,7 @@
     "@vitejs/plugin-vue": "^4.2.3",
     "concurrently": "^9.2.1",
     "nodemon": "^3.0.3",
+    "prisma": "^5.22.0",
     "sass": "^1.64.2",
     "vite": "^4.4.5",
     "vitepress": "^1.6.4"
