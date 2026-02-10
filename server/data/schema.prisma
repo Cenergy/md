@@ -16,6 +16,15 @@ model menus {
   projects   projects? @relation(fields: [project_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
+model build_tasks {
+  id         Int       @id @default(autoincrement())
+  project_id String?
+  status     String    @default("PENDING") // PENDING, PROCESSING, COMPLETED, FAILED
+  output     String?
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+}
+
 model project_links {
   id         Int       @id @default(autoincrement())
   project_id String?
