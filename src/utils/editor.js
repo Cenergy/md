@@ -30,7 +30,7 @@ export function loadMonaco(callback) {
     if (callback) callback();
 }
 
-export function createEditor(selector, vm, callback) {
+export function createEditor(selector, config, callback) {
     if (getEditor()) {
         if (callback) callback();
         return getEditor();
@@ -42,7 +42,7 @@ export function createEditor(selector, vm, callback) {
         return;
     }
 
-    const theme = vm.hero && vm.hero.theme ? vm.hero.theme : "vitepress";
+    const theme = config.theme || "vitepress";
     
     mdEditor = new mdpress.MDEditor(selector, {
         autoParseVSCodePasteData: true,
@@ -59,8 +59,9 @@ export function createEditor(selector, vm, callback) {
     const ANIMATION_FADEINLEFT = "animate__fadeInLeft";
 
     getEditor().on("closefullscreen", function() {
-        if (vm.$refs.leftnav) {
-            const classList = vm.$refs.leftnav.classList;
+        const leftNav = config.getLeftNav ? config.getLeftNav() : null;
+        if (leftNav) {
+            const classList = leftNav.classList;
             classList.remove(LEFT_NAV_FLOAT);
             classList.remove(ANIMATION_FADEINLEFT);
         }
@@ -72,31 +73,33 @@ export function createEditor(selector, vm, callback) {
         if (files.length > 0) {
              // Basic implementation of file upload on paste
              // The original logic filtered by size (20MB) and count (10)
-             // and called vm.uploadFile
+             // and called config.uploadFile
              Array.from(files).forEach(file => {
                  if (file.size > 20 * 1024 * 1024) {
-                     vm.warn(`文件 ${file.name} 超过 20M，跳过上传`);
+                     if (config.warn) config.warn(`文件 ${file.name} 超过 20M，跳过上传`);
                      return;
                  }
-                 vm.uploadFile(file, (url) => {
-                     // Insert markdown image or link
-                     const isImage = file.type.startsWith('image/');
-                     const text = isImage ? `![${file.name}](${url})` : `[${file.name}](${url})`;
-                     
-                     const range = getEditor().getCurrentRange()[0];
-                     getEditor().editor.executeEdits("", [{ range: range, text: "\n" + text + "\n" }]);
-                 });
+                 if (config.uploadFile) {
+                    config.uploadFile(file, (url) => {
+                        // Insert markdown image or link
+                        const isImage = file.type.startsWith('image/');
+                        const text = isImage ? `![${file.name}](${url})` : `[${file.name}](${url})`;
+                        
+                        const range = getEditor().getCurrentRange()[0];
+                        getEditor().editor.executeEdits("", [{ range: range, text: "\n" + text + "\n" }]);
+                    });
+                 }
              });
         }
     });
 
-    addToolicons(vm);
+    addToolicons(config);
 
     if (callback) callback();
     return mdEditor;
 }
 
-function addToolicons(vm) {
+function addToolicons(config) {
     const mdpress = window.mdpress;
     const className = "majoricon";
     const icons = [
@@ -113,8 +116,9 @@ function addToolicons(vm) {
 
     icons[0].on("click", function() {
         if (getEditor().isFullScreen()) {
-            if (vm.$refs.leftnav) {
-                const classList = vm.$refs.leftnav.classList;
+            const leftNav = config.getLeftNav ? config.getLeftNav() : null;
+            if (leftNav) {
+                const classList = leftNav.classList;
                 if (classList.contains(LEFT_NAV_FLOAT)) {
                     classList.remove(LEFT_NAV_FLOAT);
                     classList.remove(ANIMATION_FADEINLEFT);
@@ -124,11 +128,11 @@ function addToolicons(vm) {
                 }
             }
         } else {
-            vm.info("当编辑器全屏时才可以进行该操作");
+            if (config.info) config.info("当编辑器全屏时才可以进行该操作");
         }
     });
 
-    icons[1].on("click", () => vm.importMd());
-    icons[2].on("click", () => vm.openUploadPanel());
-    icons[3].on("click", () => vm.saveDoc());
+    icons[1].on("click", () => { if (config.importMd) config.importMd() });
+    icons[2].on("click", () => { if (config.openUploadPanel) config.openUploadPanel() });
+    icons[3].on("click", () => { if (config.saveDoc) config.saveDoc() });
 }

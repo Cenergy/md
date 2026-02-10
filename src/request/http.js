@@ -403,23 +403,9 @@ export async function updateProject({ id, name, token }) {
 // }
 export async function buildProject({ projectId, token }) {
   try {
-    // Try local build endpoint first (dev environment)
-    if (import.meta.env.DEV) {
-      try {
-        const response = await get("/api/local-build", {
-          projectId: resolveProjectId(projectId),
-        });
-        if (response && response.success) {
-          return response;
-        }
-      } catch (e) {
-        console.warn("Local build failed, falling back to remote build", e);
-      }
-    }
-
-    const response = await get("/api/project/build", {
+    // Use the new queue-based build system
+    const response = await post("/api/build", {
       projectId: resolveProjectId(projectId),
-      token: resolveToken(token),
     });
     return response;
   } catch (error) {

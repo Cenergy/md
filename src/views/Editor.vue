@@ -256,7 +256,7 @@ import {
   saveMenu,
   saveSlider,
   queryDoc,
-  saveDoc,
+  saveDoc as apiSaveDoc,
   querySliderList,
   uploadImageFile
 } from "@/request/http";
@@ -659,7 +659,17 @@ const docItemClick = (slider) => {
     item: slider.link,
     name: slider.name,
   }).then((res) => {
-    createEditor("#editor", null, () => {
+    const editorConfig = {
+      theme: hero.value.theme,
+      getLeftNav: () => leftnav.value,
+      warn: (msg) => ElMessage.warning(msg),
+      info: (msg) => ElMessage.info(msg),
+      uploadFile: uploadFile,
+      importMd: importMd,
+      openUploadPanel: openUploadPanel,
+      saveDoc: saveDoc
+    };
+    createEditor("#editor", editorConfig, () => {
       if (getEditor()) getEditor().setValue(res);
     });
   });
@@ -668,7 +678,7 @@ const docItemClick = (slider) => {
 const saveDoc = () => {
   if (!currentMenu.value || !currentDoc.value) return;
   if (!getEditor()) return;
-  saveDoc({
+  apiSaveDoc({
     projectId: projectId.value,
     token: getToken(),
     link: currentMenu.value.link,

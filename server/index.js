@@ -31,7 +31,7 @@ app.use(morgan('dev', {
 // Rate Limiting (Prevent Brute Force)
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // Limit each IP to 100 requests per windowMs
+    max: 1000, // Limit each IP to 1000 requests per windowMs
     standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
     legacyHeaders: false, // Disable the `X-RateLimit-*` headers
     message: { ok: false, message: 'Too many requests, please try again later.' }
@@ -56,6 +56,8 @@ const projectRoutes = require('./routes/project');
 const menuRoutes = require('./routes/menu');
 const sliderRoutes = require('./routes/slider');
 const fileRoutes = require('./routes/file');
+const buildRoutes = require('./routes/build');
+const { startBuildWorker } = require('./services/buildWorker');
 
 app.use('/api', authRoutes);
 app.use('/api', userRoutes);
@@ -63,9 +65,13 @@ app.use('/api', projectRoutes);
 app.use('/api', menuRoutes);
 app.use('/api', sliderRoutes);
 app.use('/api', fileRoutes);
+app.use('/api', buildRoutes);
 
 // API 404 Handler (must be after all API routes)
 app.use('/api/*', notFoundHandler);
+
+// Start Background Worker
+startBuildWorker();
 
 // Setup Frontend (Static/Vite)
 setupFrontend(app).then(() => {
