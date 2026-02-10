@@ -9,6 +9,7 @@ const path = require('path');
 const crypto = require('crypto');
 const fs = require('fs');
 const { PrismaClient } = require('@prisma/client');
+const { loginSchema, registerSchema } = require('./schemas');
 
 const prisma = new PrismaClient();
 const nodemailer = require('nodemailer');
@@ -115,13 +116,20 @@ const verifyToken = (req, res, next) => {
 // Routes
 
 // 1. Token Validate
-app.get('/glicon/tokenvalidate', verifyToken, (req, res) => {
+app.get('/api/tokenvalidate', verifyToken, (req, res) => {
     res.json(true); 
 });
 
 // 2. User Routes
-app.post('/glicon/user/login', async (req, res) => {
-    const { email, password } = req.body;
+app.post('/api/user/login', async (req, res) => {
+    // Zod Validation
+    const validation = loginSchema.safeParse(req.body);
+    if (!validation.success) {
+        return res.status(400).json({ ok: false, message: validation.error.issues[0].message });
+    }
+    
+    const { email, password } = validation.data;
+
     try {
         const user = await prisma.users.findUnique({
             where: { email }
@@ -151,8 +159,14 @@ app.post('/glicon/user/login', async (req, res) => {
     }
 });
 
-app.post('/glicon/user/register', async (req, res) => {
-    const { email, password, code } = req.body;
+app.post('/api/user/register', async (req, res) => {
+    // Zod Validation
+    const validation = registerSchema.safeParse(req.body);
+    if (!validation.success) {
+        return res.status(400).json({ ok: false, message: validation.error.issues[0].message });
+    }
+
+    const { email, password, code } = validation.data;
     
     // Verify code
     let status = 1;
@@ -192,7 +206,7 @@ app.post('/glicon/user/register', async (req, res) => {
     }
 });
 
-app.get('/glicon/user/vercode', async (req, res) => {
+app.get('/api/user/vercode', async (req, res) => {
     const { email } = req.query;
     // Generate random 6-digit code
     const code = Math.floor(100000 + Math.random() * 900000).toString();
@@ -213,7 +227,7 @@ app.get('/glicon/user/vercode', async (req, res) => {
     res.json({ ok: true, message: 'Code sent' });
 });
 
-app.get('/glicon/userinfo/query', verifyToken, async (req, res) => {
+app.get('/api/userinfo/query', verifyToken, async (req, res) => {
     const user = await prisma.users.findUnique({
         where: { id: req.user.id },
         select: { id: true, email: true, name: true, avatar: true }
@@ -221,7 +235,7 @@ app.get('/glicon/userinfo/query', verifyToken, async (req, res) => {
     res.json({ ok: true, data: { userInfo: user } });
 });
 
-app.post('/glicon/userinfo/updatename', verifyToken, async (req, res) => {
+app.post('/api/userinfo/updatename', verifyToken, async (req, res) => {
     const { name } = req.body;
     await prisma.users.update({
         where: { id: req.user.id },
@@ -230,7 +244,7 @@ app.post('/glicon/userinfo/updatename', verifyToken, async (req, res) => {
     res.json({ ok: true });
 });
 
-app.get('/glicon/userinfo/search', verifyToken, async (req, res) => {
+app.get('/api/userinfo/search', verifyToken, async (req, res) => {
     const { keywords } = req.query;
     const users = await prisma.users.findMany({
         where: {
@@ -246,7 +260,7 @@ app.get('/glicon/userinfo/search', verifyToken, async (req, res) => {
 
 
 // 3. Project Routes
-app.get('/glicon/project/list', verifyToken, async (req, res) => {
+app.get('/api/project/list', verifyToken, async (req, res) => {
     const projects = await prisma.projects.findMany({
         where: { owner_id: req.user.id }
     });
@@ -257,7 +271,7 @@ app.get('/glicon/project/list', verifyToken, async (req, res) => {
     res.json({ ok: true, data: projects });
 });
 
-app.get('/glicon/project/query', verifyToken, async (req, res) => {
+app.get('/api/project/query', verifyToken, async (req, res) => {
     const { projectId } = req.query;
     const project = await prisma.projects.findUnique({
         where: { id: projectId }
@@ -270,7 +284,7 @@ app.get('/glicon/project/query', verifyToken, async (req, res) => {
     }
 });
 
-app.post('/glicon/project/save', verifyToken, async (req, res) => {
+app.post('/api/project/save', verifyToken, async (req, res) => {
     const { name } = req.body;
     const id = generateId();
     await prisma.projects.create({
@@ -284,7 +298,7 @@ app.post('/glicon/project/save', verifyToken, async (req, res) => {
     res.json({ ok: true, data: { id, name } });
 });
 
-app.post('/glicon/project/update', verifyToken, async (req, res) => {
+app.post('/api/project/update', verifyToken, async (req, res) => {
     const { id, name } = req.body;
     await prisma.projects.update({
         where: { id },
@@ -293,7 +307,7 @@ app.post('/glicon/project/update', verifyToken, async (req, res) => {
     res.json({ ok: true });
 });
 
-app.post('/glicon/project/profile', verifyToken, async (req, res) => {
+app.post('/api/project/profile', verifyToken, async (req, res) => {
     const { projectId, query, ...profileData } = req.body;
     
     if (query) {
@@ -322,7 +336,7 @@ app.post('/glicon/project/profile', verifyToken, async (req, res) => {
 });
 
 // 4. Menu Routes
-app.get('/glicon/menu/list', verifyToken, async (req, res) => {
+app.get('/api/menu/list', verifyToken, async (req, res) => {
     const { projectId } = req.query;
     const menus = await prisma.menus.findMany({
         where: { project_id: projectId },
@@ -360,7 +374,7 @@ app.get('/glicon/menu/list', verifyToken, async (req, res) => {
     res.json({ ok: true, data: menus });
 });
 
-app.post('/glicon/menu/save', verifyToken, async (req, res) => {
+app.post('/api/menu/save', verifyToken, async (req, res) => {
     const { projectId, name, link } = req.body;
     // Check if exists
     const exists = await prisma.menus.findFirst({
@@ -387,7 +401,7 @@ app.post('/glicon/menu/save', verifyToken, async (req, res) => {
     res.json({ ok: true });
 });
 
-app.post('/glicon/menu/sort', verifyToken, async (req, res) => {
+app.post('/api/menu/sort', verifyToken, async (req, res) => {
     const { projectId, data } = req.body; // data is array of menus
     
     // Transaction?
@@ -404,7 +418,7 @@ app.post('/glicon/menu/sort', verifyToken, async (req, res) => {
 });
 
 // 5. Slider/Doc Routes
-app.get('/glicon/slider/all', verifyToken, async (req, res) => {
+app.get('/api/slider/all', verifyToken, async (req, res) => {
     const { projectId } = req.query;
     const sliders = await prisma.sliders.findMany({
         where: { project_id: projectId }
@@ -412,7 +426,7 @@ app.get('/glicon/slider/all', verifyToken, async (req, res) => {
     res.json({ ok: true, data: sliders });
 });
 
-app.get('/glicon/slider/list', verifyToken, async (req, res) => {
+app.get('/api/slider/list', verifyToken, async (req, res) => {
     const { projectId, link } = req.query; // link is menu_link
     
     if (!link) {
@@ -454,7 +468,7 @@ app.get('/glicon/slider/list', verifyToken, async (req, res) => {
 });
 
 
-app.post('/glicon/slider/save', verifyToken, async (req, res) => {
+app.post('/api/slider/save', verifyToken, async (req, res) => {
     const { projectId, link, data } = req.body; // link is menu_link, data is array of sliders
     
     // We need to sync the sliders for this menu.
@@ -548,7 +562,7 @@ app.post('/glicon/slider/save', verifyToken, async (req, res) => {
     res.json({ ok: true });
 });
 
-app.get('/glicon/slider/item/list', verifyToken, async (req, res) => {
+app.get('/api/slider/item/list', verifyToken, async (req, res) => {
     const { projectId, item } = req.query; // item is the slider link
     const slider = await prisma.sliders.findFirst({
         where: { project_id: projectId, link: item }
@@ -556,7 +570,7 @@ app.get('/glicon/slider/item/list', verifyToken, async (req, res) => {
     res.json({ ok: true, data: slider ? slider.content : '' });
 });
 
-app.post('/glicon/slider/item/save', verifyToken, async (req, res) => {
+app.post('/api/slider/item/save', verifyToken, async (req, res) => {
     const { projectId, item, data } = req.body; // item is link, data is content
     // Update content. Link is not unique globally, but per project.
     // We should find the record first.
@@ -578,7 +592,7 @@ app.post('/glicon/slider/item/save', verifyToken, async (req, res) => {
 
 
 // 6. File Upload
-app.post('/glicon/file/upload', upload.single('avatar'), (req, res) => {
+app.post('/api/file/upload', upload.single('avatar'), (req, res) => {
     if (!req.file) {
         return res.status(400).json({ ok: false, message: 'No file uploaded' });
     }
@@ -591,7 +605,7 @@ app.post('/glicon/file/upload', upload.single('avatar'), (req, res) => {
 });
 
 // 7. Collaboration
-app.get('/glicon/project/collaborate', verifyToken, async (req, res) => {
+app.get('/api/project/collaborate', verifyToken, async (req, res) => {
     // Join project_links with projects
     // Prisma: project_links has relation `projects`.
     const links = await prisma.project_links.findMany({
@@ -603,7 +617,7 @@ app.get('/glicon/project/collaborate', verifyToken, async (req, res) => {
     res.json({ ok: true, data: projects });
 });
 
-app.get('/glicon/project_link/users', verifyToken, async (req, res) => {
+app.get('/api/project_link/users', verifyToken, async (req, res) => {
     const { projectId } = req.query;
     const users = await prisma.project_links.findMany({
         where: { project_id: projectId }
@@ -611,7 +625,7 @@ app.get('/glicon/project_link/users', verifyToken, async (req, res) => {
     res.json({ ok: true, data: users });
 });
 
-app.post('/glicon/project_link/save', verifyToken, async (req, res) => {
+app.post('/api/project_link/save', verifyToken, async (req, res) => {
     const { projectId, email } = req.body;
     
     // Check if user exists
@@ -642,7 +656,7 @@ app.post('/glicon/project_link/save', verifyToken, async (req, res) => {
     res.json({ ok: true });
 });
 
-app.get('/glicon/project_link/delete', verifyToken, async (req, res) => {
+app.get('/api/project_link/delete', verifyToken, async (req, res) => {
     const { projectId, uid } = req.query; 
     // uid is project_links.id (Int) or maybe string from query?
     // req.query params are strings. We need to parse int for ID.
@@ -679,7 +693,7 @@ app.get('/glicon/project_link/delete', verifyToken, async (req, res) => {
 });
 
 // 8. Build
-app.get('/glicon/project/build', verifyToken, (req, res) => {
+app.get('/api/project/build', verifyToken, (req, res) => {
     // Mock build
     res.json({ ok: true, message: 'Build triggered' });
 });

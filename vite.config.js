@@ -50,7 +50,7 @@ export default defineConfig({
   server: {
     port: 3000,
     proxy: {
-      "/glicon": {
+      "/api": {
         target: "http://localhost:3001",
         // target: 'https://mdpress.glicon.design/common',
         // rewrite: (path) => path.replace(/^\/glicon/, ''),
