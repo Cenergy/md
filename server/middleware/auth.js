@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
-require('dotenv').config();
+const config = require('../config');
 
-const SECRET_KEY = process.env.SECRET_KEY || 'md-test-secret-key';
+const SECRET_KEY = config.jwtSecret;
 
 const verifyToken = (req, res, next) => {
     const token = req.headers['token'] || req.query.token || req.body.token;
