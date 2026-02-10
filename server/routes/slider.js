@@ -3,6 +3,7 @@ const router = express.Router();
 const prisma = require('../utils/prisma');
 const verifyToken = require('../middleware/auth');
 const { generateId } = require('../utils/common');
+const { sliderSaveSchema } = require('../data/schemas');
 
 router.get('/slider/all', verifyToken, async (req, res) => {
     const { projectId } = req.query;
@@ -53,7 +54,11 @@ router.get('/slider/list', verifyToken, async (req, res) => {
 
 
 router.post('/slider/save', verifyToken, async (req, res) => {
-    const { projectId, link, data } = req.body; // link is menu_link, data is array of sliders
+    const validation = sliderSaveSchema.safeParse(req.body);
+    if (!validation.success) {
+        return res.status(400).json({ ok: false, message: validation.error.issues[0].message });
+    }
+    const { projectId, link, data } = validation.data; // link is menu_link, data is array of sliders
     
     let order = 0;
     

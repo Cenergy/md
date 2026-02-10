@@ -4,9 +4,10 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
+const config = require('../config');
 
 // File Upload Setup
-const uploadDir = path.join(__dirname, '../uploads');
+const uploadDir = path.join(__dirname, '../', config.upload.dir || 'uploads');
 if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
 }
@@ -24,14 +25,13 @@ const storage = multer.diskStorage({
 const upload = multer({ 
     storage: storage,
     limits: {
-        fileSize: 5 * 1024 * 1024, // 5MB limit
+        fileSize: config.upload.maxSize || 5 * 1024 * 1024, // Use config or default 5MB
     },
     fileFilter: (req, file, cb) => {
-        // Optional: Filter file types (e.g., images only)
-        // For now, we allow all but you can uncomment below to restrict
-        // if (!file.mimetype.startsWith('image/')) {
-        //     return cb(new Error('Only image files are allowed!'), false);
-        // }
+        // Only allow images
+        if (!file.mimetype.startsWith('image/')) {
+            return cb(new Error('Only image files are allowed!'), false);
+        }
         cb(null, true);
     }
 });

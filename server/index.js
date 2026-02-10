@@ -42,9 +42,9 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Static Files
-const uploadDir = path.join(__dirname, 'uploads');
+const uploadDir = path.join(__dirname, config.upload.dir || 'uploads');
 if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir);
+    fs.mkdirSync(uploadDir, { recursive: true });
 }
 app.use('/uploads', express.static(uploadDir));
 app.use('/p', express.static(uploadDir));

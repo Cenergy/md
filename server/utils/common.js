@@ -21,4 +21,19 @@ function generateId(length = 21) {
     return result;
 }
 
-module.exports = { generateId };
+/**
+ * Safely parses a JSON string.
+ * 
+ * @param {string} str - The JSON string to parse
+ * @param {any} fallback - The fallback value if parsing fails (default: {})
+ * @returns {any} The parsed object or the fallback value
+ */
+function safeJSONParse(str, fallback = {}) {
+    try {
+        return str ? JSON.parse(str) : fallback;
+    } catch (e) {
+        return fallback;
+    }
+}
+
+module.exports = { generateId, safeJSONParse };
