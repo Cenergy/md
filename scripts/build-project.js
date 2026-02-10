@@ -2,18 +2,46 @@ const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
+const jwt = require('jsonwebtoken');
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 
 // Constants
-const BASE_URL = 'https://mdpress.glicon.design/common';
-const TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImJVcmNNb0hKdnVsU09oaXI4ejctcyIsImlhdCI6MTc2OTA4MDA1OCwiZXhwIjoxNzcxNjcyMDU4fQ.vKgrQbI5mr9GSp41F6V2l5I6_4WCgBMfkXfOd7ZDyAw";
-const PROJECT_ID = process.env.PROJECT_ID || "N-KUsUZgmt9J7JUcTITZd";
+const BASE_URL = `http://localhost:${process.env.PORT || 3001}/api`;
+const SECRET_KEY = process.env.SECRET_KEY || 'md-test-secret-key';
+// Generate a system token for build process
+const TOKEN = jwt.sign({ id: 1, email: 'system@build', name: 'System Build' }, SECRET_KEY, { expiresIn: '1h' });
 
+let PROJECT_ID = process.env.PROJECT_ID; // Can be updated if not provided
 const DOCS_ROOT = path.resolve(__dirname, '../docs');
-const PROJECT_DOCS_DIR = path.join(DOCS_ROOT, PROJECT_ID);
+let PROJECT_DOCS_DIR = path.join(DOCS_ROOT, PROJECT_ID || 'default');
 const VITEPRESS_DIR = path.join(DOCS_ROOT, '.vitepress');
 const REGISTRY_PATH = path.join(VITEPRESS_DIR, 'project-registry.json');
 
 // --- Helpers ---
+
+async function resolveProjectId() {
+    if (PROJECT_ID) return;
+
+    try {
+        console.log('No PROJECT_ID provided. Attempting to find default project from database...');
+        // Dynamically require prisma to avoid loading it if not needed (though here we need it)
+        const prisma = require('../server/utils/prisma');
+        const project = await prisma.projects.findFirst();
+        
+        if (project) {
+            PROJECT_ID = project.id;
+            console.log(`Using default project: ${project.name} (${PROJECT_ID})`);
+            // Update dependent paths
+            PROJECT_DOCS_DIR = path.join(DOCS_ROOT, PROJECT_ID);
+        } else {
+             console.error('No projects found in database. Please create a project first.');
+             process.exit(1);
+        }
+    } catch (e) {
+        console.error('Failed to resolve default project:', e.message);
+        process.exit(1);
+    }
+}
 
 function ensureDir(dir) {
     if (!fs.existsSync(dir)) {
@@ -24,7 +52,8 @@ function ensureDir(dir) {
 async function fetchApi(endpoint, params) {
     try {
         const res = await axios.get(`${BASE_URL}${endpoint}`, {
-            params: { ...params, projectId: PROJECT_ID, token: TOKEN }
+            params: { ...params, projectId: PROJECT_ID },
+            headers: { token: TOKEN } 
         });
         return res.data.data;
     } catch (e) {

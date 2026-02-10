@@ -36,19 +36,16 @@ service.interceptors.response.use(
 export const get = (url, params) => service.get(url, { params });
 export const post = (url, data, config) => service.post(url, data, config);
 
-const TEST_TOKEN = "";
-const TEST_PROJECT_ID = "";
-
 // Helper to get token (param > localStorage > test constant)
-const resolveToken = (token) => token || getToken() || TEST_TOKEN;
-const resolveProjectId = (projectId) => projectId || TEST_PROJECT_ID;
+const resolveToken = (token) => getToken() || token;
+const resolveProjectId = (projectId) => projectId;
 
 // 验证token是否有效
 // 结果示例{ok: true}
 export async function validateToken(token) {
   try {
     const response = await get("/api/tokenvalidate", {
-      token: resolveToken(token),
+      token: token || getToken(),
     });
     return response;
   } catch (error) {
@@ -74,10 +71,9 @@ export async function validateToken(token) {
 export async function queryProject({ projectId, token }) {
   try {
     const response = await get("/api/project/query", {
-      projectId: resolveProjectId(projectId),
-      token: resolveToken(token),
+      projectId,
+      token: token || getToken(),
     });
-    console.log("🚀 ~ queryProject ~ response:", response);
     return response;
   } catch (error) {
     console.error("Project query failed:", error);
@@ -88,8 +84,8 @@ export async function queryProject({ projectId, token }) {
 export async function queryMenu({ projectId, token }) {
   try {
     const response = await get("/api/menu/list", {
-      projectId: resolveProjectId(projectId),
-      token: resolveToken(token),
+      projectId,
+      token: token || getToken(),
     });
     return response.data || [];
   } catch (error) {
