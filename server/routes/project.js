@@ -5,6 +5,9 @@ const verifyToken = require('../middleware/auth');
 const { generateId, safeJSONParse } = require('../utils/common');
 const { sendEmail } = require('../utils/email');
 const { projectCreateSchema, projectUpdateSchema, projectProfileSchema, projectLinkSchema } = require('../data/schemas');
+const util = require('util');
+const exec = util.promisify(require('child_process').exec);
+const path = require('path');
 
 // Project Routes
 router.get('/project/list', verifyToken, async (req, res) => {
@@ -173,8 +176,35 @@ router.get('/project_link/delete', verifyToken, async (req, res) => {
 });
 
 // Build
-router.get('/project/build', verifyToken, (req, res) => {
-    res.json({ ok: true, message: 'Build triggered' });
+router.get('/project/build', verifyToken, async (req, res) => {
+    const { projectId } = req.query;
+    console.log(`🚀 Build triggered for: ${projectId || 'auto-detect'}`);
+
+    const scriptPath = path.resolve(__dirname, '../../scripts/build-project.js');
+    const projectRoot = path.resolve(__dirname, '../../');
+
+    try {
+        const { stdout } = await exec(`node "${scriptPath}"`, {
+            env: { ...process.env, PROJECT_ID: projectId || '' },
+            cwd: projectRoot,
+            maxBuffer: 10 * 1024 * 1024 // 10MB buffer to prevent overflow
+        });
+
+        console.log('✅ Build completed successfully');
+        res.json({ 
+            ok: true, 
+            message: 'Build completed successfully',
+            logs: stdout
+        });
+    } catch (error) {
+        console.error(`❌ Build failed: ${error.message}`);
+        res.status(500).json({ 
+            ok: false, 
+            message: 'Build failed', 
+            error: error.message,
+            logs: error.stdout || error.stderr || 'No logs available'
+        });
+    }
 });
 
 module.exports = router;
