@@ -37,3 +37,19 @@ npm run dev
   ```bash
   npx prisma studio
   ```
+
+## 构建 (Build)
+
+### 构建前端 (Frontend Build)
+```bash
+npm run build
+```
+构建产物将输出到 `dist` 目录。后端在生产模式下会自动托管此目录。
+
+### 构建文档 (Docs Build)
+```bash
+npm run build:docs
+```
+此脚本用于生成 VitePress 文档。它会自动生成系统 Token 并调用本地 API (`http://localhost:3001/api`) 获取数据。
+**注意**: 如果未设置 `PROJECT_ID` 环境变量，脚本将自动尝试从数据库中获取第一个项目进行构建。
+确保在运行此命令前，本地后端服务 (`npm run dev` 或 `npm run server`) 已经启动。

@@ -6,8 +6,8 @@ import router from './router'
 
 // Local Styles
 import '@/assets/css/font_3975977_isscicrrga.css'
-import '@/assets/css/base-4d592b08fc.css'
-import '@/assets/css/edit-65440efa85.css'
+import '@/assets/css/base.css'
+import '@/assets/css/edit.css'
 import '@/assets/css/editor.css'
 import '@/assets/css/message.css'
 
