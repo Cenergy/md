@@ -47,7 +47,7 @@ const resolveProjectId = (projectId) => projectId || TEST_PROJECT_ID;
 // 结果示例{ok: true}
 export async function validateToken(token) {
   try {
-    const response = await get("/glicon/tokenvalidate", {
+    const response = await get("/api/tokenvalidate", {
       token: resolveToken(token),
     });
     return response;
@@ -73,7 +73,7 @@ export async function validateToken(token) {
 // }
 export async function queryProject({ projectId, token }) {
   try {
-    const response = await get("/glicon/project/query", {
+    const response = await get("/api/project/query", {
       projectId: resolveProjectId(projectId),
       token: resolveToken(token),
     });
@@ -87,7 +87,7 @@ export async function queryProject({ projectId, token }) {
 
 export async function queryMenu({ projectId, token }) {
   try {
-    const response = await get("/glicon/menu/list", {
+    const response = await get("/api/menu/list", {
       projectId: resolveProjectId(projectId),
       token: resolveToken(token),
     });
@@ -155,7 +155,7 @@ export async function queryMenu({ projectId, token }) {
 // }
 export async function querySlider({ projectId, token, name, link }) {
   try {
-    const response = await get("/glicon/slider/all", {
+    const response = await get("/api/slider/all", {
       projectId: resolveProjectId(projectId),
       token: resolveToken(token),
       name,
@@ -199,7 +199,7 @@ export async function querySlider({ projectId, token, name, link }) {
 // ]
 export async function querySliderList({ projectId, token, name, link }) {
   try {
-    const response = await get("/glicon/slider/list", {
+    const response = await get("/api/slider/list", {
       projectId: resolveProjectId(projectId),
       token: resolveToken(token),
       name,
@@ -216,7 +216,7 @@ export async function querySliderList({ projectId, token, name, link }) {
 export async function sortMenu({ projectId, token, data }) {
   try {
     const response = await post(
-      "/glicon/menu/sort",
+      "/api/menu/sort",
       {
         projectId: resolveProjectId(projectId),
         data,
@@ -235,7 +235,7 @@ export async function sortMenu({ projectId, token, data }) {
 export async function saveMenu({ projectId, token, name, link }) {
   try {
     const response = await post(
-      "/glicon/menu/save",
+      "/api/menu/save",
       {
         projectId: resolveProjectId(projectId),
         name,
@@ -255,7 +255,7 @@ export async function saveMenu({ projectId, token, name, link }) {
 export async function saveSlider({ projectId, token, link, data }) {
   try {
     const response = await post(
-      "/glicon/slider/save",
+      "/api/slider/save",
       {
         projectId: resolveProjectId(projectId),
         link,
@@ -279,7 +279,7 @@ export async function saveSlider({ projectId, token, link, data }) {
 // }
 export async function queryDoc({ projectId, token, link, item, name }) {
   try {
-    const response = await get("/glicon/slider/item/list", {
+    const response = await get("/api/slider/item/list", {
       projectId: resolveProjectId(projectId),
       token: resolveToken(token),
       link,
@@ -300,7 +300,7 @@ export async function queryDoc({ projectId, token, link, item, name }) {
 export async function saveDoc({ projectId, token, link, item, data }) {
   try {
     const response = await post(
-      "/glicon/slider/item/save",
+      "/api/slider/item/save",
       {
         projectId: resolveProjectId(projectId),
         link,
@@ -331,7 +331,7 @@ export async function saveDoc({ projectId, token, link, item, data }) {
 // }
 export async function queryProjectList({ token }) {
   try {
-    const response = await get("/glicon/project/list", {
+    const response = await get("/api/project/list", {
       token: resolveToken(token),
     });
     return response.data || [];
@@ -353,7 +353,7 @@ export async function queryProjectList({ token }) {
 // }
 export async function queryCollaborateProjects({ token }) {
   try {
-    const response = await get("/glicon/project/collaborate", {
+    const response = await get("/api/project/collaborate", {
       token: resolveToken(token),
     });
     console.log("🚀 ~ queryCollaborateProjects ~ response:", response);
@@ -367,7 +367,7 @@ export async function queryCollaborateProjects({ token }) {
 export async function saveProject({ name, token }) {
   try {
     const response = await post(
-      "/glicon/project/save",
+      "/api/project/save",
       {
         name,
       },
@@ -385,7 +385,7 @@ export async function saveProject({ name, token }) {
 export async function updateProject({ id, name, token }) {
   try {
     const response = await post(
-      "/glicon/project/update",
+      "/api/project/update",
       {
         id,
         name,
@@ -421,7 +421,7 @@ export async function buildProject({ projectId, token }) {
       }
     }
 
-    const response = await get("/glicon/project/build", {
+    const response = await get("/api/project/build", {
       projectId: resolveProjectId(projectId),
       token: resolveToken(token),
     });
@@ -435,7 +435,7 @@ export async function buildProject({ projectId, token }) {
 export async function queryProjectProfile({ projectId, token }) {
   try {
     const response = await post(
-      "/glicon/project/profile",
+      "/api/project/profile",
       {
         projectId: resolveProjectId(projectId),
         query: true,
@@ -454,7 +454,7 @@ export async function queryProjectProfile({ projectId, token }) {
 export async function saveProjectProfile({ projectId, profileData, token }) {
   try {
     const response = await post(
-      "/glicon/project/profile",
+      "/api/project/profile",
       {
         projectId: resolveProjectId(projectId),
         ...profileData,
@@ -472,7 +472,7 @@ export async function saveProjectProfile({ projectId, profileData, token }) {
 
 export async function searchUser({ keywords, token }) {
   try {
-    const response = await get("/glicon/userinfo/search", {
+    const response = await get("/api/userinfo/search", {
       keywords,
       token: resolveToken(token),
     });
@@ -485,7 +485,7 @@ export async function searchUser({ keywords, token }) {
 
 export async function queryProjectLinkUsers({ projectId, token }) {
   try {
-    const response = await get("/glicon/project_link/users", {
+    const response = await get("/api/project_link/users", {
       projectId: resolveProjectId(projectId),
       token: resolveToken(token),
     });
@@ -499,7 +499,7 @@ export async function queryProjectLinkUsers({ projectId, token }) {
 export async function saveProjectLinkUser({ projectId, uid, email, token }) {
   try {
     const response = await post(
-      "/glicon/project_link/save",
+      "/api/project_link/save",
       {
         projectId: resolveProjectId(projectId),
         uid,
@@ -518,7 +518,7 @@ export async function saveProjectLinkUser({ projectId, uid, email, token }) {
 
 export async function deleteProjectLinkUser({ projectId, uid, token }) {
   try {
-    const response = await get("/glicon/project_link/delete", {
+    const response = await get("/api/project_link/delete", {
       projectId: resolveProjectId(projectId),
       uid,
       token: resolveToken(token),
@@ -533,7 +533,7 @@ export async function deleteProjectLinkUser({ projectId, uid, token }) {
 // User Info APIs
 export async function queryUserInfo({ token } = {}) {
   try {
-    const response = await get("/glicon/userinfo/query", {
+    const response = await get("/api/userinfo/query", {
       token: resolveToken(token),
     });
     return response.data || {};
@@ -546,7 +546,7 @@ export async function queryUserInfo({ token } = {}) {
 export async function updateUserInfoName({ name, token }) {
   try {
     const response = await post(
-      "/glicon/userinfo/updatename",
+      "/api/userinfo/updatename",
       {
         name,
       },
@@ -564,7 +564,7 @@ export async function updateUserInfoName({ name, token }) {
 export async function refreshUserToken({ token } = {}) {
   try {
     const response = await post(
-      "/glicon/userinfo/refreshtoken",
+      "/api/userinfo/refreshtoken",
       {},
       {
         params: { token: resolveToken(token) },
@@ -580,7 +580,7 @@ export async function refreshUserToken({ token } = {}) {
 // Login/Register APIs
 export async function sendVerifyCode({ email }) {
   try {
-    const response = await get("/glicon/user/vercode", {
+    const response = await get("/api/user/vercode", {
       email,
     });
     return response;
@@ -592,7 +592,7 @@ export async function sendVerifyCode({ email }) {
 
 export async function registerUser({ email, password, code }) {
   try {
-    const response = await post("/glicon/user/register", {
+    const response = await post("/api/user/register", {
       email,
       password,
       code,
@@ -606,7 +606,7 @@ export async function registerUser({ email, password, code }) {
 
 export async function loginUser({ email, password }) {
   try {
-    const response = await post("/glicon/user/login", {
+    const response = await post("/api/user/login", {
       email,
       password,
     });
@@ -633,7 +633,7 @@ export async function loginUser({ email, password }) {
  */
 export async function uploadImageFile(data) {
   try {
-    const response = await post("/glicon/file/upload", data);
+    const response = await post("/api/file/upload", data);
     return response || {};
   } catch (error) {
     console.error("Upload image failed:", error);
