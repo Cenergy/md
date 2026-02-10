@@ -1,5 +1,7 @@
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
+const bcrypt = require('bcryptjs');
 // const bodyParser = require('body-parser'); // Removed: Express has built-in body parsing
 const multer = require('multer');
 const jwt = require('jsonwebtoken');
@@ -59,6 +61,10 @@ async function sendEmail(to, subject, text) {
 
 
 // Middleware
+app.use(helmet({
+    contentSecurityPolicy: false, // Disable CSP for development flexibility with Vite
+    crossOriginEmbedderPolicy: false
+}));
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
@@ -117,13 +123,20 @@ app.get('/glicon/tokenvalidate', verifyToken, (req, res) => {
 app.post('/glicon/user/login', async (req, res) => {
     const { email, password } = req.body;
     try {
-        const user = await prisma.users.findFirst({
-            where: { email, password }
+        const user = await prisma.users.findUnique({
+            where: { email }
         });
+        
         if (user) {
             if (user.status === 0) {
                 return res.json({ ok: false, message: 'Account inactive. Please verify your email.' });
             }
+
+            const valid = await bcrypt.compare(password, user.password);
+            if (!valid) {
+                return res.status(401).json({ ok: false, message: 'Invalid credentials' });
+            }
+
             const token = jwt.sign({ id: user.id, email: user.email, name: user.name }, SECRET_KEY, { expiresIn: '7d' });
             res.json({
                 ok: true,
@@ -159,10 +172,11 @@ app.post('/glicon/user/register', async (req, res) => {
     }
 
     try {
+        const hashedPassword = await bcrypt.hash(password, 10);
         await prisma.users.create({
             data: {
                 email,
-                password,
+                password: hashedPassword,
                 name: email.split('@')[0],
                 status
             }
