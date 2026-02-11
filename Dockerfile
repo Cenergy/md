@@ -11,9 +11,8 @@ RUN npm install
 # Copy source code
 COPY . .
 
-# Build frontend for production
-# Increase Node.js heap size to avoid OOM during build
-RUN export NODE_OPTIONS="--max-old-space-size=4096" && npm run build
+# No build step required - using Vite middleware
+# RUN export NODE_OPTIONS="--max-old-space-size=4096" && npm run build
 
 # Generate Prisma Client
 RUN npx prisma generate
