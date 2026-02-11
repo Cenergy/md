@@ -13,7 +13,7 @@ COPY . .
 
 # Build frontend for production
 # Increase Node.js heap size to avoid OOM during build
-RUN export NODE_OPTIONS="--max-old-space-size=4096"
+RUN export NODE_OPTIONS="--max-old-space-size=4096" && npm run build
 
 # Generate Prisma Client
 RUN npx prisma generate
