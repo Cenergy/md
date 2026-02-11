@@ -12,7 +12,8 @@ RUN npm install
 COPY . .
 
 # Build frontend for production
-RUN npm run build
+# Increase Node.js heap size to avoid OOM during build
+RUN export NODE_OPTIONS="--max-old-space-size=4096" && npm run build
 
 # Generate Prisma Client
 RUN npx prisma generate
