@@ -11,9 +11,9 @@ RUN npm install
 # Copy source code
 COPY . .
 
-# Build frontend for production
-# Server has 2GB RAM + 8GB Swap. Set limit to ~6GB to use swap without crashing.
-RUN export NODE_OPTIONS="--max-old-space-size=6144" && npm run build
+# Skip build on server to save memory/time
+# Ensure you run 'npm run build' locally before deploying
+# RUN export NODE_OPTIONS="--max-old-space-size=6144" && npm run build
 
 # Generate Prisma Client
 RUN npx prisma generate
