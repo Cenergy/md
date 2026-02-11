@@ -26,4 +26,5 @@ ENV PORT=3001
 
 # Start the server
 # Run migrations before starting
-CMD npx prisma migrate deploy && node server/index.js
+# Ensure we use the correct schema location defined in package.json
+CMD npx prisma db push --schema=server/data/schema.prisma && node server/index.js
