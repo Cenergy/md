@@ -20,10 +20,10 @@ const config = {
     
     // Email Config
     email: {
-        host: process.env.EMAIL_HOST || 'smtp.qq.com',
-        port: parseInt(process.env.EMAIL_PORT) || 465,
-        user: process.env.EMAIL_USER || '',
-        pass: process.env.EMAIL_PASS || '',
+        host: process.env.EMAIL_HOST || process.env.SMTP_HOST || 'smtp.qq.com',
+        port: parseInt(process.env.EMAIL_PORT || process.env.SMTP_PORT) || 465,
+        user: process.env.EMAIL_USER || process.env.SMTP_USER || '',
+        pass: process.env.EMAIL_PASS || process.env.SMTP_PASSWORD || '',
     },
     
     // File Upload Config

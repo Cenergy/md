@@ -15,9 +15,6 @@ const config = require('./config');
 const app = express();
 const PORT = config.port;
 
-// Trust Proxy (Required for Nginx/Docker)
-app.set('trust proxy', 1); // Trust the first proxy
-
 // Middleware
 app.use(helmet({
     contentSecurityPolicy: false, 
