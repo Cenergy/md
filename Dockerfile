@@ -11,8 +11,9 @@ RUN npm install
 # Copy source code
 COPY . .
 
-# No build step required - using Vite middleware
-# RUN export NODE_OPTIONS="--max-old-space-size=4096" && npm run build
+# Build frontend for production
+# Server has 2GB RAM + 8GB Swap. Set limit to ~6GB to use swap without crashing.
+RUN export NODE_OPTIONS="--max-old-space-size=6144" && npm run build
 
 # Generate Prisma Client
 RUN npx prisma generate
@@ -26,5 +27,4 @@ ENV PORT=3001
 
 # Start the server
 # Run migrations before starting
-# Ensure we use the correct schema location defined in package.json
-CMD npx prisma db push --schema=server/data/schema.prisma && node server/index.js
+CMD npx prisma migrate deploy && node server/index.js
