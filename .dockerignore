@@ -1,5 +1,5 @@
 node_modules
-dist
+# dist  <-- Commented out to allow copying local dist to image
 docs
 uploads
 .git
