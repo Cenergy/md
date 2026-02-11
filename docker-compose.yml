@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  app:
+    container_name: md-test2-app
+    build: .
+    restart: always
+    ports:
+      - "3001:3001"
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+
+    volumes:
+      # Persist Database
+      - ./server/data:/app/server/data
+      # Persist Uploads
+      - ./uploads:/app/uploads
+      # Persist Generated Docs (Optional)
+      - ./docs:/app/docs
