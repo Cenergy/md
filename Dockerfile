@@ -25,4 +25,5 @@ ENV NODE_ENV=production
 ENV PORT=3001
 
 # Start the server
-CMD ["node", "server/index.js"]
+# Run migrations before starting
+CMD npx prisma migrate deploy && node server/index.js
