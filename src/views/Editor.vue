@@ -245,7 +245,7 @@
 
 <script setup>
 import { ref, reactive, onMounted, onBeforeUnmount } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { useRoute, useRouter, onBeforeRouteLeave } from "vue-router";
 import { Container, Draggable } from "vue3-smooth-dnd";
 import { getToken, wrapUrl, getHost } from "@/utils";
 import {
@@ -660,7 +660,7 @@ const attachEditorListener = () => {
   }
 };
 
-const checkSave = (next) => {
+const checkSave = (next, onCancel) => {
   if (isDirty.value) {
     ElMessageBox.confirm(
       '当前文档有未保存的修改，是否保存？',
@@ -681,6 +681,8 @@ const checkSave = (next) => {
         if (action === 'cancel') {
           isDirty.value = false;
           next();
+        } else if (onCancel) {
+          onCancel();
         }
       });
   } else {
@@ -931,6 +933,15 @@ onMounted(async () => {
   } finally {
     loading.close();
   }
+});
+
+onBeforeRouteLeave((to, from) => {
+  return new Promise((resolve) => {
+    checkSave(
+      () => resolve(true),
+      () => resolve(false)
+    );
+  });
 });
 
 onBeforeUnmount(() => {

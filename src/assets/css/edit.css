@@ -122,7 +122,9 @@ body {
   color: gray;
   text-align: center;
   padding-top: 200px;
-  background: url(../img/grid.svg);
+  background-image: linear-gradient(#f3f3f3 1px, transparent 1px),
+    linear-gradient(90deg, #f3f3f3 1px, transparent 1px);
+  background-size: 10px 10px;
 }
 .edit-panel .panel {
   height: 100%;
@@ -148,7 +150,9 @@ body {
 }
 .drag-zone {
   height: 140px;
-  background: url(../img/grid.svg);
+  background-image: linear-gradient(#f3f3f3 1px, transparent 1px),
+    linear-gradient(90deg, #f3f3f3 1px, transparent 1px);
+  background-size: 10px 10px;
   border: 1px dashed #efefef;
 }
 .shopcar-content {
