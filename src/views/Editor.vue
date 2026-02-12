@@ -267,7 +267,7 @@ import {
   getEditor,
   destroyEditor,
 } from "@/utils/editor";
-import { ElMessage, ElLoading } from "element-plus";
+import { ElMessage, ElLoading, ElMessageBox } from "element-plus";
 import { pinyin } from "pinyin-pro";
 import useClipboard from "vue-clipboard3";
 import Header from "@/components/Header.vue";
@@ -312,6 +312,9 @@ const docEditDialog = ref(false);
 const docEditData = ref(null);
 const docEditTitle = ref("");
 const isLogin = ref(false);
+const isDirty = ref(false);
+let editorDisposable = null;
+let isSettingValue = false;
 
 const contentRef = ref(null);
 const shopcar = ref(null);
@@ -493,13 +496,15 @@ const getSliders = (menu) => {
 };
 
 const menuClick = (menu) => {
-  menus.value.forEach((e) => (e.isActive = false));
-  menu.isActive = true;
-  getSliders(menu);
-  currentMenu.value = menu;
-  currentLink.value = `/${menu.link}`;
-  editorShow.value = false;
-  currentDoc.value = null;
+  checkSave(() => {
+    menus.value.forEach((e) => (e.isActive = false));
+    menu.isActive = true;
+    getSliders(menu);
+    currentMenu.value = menu;
+    currentLink.value = `/${menu.link}`;
+    editorShow.value = false;
+    currentDoc.value = null;
+  });
 };
 
 const _saveSliders = () => {
@@ -634,49 +639,107 @@ const saveEditDocItem = () => {
   }
 };
 
+const beforeUnloadListener = (e) => {
+  if (isDirty.value) {
+    e.preventDefault();
+    e.returnValue = "";
+  }
+};
+
+const attachEditorListener = () => {
+  const editor = getEditor();
+  if (editor && editor.editor) {
+    if (editorDisposable) {
+      editorDisposable.dispose();
+    }
+    editorDisposable = editor.editor.onDidChangeModelContent(() => {
+      if (!isSettingValue) {
+        isDirty.value = true;
+      }
+    });
+  }
+};
+
+const checkSave = (next) => {
+  if (isDirty.value) {
+    ElMessageBox.confirm(
+      '当前文档有未保存的修改，是否保存？',
+      '提示',
+      {
+        confirmButtonText: '保存',
+        cancelButtonText: '不保存',
+        type: 'warning',
+        distinguishCancelAndClose: true
+      }
+    )
+      .then(() => {
+        saveDoc().then(() => {
+          next();
+        });
+      })
+      .catch((action) => {
+        if (action === 'cancel') {
+          isDirty.value = false;
+          next();
+        }
+      });
+  } else {
+    next();
+  }
+};
+
 const docItemClick = (slider) => {
-  sliders.value.forEach((s) => {
-    s.isActive = false;
-    if (s.children) s.children.forEach((c) => (c.isActive = false));
-  });
-  slider.isActive = true;
+  checkSave(() => {
+    sliders.value.forEach((s) => {
+      s.isActive = false;
+      if (s.children) s.children.forEach((c) => (c.isActive = false));
+    });
+    slider.isActive = true;
 
-  let t = slider.link;
-  let n = currentLink.value
-    ? currentLink.value.split("/").slice(0, 2)
-    : ["", ""];
-  n.push(t);
-  currentLink.value = n.join("/");
-  currentDoc.value = slider;
-  editorShow.value = true;
+    let t = slider.link;
+    let n = currentLink.value
+      ? currentLink.value.split("/").slice(0, 2)
+      : ["", ""];
+    n.push(t);
+    currentLink.value = n.join("/");
+    currentDoc.value = slider;
+    editorShow.value = true;
 
-  queryDoc({
-    projectId: projectId.value,
-    token: getToken(),
-    link: currentMenu.value.link,
-    item: slider.link,
-    name: slider.name,
-  }).then((res) => {
-    const editorConfig = {
-      theme: hero.value.theme,
-      getLeftNav: () => leftnav.value,
-      warn: (msg) => ElMessage.warning(msg),
-      info: (msg) => ElMessage.info(msg),
-      uploadFile: uploadFile,
-      importMd: importMd,
-      openUploadPanel: openUploadPanel,
-      saveDoc: saveDoc,
-    };
-    createEditor("#editor", editorConfig, () => {
-      if (getEditor()) getEditor().setValue(res);
+    queryDoc({
+      projectId: projectId.value,
+      token: getToken(),
+      link: currentMenu.value.link,
+      item: slider.link,
+      name: slider.name,
+    }).then((res) => {
+      const editorConfig = {
+        theme: hero.value.theme,
+        getLeftNav: () => leftnav.value,
+        warn: (msg) => ElMessage.warning(msg),
+        info: (msg) => ElMessage.info(msg),
+        uploadFile: uploadFile,
+        importMd: importMd,
+        openUploadPanel: openUploadPanel,
+        saveDoc: saveDoc,
+      };
+      createEditor("#editor", editorConfig, () => {
+        const editor = getEditor();
+        if (editor) {
+          isSettingValue = true;
+          editor.setValue(res);
+          isSettingValue = false;
+          isDirty.value = false;
+          attachEditorListener();
+        }
+      });
     });
   });
 };
 
 const saveDoc = () => {
-  if (!currentMenu.value || !currentDoc.value) return;
-  if (!getEditor()) return;
-  apiSaveDoc({
+  if (!currentMenu.value || !currentDoc.value) return Promise.resolve();
+  if (!getEditor()) return Promise.resolve();
+  return apiSaveDoc({
     projectId: projectId.value,
     token: getToken(),
     link: currentMenu.value.link,
@@ -684,6 +747,7 @@ const saveDoc = () => {
     data: getEditor().getValue(),
   }).then((res) => {
     success(`(${currentMenu.value.name}/${currentDoc.value.name})文档保存成功`);
+    isDirty.value = false;
   });
 };
 
@@ -859,6 +923,8 @@ onMounted(async () => {
         saveDoc();
       }
     });
+
+    window.addEventListener("beforeunload", beforeUnloadListener);
   } catch (e) {
     console.error(e);
     error("Failed to load editor resources");
@@ -868,6 +934,10 @@ onMounted(async () => {
 });
 
 onBeforeUnmount(() => {
+  if (editorDisposable) {
+    editorDisposable.dispose();
+  }
+  window.removeEventListener("beforeunload", beforeUnloadListener);
   destroyEditor();
 });
 </script>
