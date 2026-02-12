@@ -21,12 +21,8 @@
       </div>
       <div class="menu-panel">
         <button type="text" @click="dialog = true">+菜单</button>&nbsp;&nbsp;
-        <el-checkbox v-model="hideHeader"
-          >隐藏头部菜单</el-checkbox
-        >
-        <el-checkbox v-model="hideLinksPanel"
-          >隐藏右侧菜单链接面板</el-checkbox
-        >
+        <el-checkbox v-model="hideHeader">隐藏头部菜单</el-checkbox>
+        <el-checkbox v-model="hideLinksPanel">隐藏右侧菜单链接面板</el-checkbox>
       </div>
     </div>
 
@@ -41,7 +37,7 @@
         <div class="link-panel">
           <div class="el-row">
             <div class="el-col el-col-18">
-              <el-input size="mini" disabled></el-input>
+              <el-input size="mini" v-model="currentLink" disabled></el-input>
             </div>
             <div class="el-col el-col-6">
               <el-button size="mini" @click="toggleSliderDialog"
@@ -150,6 +146,11 @@
         <el-form-item label="菜单链接">
           <el-input v-model="menuLink" placeholder="请输入菜单链接"></el-input>
         </el-form-item>
+        <div class="el-divider el-divider--horizontal"><div class="el-divider__text is-left">已经存在的菜单集合</div></div>
+        <el-table :data="menus" style="width: 100%" size="small" border>
+          <el-table-column prop="name" label="菜单名称" />
+          <el-table-column prop="link" label="菜单链接地址" />
+        </el-table>
       </el-form>
       <template #footer>
         <el-button @click="dialog = false">取 消</el-button>
@@ -244,7 +245,7 @@
 
 <script setup>
 import { ref, reactive, onMounted, onBeforeUnmount } from "vue";
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute, useRouter } from "vue-router";
 import { Container, Draggable } from "vue3-smooth-dnd";
 import { getToken, wrapUrl, getHost } from "@/utils";
 import {
@@ -258,7 +259,7 @@ import {
   queryDoc,
   saveDoc as apiSaveDoc,
   querySliderList,
-  uploadImageFile
+  uploadImageFile,
 } from "@/request/http";
 import {
   loadMonaco,
@@ -409,35 +410,33 @@ const menuInput = () => {
 };
 
 const getAllSliders = () => {
-  querySlider({ projectId: projectId.value, token: getToken() }).then(
-    (res) => {
-      let a = [];
-      res.forEach((e) => {
-        let t = e.sliders,
-          o = e.name,
-          r = e.link;
-        t &&
-          t.forEach((sub) => {
-            let n = sub.name,
-              sl = sub.link,
-              children = sub.children,
-              grp = sub.group;
-            if (children && grp) {
-              children.forEach((c) => {
-                let path = `${o}/${n}/${c.name}`;
-                let url = `./${r}/${c.link}`;
-                a.push({ label: path, url: url });
-              });
-            } else {
-              let path = `${o}/${n}`;
-              let url = `./${r}/${sl}`;
+  querySlider({ projectId: projectId.value, token: getToken() }).then((res) => {
+    let a = [];
+    res.forEach((e) => {
+      let t = e.sliders,
+        o = e.name,
+        r = e.link;
+      t &&
+        t.forEach((sub) => {
+          let n = sub.name,
+            sl = sub.link,
+            children = sub.children,
+            grp = sub.group;
+          if (children && grp) {
+            children.forEach((c) => {
+              let path = `${o}/${n}/${c.name}`;
+              let url = `./${r}/${c.link}`;
               a.push({ label: path, url: url });
-            }
-          });
-      });
-      sliderURLS.value = a;
-    },
-  );
+            });
+          } else {
+            let path = `${o}/${n}`;
+            let url = `./${r}/${sl}`;
+            a.push({ label: path, url: url });
+          }
+        });
+    });
+    sliderURLS.value = a;
+  });
 };
 
 const addMenu = () => {
@@ -562,8 +561,7 @@ const addDocItem = () => {
     return;
   }
   let a =
-    n ||
-    pinyin(e, { toneType: "none", type: "array" }).join("").toLowerCase();
+    n || pinyin(e, { toneType: "none", type: "array" }).join("").toLowerCase();
 
   let exists = false;
   if (sliders.value) {
@@ -667,7 +665,7 @@ const docItemClick = (slider) => {
       uploadFile: uploadFile,
       importMd: importMd,
       openUploadPanel: openUploadPanel,
-      saveDoc: saveDoc
+      saveDoc: saveDoc,
     };
     createEditor("#editor", editorConfig, () => {
       if (getEditor()) getEditor().setValue(res);
@@ -685,9 +683,7 @@ const saveDoc = () => {
     item: currentDoc.value.link,
     data: getEditor().getValue(),
   }).then((res) => {
-    success(
-      `(${currentMenu.value.name}/${currentDoc.value.name})文档保存成功`,
-    );
+    success(`(${currentMenu.value.name}/${currentDoc.value.name})文档保存成功`);
   });
 };
 
@@ -749,8 +745,7 @@ const importMd = () => {
       let file = input.files[0];
       let reader = new FileReader();
       reader.onload = () => {
-        if (getEditor() && reader.result)
-          getEditor().setValue(reader.result);
+        if (getEditor() && reader.result) getEditor().setValue(reader.result);
       };
       reader.readAsText(file);
     } else {
