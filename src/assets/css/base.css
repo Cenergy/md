@@ -277,7 +277,9 @@ a.active {
   margin: 5px;
   float: left;
   padding: 2px;
-  background: url(../img/grid.svg);
+  background-image: linear-gradient(#f3f3f3 1px, transparent 1px),
+    linear-gradient(90deg, #f3f3f3 1px, transparent 1px);
+  background-size: 10px 10px;
 }
 .shopcar-icon img {
   width: 40px;
