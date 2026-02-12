@@ -8,8 +8,8 @@ const config = require("../config");
  * @param {import('express').Application} app
  */
 async function setupFrontend(app) {
-    // if (config.isProduction) {
-    if (true) {
+    if (config.isProduction) {
+    // if (true) {
         console.log('Running in production mode, serving static files from ../dist');
         // Resolve path relative to project root (server/middleware/../../dist)
         const distPath = path.join(__dirname, '../../dist');
