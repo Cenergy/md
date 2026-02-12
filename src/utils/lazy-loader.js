@@ -36,7 +36,12 @@ export async function loadEditorPlugins() {
   await import("@/utils/common-utils.js");
   await import("@/utils/prettier-loader.js");
   await import("@/lib/domclickoutside.min.js");
-  await import("@/lib/mdpress-editor.min.js");
+  
+  // 关键修复：导入 ESM 格式的 mdpress-monaco-editor，并手动挂载到 window.mdpress
+  // 因为 ESM 模块不会自动污染全局变量，而 mdeditorplugins.js 依赖 window.mdpress
+  const mdpressModule = await import("mdpress-monaco-editor");
+  window.mdpress = mdpressModule;
+  
   await import("@/lib/mdeditorplugins.js");
   await import("@/lib/filednd.min.js");
 
