@@ -38,6 +38,8 @@ npm run dev
   npx prisma studio
   ```
 
+  npx prisma db push --schema=server/data/schema.prisma
+
 ## 构建 (Build)
 
 ### 构建前端 (Frontend Build)
