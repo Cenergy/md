@@ -203,7 +203,7 @@ const formatProjectURL = (project) => {
     // Legacy: https://mdpress.glicon.design/p/ID/
     // We should probably respect the legacy format if it points to a deployed site.
     // Or if local, maybe it's different. Let's assume the legacy URL structure is what's desired for "Browse Address".
-    return `https://mdpress.glicon.design/p/${project.id}/`; 
+    return `https://note.gishai.top/p/${project.id}/`; 
 }
 
 const loadProjects = async () => {
