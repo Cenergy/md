@@ -1,5 +1,5 @@
 const prisma = require('../utils/prisma');
-const { exec } = require('child_process');
+const { spawn } = require('child_process');
 const path = require('path');
 const os = require('os');
 
@@ -64,40 +64,72 @@ async function processTask(task) {
         const rootDir = path.resolve(__dirname, '../../');
         
         await new Promise((resolve, reject) => {
-            const child = exec('npm run build:docs', { cwd: rootDir, env }, async (error, stdout, stderr) => {
-                const output = `STDOUT:\n${stdout}\n\nSTDERR:\n${stderr}`;
+            // Use spawn instead of exec to avoid buffer limits and allow streaming
+            const child = spawn('npm', ['run', 'build:docs'], { 
+                cwd: rootDir, 
+                env,
+                shell: true // Ensure npm is found and runs correctly
+            });
+
+            let stdoutChunks = [];
+            let stderrChunks = [];
+
+            child.stdout.on('data', (data) => {
+                stdoutChunks.push(data);
+            });
+
+            child.stderr.on('data', (data) => {
+                stderrChunks.push(data);
+            });
+
+            child.on('error', (error) => {
+                reject(error);
+            });
+
+            child.on('close', async (code) => {
+                const stdout = Buffer.concat(stdoutChunks).toString();
+                const stderr = Buffer.concat(stderrChunks).toString();
                 
-                if (error) {
-                    await prisma.build_tasks.update({
-                        where: { id: task.id },
-                        data: { 
-                            status: 'FAILED',
-                            output: output + `\n\nError: ${error.message}`
-                        }
-                    });
-                    console.error(`[Worker] Task #${task.id} FAILED.`);
-                    resolve(); // Resolve anyway to continue processing next tasks
-                } else {
-                    await prisma.build_tasks.update({
-                        where: { id: task.id },
-                        data: { 
-                            status: 'COMPLETED',
-                            output: output
-                        }
-                    });
-                    console.log(`[Worker] Task #${task.id} COMPLETED.`);
+                // Truncate output for DB storage if necessary, though spawn handles large memory better
+                const MAX_LOG_LENGTH = 50000;
+                const truncatedStdout = stdout.length > MAX_LOG_LENGTH ? '...' + stdout.slice(-MAX_LOG_LENGTH) : stdout;
+                const truncatedStderr = stderr.length > MAX_LOG_LENGTH ? '...' + stderr.slice(-MAX_LOG_LENGTH) : stderr;
+                const output = `STDOUT:\n${truncatedStdout}\n\nSTDERR:\n${truncatedStderr}`;
+
+                try {
+                    if (code !== 0) {
+                        await prisma.build_tasks.update({
+                            where: { id: task.id },
+                            data: { 
+                                status: 'FAILED',
+                                output: output + `\n\nExit Code: ${code}`
+                            }
+                        });
+                        console.error(`[Worker] Task #${task.id} FAILED (Exit Code: ${code}).`);
+                    } else {
+                        await prisma.build_tasks.update({
+                            where: { id: task.id },
+                            data: { 
+                                status: 'COMPLETED',
+                                output: output
+                            }
+                        });
+                        console.log(`[Worker] Task #${task.id} COMPLETED.`);
+                    }
+                } catch (dbError) {
+                    console.error(`[Worker] Error updating task status:`, dbError);
+                } finally {
                     resolve();
                 }
             });
 
-            // Lower the priority of the build process to prevent CPU starvation of the API server
+            // Lower the priority of the build process
             if (child.pid) {
                 try {
-                    // 19 is the lowest priority (niceness)
                     os.setPriority(child.pid, 19);
                     console.log(`[Worker] Set build task process priority to LOW (PID: ${child.pid})`);
                 } catch (err) {
-                    console.warn(`[Worker] Failed to set process priority for PID ${child.pid}:`, err.message);
+                    // Ignore priority setting errors
                 }
             }
         });

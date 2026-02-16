@@ -13,35 +13,58 @@ const TOKEN = jwt.sign({ id: 1, email: 'system@build', name: 'System Build' }, S
 
 let PROJECT_ID = process.env.PROJECT_ID; // Can be updated if not provided
 const DOCS_ROOT = path.resolve(__dirname, '../docs');
-let PROJECT_DOCS_DIR = path.join(DOCS_ROOT, PROJECT_ID || 'default');
-const VITEPRESS_DIR = path.join(DOCS_ROOT, '.vitepress');
-const REGISTRY_PATH = path.join(VITEPRESS_DIR, 'project-registry.json');
+
+// New structure paths
+const MARKDOWN_ROOT = path.join(DOCS_ROOT, 'markdown');
+const OUTPUT_ROOT = path.join(DOCS_ROOT, 'vitepress');
+
+const PROJECT_SOURCE_DIR = path.join(MARKDOWN_ROOT, PROJECT_ID || 'default');
+const PROJECT_OUT_DIR = path.join(OUTPUT_ROOT, PROJECT_ID || 'default');
+
+// Config path is now in the source dir
+const VITEPRESS_DIR = path.join(PROJECT_SOURCE_DIR, ".vitepress");
+const REGISTRY_PATH = path.join(VITEPRESS_DIR, "project-registry.json");
+
+// --- Content Sanitization ---
+
+const HTML_TAGS = new Set([
+  'a', 'abbr', 'address', 'area', 'article', 'aside', 'audio', 'b', 'base', 'bdi', 'bdo',
+  'blockquote', 'body', 'br', 'button', 'canvas', 'caption', 'cite', 'code', 'col',
+  'colgroup', 'data', 'datalist', 'dd', 'del', 'details', 'dfn', 'dialog', 'div',
+  'dl', 'dt', 'em', 'embed', 'fieldset', 'figcaption', 'figure', 'footer', 'form',
+  'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'head', 'header', 'hgroup', 'hr', 'html', 'i',
+  'iframe', 'img', 'input', 'ins', 'kbd', 'label', 'legend', 'li', 'link', 'main',
+  'map', 'mark', 'meta', 'meter', 'nav', 'noscript', 'object', 'ol', 'optgroup',
+  'option', 'output', 'p', 'param', 'picture', 'pre', 'progress', 'q', 'rp', 'rt',
+  'ruby', 's', 'samp', 'script', 'section', 'select', 'small', 'source', 'span',
+  'strong', 'style', 'sub', 'summary', 'sup', 'svg', 'table', 'tbody', 'td',
+  'template', 'textarea', 'tfoot', 'th', 'thead', 'time', 'title', 'tr', 'track',
+  'u', 'ul', 'var', 'video', 'wbr'
+]);
+
+function sanitizeContent(content) {
+  if (!content) return "";
+  
+  // Split content by code blocks (inline `code` or block ```code```)
+  // The regex captures the delimiters so they are included in the split result
+  const parts = content.split(/(```[\s\S]*?```|`[^`]*`)/g);
+  
+  return parts.map(part => {
+    // If it starts with ` or ```, it's a code block, return as is
+    if (part.startsWith('`')) return part;
+    
+    // Otherwise, check for <TagName...> patterns
+    // Replace < followed by a letter with &lt; IF it's not a known HTML tag
+    return part.replace(/<([a-zA-Z][a-zA-Z0-9\-\.]*)/g, (match, tagName) => {
+      if (HTML_TAGS.has(tagName.toLowerCase())) {
+        return match; // It's a valid HTML tag, keep it
+      }
+      return '&lt;' + tagName; // Escape it
+    });
+  }).join('');
+}
 
 // --- Helpers ---
-
-async function resolveProjectId() {
-    if (PROJECT_ID) return;
-
-    try {
-        console.log('No PROJECT_ID provided. Attempting to find default project from database...');
-        // Dynamically require prisma to avoid loading it if not needed (though here we need it)
-        const prisma = require('../server/utils/prisma');
-        const project = await prisma.projects.findFirst();
-        
-        if (project) {
-            PROJECT_ID = project.id;
-            console.log(`Using default project: ${project.name} (${PROJECT_ID})`);
-            // Update dependent paths
-            PROJECT_DOCS_DIR = path.join(DOCS_ROOT, PROJECT_ID);
-        } else {
-             console.error('No projects found in database. Please create a project first.');
-             process.exit(1);
-        }
-    } catch (e) {
-        console.error('Failed to resolve default project:', e.message);
-        process.exit(1);
-    }
-}
 
 function ensureDir(dir) {
     if (!fs.existsSync(dir)) {
@@ -110,11 +133,12 @@ async function processSliderItems(items, menuLink, parentDir) {
             const filePath = path.join(parentDir, fileName);
             
             const content = await fetchDoc(menuLink, item.link, item.name);
-            fs.writeFileSync(filePath, content || '');
+            const sanitizedContent = sanitizeContent(content || "");
+            fs.writeFileSync(filePath, sanitizedContent);
             
             // Calculate relative link for sidebar
-            const relDir = path.relative(PROJECT_DOCS_DIR, parentDir);
-            const urlPath = `/${PROJECT_ID}/` + (relDir ? relDir.split(path.sep).join('/') + '/' : '') + fileName; 
+            const relDir = path.relative(PROJECT_SOURCE_DIR, parentDir);
+            const urlPath = `/` + (relDir ? relDir.split(path.sep).join('/') + '/' : '') + fileName; 
             const linkPath = urlPath.replace(/\.md$/, '');
             
             sidebarItems.push({
@@ -137,7 +161,7 @@ hero:
   actions:
     - theme: brand
       text: Get Started
-      link: ${menus.length > 0 ? `/${PROJECT_ID}/${menus[0].link}/` : `/${PROJECT_ID}/`}
+      link: ${menus.length > 0 ? `/${menus[0].link}/` : `/`}
 
 features:
   - title: Markdown Support
@@ -147,46 +171,30 @@ features:
 ---`;
 }
 
-function generateRootHomeContent(projectDataList) {
-    let actionsYaml = '';
-    for (const { id, name } of projectDataList) {
-        actionsYaml += `    - theme: brand\n      text: ${name}\n      link: /${id}/\n`;
-    }
-
-    return `---
-layout: home
-
-hero:
-  name: "MDPress Docs"
-  text: "Select a Project"
-  actions:
-${actionsYaml}
----`;
-}
-
-function generateVitePressConfig(locales, globalSidebar) {
+function generateVitePressConfig(projectName, nav, sidebar) {
     return `
 import { defineConfig } from 'vitepress'
 
 export default defineConfig({
-  // Global defaults
-  title: "MDPress Docs",
-  description: "Documentation Center",
-  
-  // Locales for project isolation
-  locales: ${JSON.stringify(locales, null, 2)},
+  title: "${projectName}",
+  description: "Documentation for ${projectName}",
+  base: '/${PROJECT_ID}/', // Base URL set to project ID for centralized serving
+  outDir: '${PROJECT_OUT_DIR.replace(/\\/g, '/')}', // Output directory
   
   themeConfig: {
-    // Shared theme config if any (search, footer, etc.)
+    nav: ${JSON.stringify(nav, null, 2)},
+    sidebar: ${JSON.stringify(sidebar, null, 2)},
     search: {
       provider: 'local'
     },
-    // Global Sidebar Configuration
-    sidebar: ${JSON.stringify(globalSidebar, null, 2)}
+    socialLinks: [
+      { icon: 'github', link: 'https://github.com/vuejs/vitepress' }
+    ]
   }
 })
 `;
 }
+
 
 // --- Registry Management ---
 
@@ -210,27 +218,38 @@ function saveRegistry(registry) {
 // --- Main Workflow ---
 
 async function cleanAndSetupDirs() {
-    if (fs.existsSync(PROJECT_DOCS_DIR)) {
+    // Clean Source Dir
+    if (fs.existsSync(PROJECT_SOURCE_DIR)) {
         try {
-            fs.rmSync(PROJECT_DOCS_DIR, { recursive: true, force: true });
+            fs.rmSync(PROJECT_SOURCE_DIR, { recursive: true, force: true });
         } catch(e) {
-            console.log('Warning: Could not clean project docs dir, proceeding...');
+            console.log('Warning: Could not clean project source dir, proceeding...');
         }
     }
-    ensureDir(PROJECT_DOCS_DIR);
+    ensureDir(PROJECT_SOURCE_DIR);
+
+    // Clean Output Dir
+    if (fs.existsSync(PROJECT_OUT_DIR)) {
+        try {
+            fs.rmSync(PROJECT_OUT_DIR, { recursive: true, force: true });
+        } catch(e) {
+            console.log('Warning: Could not clean project output dir, proceeding...');
+        }
+    }
+    ensureDir(PROJECT_OUT_DIR);
 }
 
 async function processMenu(menu) {
     console.log(`Processing Menu: ${menu.name}`);
     
     const menuLink = menu.link;
-    const menuDir = path.join(PROJECT_DOCS_DIR, menuLink);
+    const menuDir = path.join(PROJECT_SOURCE_DIR, menuLink);
     ensureDir(menuDir);
 
     const navItem = {
         text: menu.name,
-        link: `/${PROJECT_ID}/${menuLink}/`, 
-        activeMatch: `/${PROJECT_ID}/${menuLink}/`
+        link: `/${menuLink}/`, 
+        activeMatch: `/${menuLink}/`
     };
 
     const sliders = await fetchSliders(menuLink);
@@ -259,12 +278,17 @@ async function processMenu(menu) {
 
     return {
         navItem,
-        sidebarKey: `/${PROJECT_ID}/${menuLink}/`,
+        sidebarKey: `/${menuLink}/`,
         sidebarItems: menuSidebarItems
     };
 }
 
 async function main() {
+    if (!PROJECT_ID) {
+        console.error('Error: PROJECT_ID is required. Usage: PROJECT_ID=... node scripts/build-project.js');
+        process.exit(1);
+    }
+
     console.log('Starting local build...');
     
     await cleanAndSetupDirs();
@@ -275,8 +299,8 @@ async function main() {
     const menus = await fetchMenus();
     console.log(`Found ${menus.length} menus`);
 
-    // Create Home Page in Project Dir
-    fs.writeFileSync(path.join(PROJECT_DOCS_DIR, 'index.md'), generateHomeContent(project.name, menus));
+    // Create Home Page in Project Source Dir
+    fs.writeFileSync(path.join(PROJECT_SOURCE_DIR, 'index.md'), generateHomeContent(project.name, menus));
 
     // Parallelize menu processing
     const results = await Promise.all(menus.map(menu => processMenu(menu)));
@@ -289,89 +313,29 @@ async function main() {
         sidebar[res.sidebarKey] = res.sidebarItems;
     });
 
-    // Update Registry
-    let registry = loadRegistry();
-    registry[PROJECT_ID] = {
-        name: project.name,
-        nav: nav, 
-        sidebar: sidebar
-    };
-    saveRegistry(registry);
-
-    // Generate Config based on Registry
-    let rootNav = [];
-    const projectIds = Object.keys(registry);
-    
-    if (projectIds.length === 1) {
-        rootNav = registry[projectIds[0]].nav;
-    } else {
-        rootNav = Object.entries(registry).map(([pId, pData]) => ({
-            text: pData.name,
-            link: `/${pId}/`
-        }));
-    }
-
-    const locales = {
-        root: {
-            label: 'Home',
-            lang: 'en',
-            title: 'MDPress Docs',
-            description: 'Documentation Center',
-            themeConfig: {
-                nav: rootNav,
-                socialLinks: [
-                    { icon: 'github', link: 'https://github.com/vuejs/vitepress' }
-                ]
-            }
-        }
-    };
-    
-    let globalSidebar = {};
-    const projectDataList = [];
-
-    for (const [pId, pData] of Object.entries(registry)) {
-        projectDataList.push({ id: pId, name: pData.name });
-
-        locales[`/${pId}/`] = {
-            label: pData.name,
-            lang: 'en',
-            title: pData.name,
-            description: `Documentation for ${pData.name}`,
-            themeConfig: {
-                nav: pData.nav,
-                // Sidebar is global now
-                socialLinks: [
-                    { icon: 'github', link: 'https://github.com/vuejs/vitepress' }
-                ]
-            }
-        };
-
-        if (pData.sidebar) {
-            for (const [key, items] of Object.entries(pData.sidebar)) {
-                if (key.startsWith(`/${pId}/`)) {
-                    globalSidebar[key] = items;
-                } else {
-                    const cleanKey = key.startsWith('/') ? key : '/' + key;
-                    globalSidebar[`/${pId}${cleanKey}`] = items;
-                }
-            }
-        }
-    }
-
     // Write Config and Root Home
+    ensureDir(VITEPRESS_DIR);
+    
     // Ensure no conflicting config.js exists
     const oldConfigPath = path.join(VITEPRESS_DIR, 'config.js');
     if (fs.existsSync(oldConfigPath)) {
         fs.unlinkSync(oldConfigPath);
     }
 
-    fs.writeFileSync(path.join(VITEPRESS_DIR, 'config.mjs'), generateVitePressConfig(locales, globalSidebar));
-    fs.writeFileSync(path.join(DOCS_ROOT, 'index.md'), generateRootHomeContent(projectDataList));
+    fs.writeFileSync(path.join(VITEPRESS_DIR, 'config.mjs'), generateVitePressConfig(project.name, nav, sidebar));
+    
+    // No longer writing global registry or root index.md
+    // fs.writeFileSync(path.join(DOCS_ROOT, 'index.md'), generateRootHomeContent(projectDataList));
 
     console.log('Data fetch complete. Building with VitePress...');
     
     try {
-        execSync('npx vitepress build docs', { 
+        // Execute build command for the specific project folder
+        // Use 'vitepress build docs/markdown/PROJECT_ID'
+        const relativeProjectSourceDir = path.relative(path.resolve(__dirname, '..'), PROJECT_SOURCE_DIR).replace(/\\/g, '/');
+        console.log(`Building target: ${relativeProjectSourceDir}`);
+        
+        execSync(`npx vitepress build "${relativeProjectSourceDir}"`, { 
             stdio: 'inherit', 
             cwd: path.resolve(__dirname, '..') 
         });
