@@ -239,7 +239,7 @@
           Drop file here or <em>click to upload</em>
         </div>
         <template #file="{ file }">
-          <div class="file-item-row">
+          <div class="file-item-row" :style="getFileBackgroundStyle(file)" @click="handlePreview(file)">
             <span class="file-name">{{ file.name }}</span>
             <div class="file-actions">
               <el-button 
@@ -247,7 +247,7 @@
                 type="success" 
                 size="small" 
                 circle 
-                @click="copyUploadFile(file)"
+                @click.stop="copyUploadFile(file)"
               >
                 <i class="iconfont icon-fuzhi1"></i>
               </el-button>
@@ -255,7 +255,7 @@
                 type="danger" 
                 size="small" 
                 circle 
-                @click="deleteUploadFile(file)"
+                @click.stop="deleteUploadFile(file)"
               >
                 <i class="iconfont icon-shanchu"></i>
               </el-button>
@@ -264,6 +264,9 @@
         </template>
       </el-upload>
     </div>
+    <el-dialog v-model="previewDialogVisible" append-to-body>
+      <img :src="previewImageUrl" style="width: 100%" />
+    </el-dialog>
   </div>
 </template>
 
@@ -337,6 +340,8 @@ const docEditData = ref(null);
 const docEditTitle = ref("");
 const isLogin = ref(false);
 const isDirty = ref(false);
+const previewDialogVisible = ref(false);
+const previewImageUrl = ref("");
 let editorDisposable = null;
 let isSettingValue = false;
 
@@ -833,6 +838,31 @@ const handleUploadRequest = (options) => {
       onError(err);
       uploading.value = false;
     });
+};
+
+const getFileBackgroundStyle = (file) => {
+  const url = file.url || (file.response && file.response.url);
+  if (url && /\.(jpg|jpeg|png|gif|bmp|webp|svg)$/i.test(file.name)) {
+    return {
+      backgroundImage: `url(${url})`,
+      backgroundSize: "cover",
+      backgroundPosition: "center",
+      color: "#fff",
+      textShadow: "1px 1px 2px rgba(0,0,0,0.8)",
+      padding: "10px",
+      borderRadius: "4px",
+      cursor: "pointer",
+    };
+  }
+  return {};
+};
+
+const handlePreview = (file) => {
+  const url = file.url || (file.response && file.response.url);
+  if (url && /\.(jpg|jpeg|png|gif|bmp|webp|svg)$/i.test(file.name)) {
+    previewImageUrl.value = url;
+    previewDialogVisible.value = true;
+  }
 };
 
 const handleUploadSuccess = (response, file, fileList) => {
