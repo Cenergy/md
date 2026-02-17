@@ -43,7 +43,10 @@ export async function loadEditorPlugins() {
   window.mdpress = mdpressModule;
   
   await import("@/lib/mdeditorplugins.js");
-  await import("@/lib/filednd.min.js");
+  const filedndModule = await import("@/lib/filednd.min.js");
+  if (!window.filednd) {
+    window.filednd = filedndModule;
+  }
 
   window.__editorPluginsLoaded = true;
 }
