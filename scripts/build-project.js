@@ -178,7 +178,7 @@ import { defineConfig } from 'vitepress'
 export default defineConfig({
   title: "${projectName}",
   description: "Documentation for ${projectName}",
-  base: '/p/${PROJECT_ID}/', // Base URL set to project ID for centralized serving
+  base: '/doc/${PROJECT_ID}/', // Base URL set to project ID for centralized serving
   outDir: '${PROJECT_OUT_DIR.replace(/\\/g, '/')}', // Output directory
   
   themeConfig: {
