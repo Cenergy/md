@@ -56,7 +56,7 @@ router.post('/file/upload', (req, res, next) => {
     // Construct URL dynamically based on request
     const protocol = req.protocol;
     const host = req.get('host');
-    const fullUrl = `${protocol}://${host}/p/${req.file.filename}`;
+    const fullUrl = `${protocol}://${host}/uploads/${req.file.filename}`;
     res.json({ 
         ok: true, 
         fileName: fullUrl,
