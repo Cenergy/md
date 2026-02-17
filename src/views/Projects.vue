@@ -197,13 +197,10 @@ const getHost = () => {
 }
 
 const formatProjectURL = (project) => {
-    // Basic implementation, assumes VITE_BASE_URL is set or uses origin
-    // Adapting from legacy code: host.substring(0, host.lastIndexOf("/")) + "/p/".concat(e.id, "/")
-    // But since we are likely in dev or prod, let's just use a relative path or fixed path for now if not sure.
-    // Legacy: https://mdpress.glicon.design/p/ID/
-    // We should probably respect the legacy format if it points to a deployed site.
-    // Or if local, maybe it's different. Let's assume the legacy URL structure is what's desired for "Browse Address".
-    return `https://note.gishai.top/doc/${project.id}/`; 
+    if (import.meta.env.DEV) {
+        return `http://localhost:3000/p/${project.id}/`;
+    }
+    return `https://note.gishai.top/p/${project.id}/`;
 }
 
 const loadProjects = async () => {
