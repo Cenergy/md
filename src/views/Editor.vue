@@ -769,7 +769,7 @@ const uploadFile = (file, cb) => {
         let url = res.fileName || res.url;
         if (!url && res.fileName) {
           let t = getHost();
-          url = `${t}/p/${res.fileName}`;
+          url = `${t}/uploads/${res.fileName}`;
         }
         cb(url);
       } else {
