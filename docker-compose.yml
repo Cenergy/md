@@ -16,6 +16,6 @@ services:
       # Persist Database
       - ./server/data:/app/server/data
       # Persist Uploads
-      - ./uploads:/app/uploads
+      - ./server/uploads:/app/server/uploads
       # Persist Generated Docs (Optional)
       - ./docs:/app/docs

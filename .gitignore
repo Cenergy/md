@@ -10,3 +10,4 @@ docs/
 .env
 *.sqlite
 
+server/uploads/
