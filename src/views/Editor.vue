@@ -223,22 +223,46 @@
           ><i class="close-btn-icon iconfont icon-guanbianniu"></i
         ></span>
       </div>
-      <div class="drag-zone center"><h4>拖拽你的文件集合到这里</h4></div>
-      <div class="shopcar-list">
-        <div class="row" v-for="(file, index) in uploadFiles" :key="file.path">
-          {{ file.path }}
-          <div class="el-row">
-            <div class="el-col el-col-16">
-              <button class="green" @click="copyUploadFile(file)">
-                <i class="iconfont icon-fuzhi1"></i></button
-              ><button class="red" @click="deleteUploadFile(index)">
-                <i class="iconfont icon-shanchu"></i>
-              </button>
-            </div>
-            <div class="el-col el-col-8"></div>
-          </div>
+      
+      <el-upload
+        class="upload-demo"
+        drag
+        action="#"
+        multiple
+        :http-request="handleUploadRequest"
+        v-model:file-list="uploadFiles"
+        :on-success="handleUploadSuccess"
+        :on-error="handleUploadError"
+      >
+        <i class="iconfont icon-shangchuan" style="font-size: 48px; color: #c0c4cc;"></i>
+        <div class="el-upload__text">
+          Drop file here or <em>click to upload</em>
         </div>
-      </div>
+        <template #file="{ file }">
+          <div class="file-item-row">
+            <span class="file-name">{{ file.name }}</span>
+            <div class="file-actions">
+              <el-button 
+                v-if="file.status === 'success'" 
+                type="success" 
+                size="small" 
+                circle 
+                @click="copyUploadFile(file)"
+              >
+                <i class="iconfont icon-fuzhi1"></i>
+              </el-button>
+              <el-button 
+                type="danger" 
+                size="small" 
+                circle 
+                @click="deleteUploadFile(file)"
+              >
+                <i class="iconfont icon-shanchu"></i>
+              </el-button>
+            </div>
+          </div>
+        </template>
+      </el-upload>
     </div>
   </div>
 </template>
@@ -784,22 +808,66 @@ const uploadFile = (file, cb) => {
     });
 };
 
+const handleUploadRequest = (options) => {
+  const { file, onSuccess, onError } = options;
+  uploading.value = true;
+  let fd = new FormData();
+  fd.append("avatar", file);
+  fd.append("token", getToken());
+  
+  uploadImageFile(fd)
+    .then((res) => {
+      if (res && (res.fileName || res.url)) {
+        let url = res.fileName || res.url;
+        if (!url && res.fileName) {
+          let t = getHost();
+          url = `${t}/uploads/${res.fileName}`;
+        }
+        onSuccess({ url: url });
+      } else {
+        onError(new Error("Unknown response format"));
+      }
+      uploading.value = false;
+    })
+    .catch((err) => {
+      onError(err);
+      uploading.value = false;
+    });
+};
+
+const handleUploadSuccess = (response, file, fileList) => {
+  if (response && response.url) {
+    file.url = response.url;
+    success("上传成功");
+  }
+};
+
+const handleUploadError = (err, file, fileList) => {
+  error("上传失败: " + (err.message || "未知错误"));
+};
+
 const copyUploadFile = (file) => {
-  if (!file.url) {
+  if (!file.url && !file.response?.url) {
     warn("文件链接无效");
     return;
   }
+  // Element Plus file object structure compatibility
+  const url = file.url || file.response?.url;
   const prefixURL = "";
-  const isImage = file.type && file.type.startsWith("image/");
-  const name = file.path ? file.path.split(/[\\/]/).pop() : "file";
-  const text = isImage
-    ? `![${name}](${prefixURL}${file.url})`
-    : `[${name}](${prefixURL}${file.url})`;
+  // Check type from file.raw or file.name extension
+  const isImg = /\.(jpg|jpeg|png|gif|bmp|webp|svg)$/i.test(file.name);
+  const name = file.name || "file";
+  const text = isImg
+    ? `![${name}](${prefixURL}${url})`
+    : `[${name}](${prefixURL}${url})`;
   copyValue(text);
 };
 
-const deleteUploadFile = (index) => {
-  uploadFiles.value.splice(index, 1);
+const deleteUploadFile = (file) => {
+  const index = uploadFiles.value.indexOf(file);
+  if (index !== -1) {
+    uploadFiles.value.splice(index, 1);
+  }
 };
 
 const importMd = () => {
@@ -882,41 +950,6 @@ onMounted(async () => {
     loadMonaco();
 
     getAllSliders();
-
-    // Initialize FileDND
-    if (window.filednd && window.filednd.FileDND) {
-      new window.filednd.FileDND(document.querySelector(".drag-zone")).dnd(
-        (files) => {
-          if (files.length) {
-            let i = 0;
-            let list = [];
-            uploading.value = true;
-            const process = () => {
-              if (i < files.length) {
-                let fileItem = files[i];
-                uploadFile(fileItem, (url) => {
-                  list.push({
-                    path: fileItem.path,
-                    url: url,
-                    type: fileItem.type,
-                  });
-                  i++;
-                  process();
-                });
-              } else {
-                setTimeout(() => {
-                  uploading.value = false;
-                }, 200);
-                uploadFiles.value = uploadFiles.value.concat(list);
-              }
-            };
-            process();
-          } else {
-            warn("你拖拽的文件里没有找到任何的文件");
-          }
-        },
-      );
-    }
 
     // Key binding
     document.addEventListener("keydown", (e) => {
@@ -1030,5 +1063,25 @@ onBeforeUnmount(() => {
 .shopcar-list {
   flex: 1;
   overflow-y: auto;
+}
+
+.file-item-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 5px 0;
+}
+
+.file-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 180px;
+}
+
+.file-actions {
+  display: flex;
+  gap: 5px;
 }
 </style>

@@ -37,22 +37,13 @@ export async function loadEditorPlugins() {
   await import("@/utils/prettier-loader.js");
   await import("@/lib/domclickoutside.min.js");
   
-  try {
-    // 关键修复：导入 ESM 格式的 mdpress-monaco-editor，并手动挂载到 window.mdpress
-    // 因为 ESM 模块不会自动污染全局变量，而 mdeditorplugins.js 依赖 window.mdpress
-    const mdpressModule = await import("mdpress-monaco-editor");
-    window.mdpress = mdpressModule.default || mdpressModule;
-    
-    await import("@/lib/mdeditorplugins.js");
-  } catch (e) {
-    console.error("Failed to load mdpress plugins", e);
-  }
-
-  try {
-    await import("@/lib/filednd.min.js");
-  } catch (e) {
-    console.error("Failed to load filednd", e);
-  }
+  // 关键修复：导入 ESM 格式的 mdpress-monaco-editor，并手动挂载到 window.mdpress
+  // 因为 ESM 模块不会自动污染全局变量，而 mdeditorplugins.js 依赖 window.mdpress
+  const mdpressModule = await import("mdpress-monaco-editor");
+  window.mdpress = mdpressModule;
+  
+  await import("@/lib/mdeditorplugins.js");
+  await import("@/lib/filednd.min.js");
 
   window.__editorPluginsLoaded = true;
 }
