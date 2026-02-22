@@ -1,18 +1,9 @@
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 import path from "path";
-import { exec } from "child_process";
-
-const localBuildPlugin = () => ({
-  name: "local-build-plugin",
-  configureServer(server) {
-    // Legacy build endpoint removed in favor of /api/build queue system
-    // This plugin is now just a placeholder or can be removed entirely if safe
-  },
-});
 
 export default defineConfig({
-  plugins: [vue(), localBuildPlugin()],
+  plugins: [vue()],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
@@ -29,7 +20,7 @@ export default defineConfig({
         // rewrite: (path) => path.replace(/^\/glicon/, ''),
         changeOrigin: true,
         secure: false,
-      },
+      }
     },
   },
 });

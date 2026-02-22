@@ -74,7 +74,7 @@ export async function queryProject({ projectId, token }) {
       projectId,
       token: token || getToken(),
     });
-    return response;
+    return response.data;
   } catch (error) {
     console.error("Project query failed:", error);
     throw error;
