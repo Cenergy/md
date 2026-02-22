@@ -372,10 +372,10 @@ const getProject = () => {
 
   queryProject({ projectId: projectId.value, token: getToken() }).then(
     (res) => {
-      if (res.name) {
+      if (res && res.name) {
         projectName.value = res.name;
       }
-      hero.value = res.hero || {};
+      hero.value = (res && res.hero) || {};
     },
   );
 };
@@ -743,6 +743,8 @@ const docItemClick = (slider) => {
       item: slider.link,
       name: slider.name,
     }).then((res) => {
+        console.log("🚀 ~ docItemClick ~ hero:", hero.value)
+
       const editorConfig = {
         theme: hero.value.theme,
         getLeftNav: () => leftnav.value,
