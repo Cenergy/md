@@ -21,45 +21,54 @@
           v-for="(project, index) in projects"
           :key="project.id"
           class="project-card"
-          shadow="always"
+          :body-style="{ padding: '0px', display: 'flex', flexDirection: 'column', height: '100%' }"
         >
-          <template #header>
-            <div class="clearfix">
-              <span
-                ><i class="iconfont icon-xiangmu"></i>&nbsp;{{ index + 1 }}.{{
-                  project.name
-                }}</span
-              >
+          <div class="project-header">
+            <div class="project-title">
+              <i class="iconfont icon-xiangmu"></i>
+              <span>{{ project.name }}</span>
             </div>
-          </template>
-          <div>
-            <div style="padding: 4px">
-              <el-button type="primary" link @click="handleProfile(project)"
-                >基本信息</el-button
-              >
-              <el-button type="primary" link @click="handleEdit(project)"
-                >编辑</el-button
-              >
-              <el-button type="primary" link @click="handleDocs(project)"
-                >文档</el-button
-              >
-              <el-button type="primary" link @click="handleCollaborate(project)"
-                >协作</el-button
-              >
+            <div class="project-index">#{{ index + 1 }}</div>
+          </div>
+          
+          <div class="project-body">
+            <div class="action-grid">
+              <div class="action-item" @click="handleProfile(project)">
+                <i class="iconfont icon-xiugai"></i>
+                <span>配置</span>
+              </div>
+              <div class="action-item" @click="handleEdit(project)">
+                <i class="iconfont icon-file-markdown"></i>
+                <span>编辑</span>
+              </div>
+              <div class="action-item" @click="handleDocs(project)">
+                <i class="iconfont icon-jiaocheng"></i>
+                <span>文档</span>
+              </div>
+              <div class="action-item" @click="handleCollaborate(project)">
+                <i class="iconfont icon-renren"></i>
+                <span>协作</span>
+              </div>
             </div>
-            <br />
-            <el-button :loading="project.loading" @click="handleBuild(project)"
-              >编译项目</el-button
-            >
-            &nbsp;
-            <a
-              :href="project.url"
-              target="_blank"
-              class="el-link el-link--default is-underline"
-            >
-              <span class="el-link--inner">浏览地址</span>
+            
+            <div class="build-section">
+              <el-button 
+                type="primary" 
+                class="build-btn" 
+                :loading="project.loading" 
+                @click="handleBuild(project)"
+                round
+              >
+                <i class="iconfont icon-vitejs" style="margin-right: 5px"></i> 编译发布
+              </el-button>
+            </div>
+          </div>
+
+          <div class="project-footer">
+            <span class="project-id">ID: {{ project.id }}</span>
+            <a :href="project.url" target="_blank" class="visit-link">
+              浏览网站 <i class="iconfont icon-fuzhi1"></i>
             </a>
-            <br /><br />项目编号:{{ project.id }}<br />
           </div>
         </el-card>
       </div>
@@ -72,39 +81,45 @@
 
       <div class="project-list" v-if="collaborateProjects.length > 0">
         <el-card
-          v-for="(project, index) in collaborateProjects"
+          v-for="project in collaborateProjects"
           :key="project.id"
-          class="project-card"
-          shadow="always"
+          class="project-card collaborate-card"
+          :body-style="{ padding: '0px', display: 'flex', flexDirection: 'column', height: '100%' }"
         >
-          <template #header>
-            <div class="clearfix">
-              <span
-                ><i class="iconfont icon-xiangmu"></i>&nbsp;协作:{{
-                  index + 1
-                }}.{{ project.name }}</span
-              >
+          <div class="project-header">
+            <div class="project-title">
+              <i class="iconfont icon-xiangmu"></i>
+              <span>{{ project.name }}</span>
             </div>
-          </template>
-          <div>
-            <div style="padding: 4px">
-              <el-button type="primary" link @click="handleDocs(project)"
-                >文档</el-button
-              >
+            <div class="project-tag">协作</div>
+          </div>
+          
+          <div class="project-body">
+            <div class="action-grid">
+              <div class="action-item" @click="handleDocs(project)">
+                <i class="iconfont icon-jiaocheng"></i>
+                <span>文档</span>
+              </div>
             </div>
-            <br />
-            <el-button :loading="project.loading" @click="handleBuild(project)"
-              >编译项目</el-button
-            >
-            &nbsp;
-            <a
-              :href="project.url"
-              target="_blank"
-              class="el-link el-link--default is-underline"
-            >
-              <span class="el-link--inner">浏览地址</span>
+            
+            <div class="build-section">
+              <el-button 
+                type="primary" 
+                class="build-btn" 
+                :loading="project.loading" 
+                @click="handleBuild(project)"
+                round
+              >
+                <i class="iconfont icon-vitejs" style="margin-right: 5px"></i> 编译发布
+              </el-button>
+            </div>
+          </div>
+
+          <div class="project-footer">
+            <span class="project-id">ID: {{ project.id }}</span>
+            <a :href="project.url" target="_blank" class="visit-link">
+              浏览网站 <i class="iconfont icon-fuzhi1"></i>
             </a>
-            <br /><br />项目编号:{{ project.id }}<br />
           </div>
         </el-card>
       </div>
@@ -114,7 +129,7 @@
     <el-dialog
       :title="isEdit ? '编辑项目' : '添加项目'"
       v-model="dialogVisible"
-      width="30%"
+      class="responsive-dialog"
     >
       <el-form :model="form" label-width="80px">
         <el-form-item label="项目名称">
@@ -139,6 +154,7 @@
       v-model="profileDrawerVisible"
       :title="currentProject ? currentProject.name : ''"
       size="30%"
+      class="responsive-drawer"
     >
       <div
         aria-modal="true"
@@ -224,15 +240,15 @@
                   "
                 >
                   <el-row :gutter="10" style="margin-bottom: 5px">
-                    <el-col :span="3">标题</el-col>
-                    <el-col :span="18">
+                    <el-col :span="3" :xs="24" class="mobile-label">标题</el-col>
+                    <el-col :span="15" :xs="18">
                       <el-input
                         v-model="feature.title"
                         placeholder="Focus on Your Content"
                         size="mini"
                       ></el-input>
                     </el-col>
-                    <el-col :span="3">
+                    <el-col :span="6" :xs="6">
                       <el-button
                         type="danger"
                         size="mini"
@@ -242,8 +258,8 @@
                     </el-col>
                   </el-row>
                   <el-row :gutter="10">
-                    <el-col :span="3">描述</el-col>
-                    <el-col :span="18">
+                    <el-col :span="3" :xs="24" class="mobile-label">描述</el-col>
+                    <el-col :span="18" :xs="24">
                       <el-input
                         type="textarea"
                         v-model="feature.details"
@@ -293,13 +309,14 @@
       v-model="collaborateDrawerVisible"
       :title="linkUserTitle"
       size="30%"
+      class="responsive-drawer"
     >
-      <div style="padding: 20px">
-        <div style="margin-bottom: 20px">
+      <div class="drawer-content">
+        <div class="search-box">
           <el-input
             v-model="searchKeywords"
             placeholder="输入邮箱搜索用户"
-            style="width: 200px; margin-right: 10px"
+            class="search-input"
           ></el-input>
           <el-button
             type="primary"
@@ -310,20 +327,15 @@
         </div>
         <div
           v-if="searchData.length > 0"
-          style="
-            margin-bottom: 20px;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 10px;
-          "
+          class="search-results"
         >
           <h4>搜索结果</h4>
           <div
             v-for="(user, idx) in searchData"
             :key="user.id"
-            class="flex"
-            style="justify-content: space-between; margin-bottom: 5px"
+            class="user-item"
           >
-            <span>{{ user.email }}</span>
+            <span class="user-email" :title="user.email">{{ user.email }}</span>
             <el-button
               type="success"
               size="small"
@@ -337,10 +349,9 @@
         <div
           v-for="user in linkUsers"
           :key="user.id"
-          class="flex"
-          style="justify-content: space-between; margin-bottom: 5px"
+          class="user-item"
         >
-          <span>{{ user.email }}</span>
+          <span class="user-email" :title="user.email">{{ user.email }}</span>
           <el-button
             type="danger"
             size="small"
@@ -664,8 +675,11 @@ onMounted(() => {
 /* Reuse styles from index.css and project.css conceptually, or just basic Element Plus + Flex */
 .projects-page {
   background-color: #f5f7f9;
-  min-height: 100vh;
-  padding-top: 20px; /* Add some spacing from header */
+  /* Ensure scrollability */
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  height: 100vh;
+  box-sizing: border-box;
 }
 
 .container {
@@ -694,24 +708,184 @@ onMounted(() => {
 
 @media (max-width: 768px) {
   .project-list {
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
   }
   
   .container {
-    padding: 0 15px;
+    padding: 0 12px;
+  }
+
+  .action-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  
+  .project-body {
+    padding: 16px;
+  }
+
+  .project-header {
+    padding: 12px 16px;
   }
 }
 
 .project-card {
-  border-radius: 8px; /* More modern radius */
-  transition: all 0.3s;
-  border: none;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  border: 1px solid #f0f0f0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  /* Ensure card doesn't overflow container width */
+  min-width: 0;
 }
 
 .project-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+  border-color: rgba(22, 93, 255, 0.2);
+}
+
+.project-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid #f5f5f5;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #fafafa;
+}
+
+.project-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-color);
+  display: flex;
+  align-items: center;
+  /* Flexible width handling */
+  flex: 1;
+  min-width: 0;
+  margin-right: 12px;
+}
+
+.project-title span {
+  /* Proper text truncation */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.project-title .iconfont {
+  margin-right: 8px;
+  color: var(--primary-color);
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.project-index {
+  font-size: 14px;
+  color: #999;
+  font-family: monospace;
+  background: #f0f0f0;
+  padding: 2px 8px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.project-tag {
+  font-size: 12px;
+  color: #fff;
+  background: var(--success-color);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.project-body {
+  padding: 20px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.action-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.action-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--secondary-color);
+  background: #f9f9f9;
+}
+
+.action-item:hover {
+  background: #eef2ff;
+  color: var(--primary-color);
+}
+
+.action-item .iconfont {
+  font-size: 24px;
+  margin-bottom: 5px;
+}
+
+.action-item span {
+  font-size: 12px;
+}
+
+.build-section {
+  margin-top: auto;
+}
+
+.build-btn {
+  width: 100%;
+  height: 40px;
+  font-size: 15px;
+  font-weight: 500;
+  box-shadow: 0 4px 6px rgba(22, 93, 255, 0.2);
+}
+
+.project-footer {
+  padding: 12px 20px;
+  border-top: 1px solid #f5f5f5;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: #999;
+  background: #fafafa;
+}
+
+.project-id {
+  font-family: monospace;
+}
+
+.visit-link {
+  color: var(--secondary-color);
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.visit-link:hover {
+  color: var(--primary-color);
+}
+
+.visit-link .iconfont {
+  margin-left: 4px;
+  font-size: 14px;
 }
 
 .clearfix:before,
@@ -721,5 +895,124 @@ onMounted(() => {
 }
 .clearfix:after {
   clear: both;
+}
+</style>
+
+<style>
+/* Global styles for responsive dialog - placed outside scoped block */
+.responsive-dialog {
+  width: 30% !important; /* Default desktop width */
+}
+
+@media (max-width: 768px) {
+  .responsive-dialog {
+    width: 90% !important;
+    margin-top: 20vh !important;
+  }
+  
+  /* Stack label and input on mobile */
+  .responsive-dialog .el-form-item {
+    display: block !important;
+    margin-bottom: 20px;
+  }
+  
+  .responsive-dialog .el-form-item__label {
+    width: 100% !important;
+    text-align: left !important;
+    display: block !important;
+    float: none !important;
+    padding: 0 0 8px 0 !important;
+    line-height: normal !important;
+  }
+  
+  .responsive-dialog .el-form-item__content {
+    margin-left: 0 !important;
+    display: block !important;
+  }
+}
+
+/* Responsive Drawer Styles */
+.responsive-drawer {
+  width: 30% !important;
+}
+
+@media (max-width: 768px) {
+  .responsive-drawer {
+    /* Set width to 85% instead of 100% to allow closing by clicking outside */
+    width: 85% !important;
+  }
+  
+  .responsive-drawer .el-form-item {
+    display: block !important;
+    margin-bottom: 20px;
+  }
+  
+  .responsive-drawer .el-form-item__label {
+    width: 100% !important;
+    text-align: left !important;
+    display: block !important;
+    float: none !important;
+    padding: 0 0 8px 0 !important;
+    line-height: normal !important;
+  }
+  
+  .responsive-drawer .el-form-item__content {
+    margin-left: 0 !important;
+    display: block !important;
+  }
+
+  .mobile-label {
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #606266;
+    font-size: 14px;
+    line-height: 20px;
+  }
+}
+
+/* Collaborate Drawer Styles */
+.drawer-content {
+  padding: 20px;
+}
+
+.search-box {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.search-input {
+  flex: 1;
+}
+
+.search-results {
+  margin-bottom: 20px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+}
+
+.user-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  padding: 8px;
+  background-color: #f9f9f9;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.user-item:hover {
+  background-color: #f0f2f5;
+}
+
+.user-email {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-right: 10px;
+  font-size: 14px;
+  color: #606266;
 }
 </style>
