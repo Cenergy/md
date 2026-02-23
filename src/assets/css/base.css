@@ -339,8 +339,9 @@ a.active {
   text-decoration: underline;
 }
 .content-container {
-  min-height: 900px;
-  min-width: 1300px;
+  min-height: calc(100vh - 100px);
+  width: 100%;
+  max-width: 100%;
 }
 .m-message-container {
   z-index: 20001 !important;
