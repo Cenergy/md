@@ -2,54 +2,54 @@
   <div class="main">
     <Header />
     <div class="home">
-      <div class="container">
+      <div class="container hero-container">
         <div class="hero">
           <h2>在线版的VitePress</h2>
           <h6>线上直接编译,体验原汁原味的VitePress</h6>
+          <router-link to="/projects" class="btn btn-white">
+            <i aria-hidden="true" class="iconfont icon-xiangmu"></i><span>新建项目</span>
+          </router-link>
         </div>
-      </div>
-      <div class="container">
-        <router-link to="/projects" class="btn btn-white">
-          <i aria-hidden="true" class="iconfont icon-xiangmu"></i><span>新建项目</span>
-        </router-link>
       </div>
     </div>
-    <div class="blank"></div>
-    <div class="container features flex">
-      <div class="col-md-3 col-sm-6 res-margin item">
-        <div class="icon icon-bg-md grdnt-purple center">
-          <i class="iconfont icon-file-markdown"></i>
+    
+    <div class="features-section">
+      <div class="container features">
+        <div class="item">
+          <div class="icon-wrapper">
+            <i class="iconfont icon-file-markdown"></i>
+          </div>
+          <div class="text">
+            <h2>Markdown</h2>
+            <p>线上直接编辑你的 Markdown。</p>
+          </div>
         </div>
-        <div class="text center">
-          <h2>markdown</h2>
-          <p>线上直接编辑你的markdown.</p>
+        <div class="item">
+          <div class="icon-wrapper">
+            <i class="iconfont icon-jishu"></i>
+          </div>
+          <div class="text">
+            <h2>一键编译</h2>
+            <p>线上一键就可以编译你的项目。</p>
+          </div>
         </div>
-      </div>
-      <div class="col-md-3 col-sm-6 res-margin item">
-        <div class="icon icon-bg-md grdnt-purple center">
-          <i class="iconfont icon-jishu"></i>
+        <div class="item">
+          <div class="icon-wrapper">
+            <i class="iconfont icon-renren"></i>
+          </div>
+          <div class="text">
+            <h2>多人协作</h2>
+            <p>可以邀请好友或者同事来一起来快乐的写文档。</p>
+          </div>
         </div>
-        <div class="text center">
-          <h2>一键编译</h2>
-          <p>线上一键就可以编译你的项目.</p>
-        </div>
-      </div>
-      <div class="col-md-3 col-sm-6 item">
-        <div class="icon icon-bg-md grdnt-purple center">
-          <i class="iconfont icon-renren"></i>
-        </div>
-        <div class="text center">
-          <h2>多人协作</h2>
-          <p>可以邀请好友或者同事来一起来快乐的写文档.</p>
-        </div>
-      </div>
-      <div class="col-md-3 col-sm-6 item">
-        <div class="icon icon-bg-md grdnt-purple center">
-          <i class="iconfont icon-vitejs"></i>
-        </div>
-        <div class="text center">
-          <h2>原味的VitePress</h2>
-          <p>将你的项目文档生成VitePress并自动托管.</p>
+        <div class="item">
+          <div class="icon-wrapper">
+            <i class="iconfont icon-vitejs"></i>
+          </div>
+          <div class="text">
+            <h2>原味 VitePress</h2>
+            <p>将你的项目文档生成 VitePress 并自动托管。</p>
+          </div>
         </div>
       </div>
     </div>
@@ -58,141 +58,156 @@
 
 <script setup>
 import Header from '@/components/Header.vue'
-// Logic can be added here if needed
 </script>
 
 <style scoped>
-/* Copied and adapted from public/index-3018ea7565.css */
-a {
-  color: rgba(60, 60, 67);
-  text-decoration: none;
+.main {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 .home {
-  margin-top: -60px;
-  padding-top: 100px;
-  height: 400px;
-  background: #10b98117;
-  /* background-image: url(../img/bg2.png);  -- Assuming image might be missing or needs correct path */
-  background-size: cover;
-}
-
-.hero {
-  width: 50%;
-  margin-top: 80px;
-  font-size: 1.75em;
-}
-
-.btn {
-  display: inline-block;
+  padding-top: 60px; /* Space for fixed header */
+  background: linear-gradient(135deg, rgba(22, 93, 255, 0.05) 0%, rgba(224, 242, 254, 0.5) 100%);
+  min-height: 500px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
-  position: relative;
-  text-transform: uppercase;
-  border-radius: 70px;
-  color: #fff;
-  padding: 8px 28px;
-  background: 0 0;
-  font-family: "open sans";
-  font-size: .9em;
-  transition: .5s;
-  -webkit-transition: .5s;
-  border: 0;
-  margin-top: 5px;
-  margin-right: 10px;
-  min-width: 100px;
-}
-
-.btn-white {
-  background-color: #fff;
-  border: 1px solid #fff;
-  color: #10b981;
-  text-decoration: none;
-}
-
-.btn-white span {
-  margin-left: 10px;
-  font-size: 16px;
-}
-
-.blank {
-  height: 60px;
-}
-
-.features {
-  color: #10b98182;
-}
-
-.features .item {
-  padding: 10px;
-  width: 20%;
-  height: 300px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, .1);
-  margin: 20px;
-  border: 1px solid #efefef;
-}
-
-.features .item:hover {
-  box-shadow: 0 0 68px rgba(0, 0, 0, .2);
-}
-
-.features .item .icon {
-  font-size: 1.5em;
-  border-radius: 50%;
-  text-align: center;
-  line-height: 120px;
-}
-
-.features .item .icon .iconfont {
-  font-size: 80px;
-}
-
-.features .item .text {
-  color: #000;
-}
-
-/* Header styles copied from Projects.vue reference or similar */
-.header {
-  background: #fff;
-  box-shadow: 0 1px 4px rgba(0,21,41,.08);
-  height: 60px;
-  line-height: 60px;
-  position: relative;
-  z-index: 10;
 }
 
 .container {
-  width: 1200px;
+  max-width: 1200px;
+  width: 100%;
   margin: 0 auto;
+  padding: 0 20px;
+  box-sizing: border-box;
 }
 
-.flex {
+.hero h2 {
+  font-size: 3em;
+  margin-bottom: 10px;
+  color: var(--text-color);
+  font-weight: 700;
+}
+
+.hero h6 {
+  font-size: 1.5em;
+  color: var(--secondary-color);
+  margin-bottom: 30px;
+  font-weight: 400;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  padding: 12px 32px;
+  font-size: 1.1em;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.btn-white {
+  background-color: var(--primary-color);
+  color: white;
+  border: 2px solid var(--primary-color);
+  box-shadow: 0 4px 6px -1px rgba(22, 93, 255, 0.3);
+}
+
+.btn-white:hover {
+  background-color: #1352e2;
+  border-color: #1352e2;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 10px -1px rgba(22, 93, 255, 0.4);
+}
+
+.btn-white span {
+  margin-left: 8px;
+}
+
+.features-section {
+  padding: 80px 0;
+  background-color: #fff;
+}
+
+.features {
+  display: grid;
+  gap: 40px;
+  /* Default to multi-column for larger screens */
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.features .item {
+  padding: 30px;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: var(--box-shadow);
+  transition: all 0.3s ease;
   display: flex;
-}
-
-.header .logo a {
-  font-size: 24px;
-  color: #333;
-  text-decoration: none;
-  font-weight: bold;
-  margin-right: 40px;
-}
-
-.header .menu .item {
-  margin: 0 20px;
-}
-
-.header .menu .item a {
-  color: #666;
-  text-decoration: none;
-  font-size: 16px;
-}
-
-.header .menu .item a:hover {
-  color: #10b981;
-}
-
-/* Utility classes that might be missing if scoped */
-.center {
+  flex-direction: column;
+  align-items: center;
   text-align: center;
+  border: 1px solid #f3f4f6;
+}
+
+.features .item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.icon-wrapper {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: rgba(22, 93, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  color: var(--primary-color);
+}
+
+.features .item .iconfont {
+  font-size: 40px;
+}
+
+.features .text h2 {
+  font-size: 1.5em;
+  margin-bottom: 10px;
+  color: var(--text-color);
+}
+
+.features .text p {
+  color: var(--secondary-color);
+  line-height: 1.6;
+}
+
+/* Responsive Breakpoints */
+@media (max-width: 1200px) {
+  .features {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .hero h2 {
+    font-size: 2em;
+  }
+  .hero h6 {
+    font-size: 1.2em;
+  }
+  
+  .features {
+    grid-template-columns: 1fr; /* Single column for mobile */
+  }
+  
+  .features-section {
+    padding: 40px 0;
+  }
 }
 </style>
