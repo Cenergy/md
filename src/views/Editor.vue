@@ -36,9 +36,6 @@
     <div
       class="content flex"
       ref="contentRef"
-      :style="{
-        height: hideHeader ? 'calc(100% - 32px)' : 'calc(100% - 92px)',
-      }"
     >
       <div class="left-nav animate__animated" ref="leftnav">
         <div class="link-panel">
@@ -1073,7 +1070,23 @@ onBeforeUnmount(() => {
   height: 100%;
   width: 100%;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
+
+/* Ensure content fills remaining vertical space */
+.content {
+  flex: 1;
+  min-height: 0; /* Critical for nested scroll containers in flex column */
+  overflow: hidden;
+}
+
+/* Prevent header/menu from shrinking */
+.header,
+.menu-container {
+  flex-shrink: 0;
+}
+
 .flex {
   display: flex;
 }
