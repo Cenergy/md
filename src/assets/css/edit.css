@@ -50,12 +50,15 @@ body {
   color: #10b981;
 }
 .content {
-  height: calc(100% - 120px);
+  /* height handled by flex in Editor.vue */
+  display: flex;
 }
 .left-nav {
   width: 300px;
   height: 100%;
   background-color: #f6f6f7;
+  display: flex;
+  flex-direction: column;
 }
 .left-nav-float {
   position: absolute;
@@ -63,15 +66,18 @@ body {
   bottom: 0;
 }
 .right-nav {
-  width: calc(100% - 300px);
+  flex: 1;
+  width: 0; /* ensure it doesn't overflow flex container */
   height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 .slider-content {
   padding-left: 20px;
   font-weight: 500;
   color: rgba(60, 60, 67, 0.75);
   font-size: 14px;
-  height: calc(100% - 60px);
+  flex: 1;
   overflow: auto;
 }
 .slider-content .group {
@@ -109,13 +115,17 @@ body {
   display: none;
 }
 .edit-container {
-  height: 100%;
+  /* height handled by flex in Editor.vue */
+  flex: 1;
+  min-height: 0;
+  display: flex;
 }
 .link-panel {
   margin-bottom: 4px;
 }
 .edit-panel {
-  width: calc(100% - 260px);
+  flex: 1;
+  width: 0; /* ensure it doesn't overflow flex container */
 }
 .editor-desc {
   font-size: 50px;

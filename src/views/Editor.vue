@@ -120,12 +120,6 @@
       <div
         class="right-nav"
         ref="editpanel"
-        :style="{
-          flex: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          width: 0, // Ensure flex item shrinks properly
-        }"
       >
         <div class="tools">
           <el-button size="mini" @click="importMd">导入Markdown</el-button>
@@ -1209,5 +1203,10 @@ onBeforeUnmount(() => {
     margin-left: 0 !important;
     display: block !important;
   }
+}
+
+#editor {
+  display: flex;
+  flex-direction: column;
 }
 </style>
