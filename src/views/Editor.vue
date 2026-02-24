@@ -1165,4 +1165,36 @@ onBeforeUnmount(() => {
   display: flex;
   gap: 5px;
 }
+
+/* Global styles for responsive dialog - copied from Projects.vue */
+.responsive-dialog {
+  width: 30% !important; /* Default desktop width */
+}
+
+@media (max-width: 768px) {
+  .responsive-dialog {
+    width: 90% !important;
+    margin-top: 20vh !important;
+  }
+  
+  /* Stack label and input on mobile */
+  .responsive-dialog .el-form-item {
+    display: block !important;
+    margin-bottom: 20px;
+  }
+  
+  .responsive-dialog .el-form-item__label {
+    width: 100% !important;
+    text-align: left !important;
+    display: block !important;
+    float: none !important;
+    padding: 0 0 8px 0 !important;
+    line-height: normal !important;
+  }
+  
+  .responsive-dialog .el-form-item__content {
+    margin-left: 0 !important;
+    display: block !important;
+  }
+}
 </style>
