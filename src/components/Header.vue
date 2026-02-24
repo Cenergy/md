@@ -7,10 +7,10 @@
       
       <!-- Desktop Menu -->
       <div class="menu flex desktop-menu">
-        <div class="item"><router-link to="/start">教程</router-link></div>
-        <div class="item"><router-link to="/projects">项目</router-link></div>
-        <div class="item"><router-link to="/problem">常见问题</router-link></div>
-        <div class="item"><router-link to="/about">关于</router-link></div>
+        <div class="item"><router-link to="/start"><i class="iconfont icon-jiaocheng"></i> 教程</router-link></div>
+        <div class="item"><router-link to="/projects"><i class="iconfont icon-xiangmu"></i> 项目</router-link></div>
+        <div class="item"><router-link to="/problem"><i class="iconfont icon-gonggao"></i> 常见问题</router-link></div>
+        <div class="item"><router-link to="/about"><i class="iconfont icon-renren"></i> 关于</router-link></div>
       </div>
       
       <div class="users flex">
@@ -27,10 +27,10 @@
     <!-- Mobile Menu Dropdown -->
     <transition name="slide-fade">
       <div class="mobile-menu" v-if="isMenuOpen">
-        <div class="item" @click="closeMenu"><router-link to="/start">教程</router-link></div>
-        <div class="item" @click="closeMenu"><router-link to="/projects">项目</router-link></div>
-        <div class="item" @click="closeMenu"><router-link to="/problem">常见问题</router-link></div>
-        <div class="item" @click="closeMenu"><router-link to="/about">关于</router-link></div>
+        <div class="item" @click="closeMenu"><router-link to="/start"><i class="iconfont icon-jiaocheng"></i> 教程</router-link></div>
+        <div class="item" @click="closeMenu"><router-link to="/projects"><i class="iconfont icon-xiangmu"></i> 项目</router-link></div>
+        <div class="item" @click="closeMenu"><router-link to="/problem"><i class="iconfont icon-gonggao"></i> 常见问题</router-link></div>
+        <div class="item" @click="closeMenu"><router-link to="/about"><i class="iconfont icon-renren"></i> 关于</router-link></div>
       </div>
     </transition>
   </div>
@@ -125,6 +125,12 @@ const closeMenu = () => {
   color: var(--primary-color);
 }
 
+.header .menu .item i {
+  margin-right: 4px;
+  font-size: 18px;
+  vertical-align: -2px;
+}
+
 .users .item {
   margin-left: 20px;
   cursor: pointer;
@@ -180,6 +186,12 @@ const closeMenu = () => {
 .mobile-menu .item a:hover,
 .mobile-menu .item a.router-link-active {
   color: var(--primary-color);
+}
+
+.mobile-menu .item i {
+  margin-right: 8px;
+  font-size: 18px;
+  vertical-align: -2px;
 }
 
 /* Transition for mobile menu */
