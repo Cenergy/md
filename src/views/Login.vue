@@ -177,8 +177,11 @@ const submitInfo = async () => {
     padding: 10px 0;
 }
 .container {
-    width: 1200px;
+    width: 100%;
+    max-width: 1200px;
     margin: 0 auto;
+    padding: 0 20px;
+    box-sizing: border-box;
 }
 .logo a {
     text-decoration: none;
@@ -187,67 +190,114 @@ const submitInfo = async () => {
     color: #333;
 }
 
+.main {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
 button {
-    height: 28px;
+    height: 36px;
 }
 
 .login {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    margin-left: -170px;
-    margin-top: -250px;
-    width: 340px;
-    height: 420px;
-    box-shadow: -2px 2px 30px #bebebe, -15px -15px 30px #fff;
-    border-radius: 10px;
+    position: relative;
+    margin: auto; /* Center vertically and horizontally in flex container */
+    width: 100%;
+    max-width: 400px;
+    min-height: 420px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
     background: #fff;
+    padding: 20px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
 }
 
 .login-container {
-    height: calc(100% - 40px);
-    padding: 4px;
+    flex: 1;
+    padding: 10px;
 }
 
 .login-container .item {
     width: 100%;
-    /* height: 100%; Removed because it breaks flex flow for inputs */
 }
 
 .login-header {
-    font-size: 20px;
-    padding: 15px 0;
+    font-size: 24px;
+    padding: 20px 0;
     font-weight: 700;
+    color: #333;
 }
 
 .login-form {
-    height: 280px;
+    /* height: 280px; Remove fixed height */
 }
 
 .login-panel {
-    width: 90%;
+    width: 100%;
     margin: auto;
 }
 
 .login-content {
-    padding: 10px;
+    padding: 10px 0;
 }
 
 .login-content .item {
-    margin-top: 5px;
+    margin-top: 15px;
     width: 100%;
+}
+
+.label {
+    margin-bottom: 6px;
+    font-weight: 500;
+    color: #606266;
+    font-size: 14px;
 }
 
 input.value {
-    height: 24px;
-    border: 1px solid #b3b3b3;
-    width: 96%;
+    height: 40px;
+    border: 1px solid #dcdfe6;
+    border-radius: 4px;
+    width: 100%;
+    padding: 0 12px;
+    box-sizing: border-box;
+    font-size: 14px;
+    transition: all 0.2s;
+    outline: none;
+    box-shadow: none;
+    color: #333;
+}
+
+input.value:focus {
+    border-color: #409eff;
+    box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
 }
 
 .login-btn {
-    padding: 4px 10px;
+    padding: 0 20px;
     width: 100%;
+    height: 40px;
+    margin-top: 20px;
+    font-size: 16px;
+    letter-spacing: 1px;
 }
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+    .login {
+        max-width: 90%;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        min-height: auto;
+    }
+    
+    .login-header {
+        font-size: 20px;
+        padding: 15px 0;
+    }
+}
+
 
 .login-other {
     padding: 10px;
@@ -265,7 +315,7 @@ input.value {
 
 button {
     align-items: center;
-    background-image: linear-gradient(to right, #10b981 0, #141414 100%);
+    background-image: linear-gradient(to right, #409eff 0, #141414 100%);
     border: none;
     border-radius: .25rem;
     box-shadow: rgba(0, 0, 0, .02) 0 1px 3px 0;
