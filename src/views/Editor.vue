@@ -19,10 +19,17 @@
           </Draggable>
         </Container>
       </div>
-      <div class="menu-panel">
-        <button type="text" @click="dialog = true">+菜单</button>&nbsp;&nbsp;
-        <el-checkbox v-model="hideHeader">隐藏头部菜单</el-checkbox>
-        <el-checkbox v-model="hideLinksPanel">隐藏右侧菜单链接面板</el-checkbox>
+      <div class="menu-panel flex" style="align-items: center; flex: 1; padding-right: 20px; justify-content: space-between">
+        <div class="left-action">
+          <el-button type="primary" size="mini" @click="dialog = true" plain round>
+            <i class="iconfont icon-tianjia"></i> +菜单
+          </el-button>
+        </div>
+        <div class="right-action flex" style="align-items: center">
+          <div style="width: 1px; height: 16px; background: #e5e7eb; margin: 0 10px"></div>
+          <el-checkbox v-model="hideHeader" size="mini" border>隐藏头部</el-checkbox>
+          <el-checkbox v-model="hideLinksPanel" size="mini" border>隐藏侧边</el-checkbox>
+        </div>
       </div>
     </div>
 
@@ -35,15 +42,22 @@
     >
       <div class="left-nav animate__animated" ref="leftnav">
         <div class="link-panel">
-          <div class="el-row">
-            <div class="el-col el-col-18">
-              <el-input size="mini" v-model="currentLink" disabled></el-input>
-            </div>
-            <div class="el-col el-col-6">
-              <el-button size="mini" @click="toggleSliderDialog"
-                >+文档</el-button
-              >
-            </div>
+          <div class="flex" style="align-items: center; padding: 5px">
+            <el-input
+              size="mini"
+              v-model="currentLink"
+              disabled
+              style="flex: 1; margin-right: 5px"
+            ></el-input>
+            <el-button
+              type="primary"
+              size="mini"
+              @click="toggleSliderDialog"
+              plain
+              round
+            >
+              <i class="iconfont icon-tianjia"></i> 文档
+            </el-button>
           </div>
         </div>
         <div class="slider-content">
@@ -143,7 +157,12 @@
       </div>
     </div>
 
-    <el-dialog v-model="dialog" title="添加菜单" width="30%">
+    <el-dialog
+      v-model="dialog"
+      title="添加菜单"
+      width="30%"
+      class="responsive-dialog"
+    >
       <el-form label-width="80px">
         <el-form-item label="菜单名称">
           <el-input
@@ -155,24 +174,37 @@
         <el-form-item label="菜单链接">
           <el-input v-model="menuLink" placeholder="请输入菜单链接"></el-input>
         </el-form-item>
-        <div class="el-divider el-divider--horizontal"><div class="el-divider__text is-left">已经存在的菜单集合</div></div>
-        <el-table :data="menus" style="width: 100%" size="small" border>
-          <el-table-column prop="name" label="菜单名称" />
+        <el-divider content-position="left">已经存在的菜单集合</el-divider>
+        <el-table
+          :data="menus"
+          style="width: 100%"
+          size="small"
+          border
+          :header-cell-style="{ background: '#f5f7fa', color: '#606266' }"
+        >
+          <el-table-column prop="name" label="菜单名称" width="120" />
           <el-table-column prop="link" label="菜单链接地址" />
         </el-table>
       </el-form>
       <template #footer>
-        <el-button @click="dialog = false">取 消</el-button>
-        <el-button
-          type="primary"
-          @click="addMenu"
-          :disabled="saveButtonDisabled"
-          >确 定</el-button
-        >
+        <span class="dialog-footer">
+          <el-button @click="dialog = false">取 消</el-button>
+          <el-button
+            type="primary"
+            @click="addMenu"
+            :disabled="saveButtonDisabled"
+            >确 定</el-button
+          >
+        </span>
       </template>
     </el-dialog>
 
-    <el-dialog v-model="docDialog" title="添加文档" width="30%">
+    <el-dialog
+      v-model="docDialog"
+      title="添加文档"
+      width="30%"
+      class="responsive-dialog"
+    >
       <el-form label-width="80px">
         <el-form-item label="文档名称">
           <el-input
@@ -186,6 +218,7 @@
             v-model="docType"
             :disabled="docTypeDisable"
             placeholder="请选择"
+            style="width: 100%"
           >
             <el-option
               v-for="item in docTypes"
@@ -200,12 +233,19 @@
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="docDialog = false">取 消</el-button>
-        <el-button type="primary" @click="addDocItem">确 定</el-button>
+        <span class="dialog-footer">
+          <el-button @click="docDialog = false">取 消</el-button>
+          <el-button type="primary" @click="addDocItem">确 定</el-button>
+        </span>
       </template>
     </el-dialog>
 
-    <el-dialog v-model="docEditDialog" title="修改文档" width="30%">
+    <el-dialog
+      v-model="docEditDialog"
+      title="修改文档"
+      width="30%"
+      class="responsive-dialog"
+    >
       <el-form label-width="80px">
         <el-form-item label="文档名称">
           <el-input
@@ -215,8 +255,10 @@
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="docEditDialog = false">取 消</el-button>
-        <el-button type="primary" @click="saveEditDocItem">确 定</el-button>
+        <span class="dialog-footer">
+          <el-button @click="docEditDialog = false">取 消</el-button>
+          <el-button type="primary" @click="saveEditDocItem">确 定</el-button>
+        </span>
       </template>
     </el-dialog>
 
