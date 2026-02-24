@@ -886,7 +886,7 @@ onMounted(() => {
   height: 40px;
   font-size: 15px;
   font-weight: 500;
-  box-shadow: 0 4px 6px rgba(22, 93, 255, 0.2);
+  box-shadow: 0 4px 6px rgba(64, 158, 255, 0.2);
 }
 
 .project-footer {
