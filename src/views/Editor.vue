@@ -21,7 +21,7 @@
       </div>
       <div class="menu-panel flex" style="align-items: center; flex: 1; padding-right: 20px; justify-content: space-between">
         <div class="left-action">
-          <el-button type="primary" size="mini" @click="dialog = true" plain round>
+          <el-button type="primary" size="mini" @click="dialog = true" plain>
             <i class="iconfont icon-tianjia"></i> +菜单
           </el-button>
         </div>
@@ -54,9 +54,8 @@
               size="mini"
               @click="toggleSliderDialog"
               plain
-              round
             >
-              <i class="iconfont icon-tianjia"></i> 文档
+              <i class="iconfont icon-tianjia"></i> +文档
             </el-button>
           </div>
         </div>
@@ -324,7 +323,6 @@
 <script setup>
 import { ref, reactive, onMounted, onBeforeUnmount } from "vue";
 import { useRoute, useRouter, onBeforeRouteLeave } from "vue-router";
-import { Container, Draggable } from "vue3-smooth-dnd";
 import { getToken, wrapUrl, getHost } from "@/utils";
 import {
   validateToken,
