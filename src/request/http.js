@@ -289,6 +289,24 @@ export async function queryDoc({ projectId, token, link, item, name }) {
   }
 }
 
+export async function deleteProject({ projectId, token }) {
+  try {
+    const response = await post(
+      "/api/project/delete",
+      {
+        projectId: resolveProjectId(projectId),
+      },
+      {
+        params: { token: resolveToken(token) },
+      },
+    );
+    return response;
+  } catch (error) {
+    console.error("Project delete failed:", error);
+    throw error;
+  }
+}
+
 // {
 //     "ok": true,
 //     "message": "success"
