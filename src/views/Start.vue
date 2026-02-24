@@ -2,60 +2,103 @@
   <div class="main">
     <Header />
     <div class="content-container">
-      <div class="start container">
-        <div class="item">
-          1.用邮箱注册个账号并登录 <i class="iconfont icon-ziyuanxhdpi"></i>
-        </div>
-        <div class="item">
-          2.进入项目页面&nbsp;<a href="./project.html"
-            ><i class="iconfont icon-xiangmu"></i></a
-          >&nbsp;创建一个自己的项目,注意项目页面你也会看到你作为协作者的项目的
-          <i class="iconfont icon-renren"></i>
-        </div>
-        <div class="item">
-          3.编辑你的项目基本信息,主要包括：
-          <ul>
-            <li>产品的名字,比如VuePress</li>
-            <li>产品简易描述</li>
-            <li>产品的宣传标语</li>
-            <li>产品的特点特色</li>
-            <li class="green">
-              项目编译后会自动生成如下的首页信息(这里以maptalks产品举例)
-            </li>
-          </ul>
-          <img src="" />
-        </div>
-        <div class="item">
-          4.接着点击项目的文档按钮,为你的项目添加菜单,目录结构,文档等了
-          <ul>
-            <li>添加菜单</li>
-            <li>为每个菜单添加对应的目录结构和文档内容</li>
-            <li>编辑每个文档的内容</li>
-            <li>上传已经存在的markdown文件</li>
-            <li>保存你编辑好的文档</li>
-            <li>...</li>
-          </ul>
-          <img src="" /> 注意：<br />
-          <ul class="red">
-            <li>
-              仅仅支持二级目录,如果你文档有多级目录的需求,应该尽可能的将其平行话,不要进行嵌套,技术上支持多级目录没有问题,但是生成的侧边栏会非常丑陋
-            </li>
-            <li>
-              比如有个需求是要展示：中国-&gt;省-&gt;市这样的需求,你可以改成中国-江苏,中国-上海这样的结构目录
-            </li>
-            <li>
-              多人协作一个项目时要尽可能的按照菜单和功能的划分来协作文档的书写,比如人员1负责菜单1,人员2负责菜单2这样来安排任务,尽可能的减少多人同时操作同一个文档的可能,以此来减少文档的冲突
-            </li>
-          </ul>
-        </div>
-        <div class="item">
-          5.当你认为文档写的差不多了,你就可以编译你的项目了,然后点击浏览地址就可以查看你的项目文档的内容了
-        </div>
+      <div class="start-list">
+        <el-card class="start-card" shadow="hover">
+          <template #header>
+            <div class="card-header">
+              <i class="iconfont icon-ziyuanxhdpi"></i>
+              <span>1. 注册登录</span>
+            </div>
+          </template>
+          <div class="card-body">
+            用邮箱注册个账号并登录
+          </div>
+        </el-card>
+
+        <el-card class="start-card" shadow="hover">
+          <template #header>
+            <div class="card-header">
+              <i class="iconfont icon-xiangmu"></i>
+              <span>2. 创建项目</span>
+            </div>
+          </template>
+          <div class="card-body">
+            进入<router-link to="/projects">项目页面</router-link>创建一个自己的项目。注意：项目页面你也会看到你作为协作者的项目
+            <i class="iconfont icon-renren"></i>
+          </div>
+        </el-card>
+
+        <el-card class="start-card" shadow="hover">
+          <template #header>
+            <div class="card-header">
+              <i class="iconfont icon-bianji"></i>
+              <span>3. 编辑信息</span>
+            </div>
+          </template>
+          <div class="card-body">
+            编辑你的项目基本信息,主要包括：
+            <ul>
+              <li>产品的名字,比如VuePress</li>
+              <li>产品简易描述</li>
+              <li>产品的宣传标语</li>
+              <li>产品的特点特色</li>
+              <li class="highlight">
+                项目编译后会自动生成如下的首页信息
+              </li>
+            </ul>
+          </div>
+        </el-card>
+
+        <el-card class="start-card" shadow="hover">
+          <template #header>
+            <div class="card-header">
+              <i class="iconfont icon-wendang"></i>
+              <span>4. 添加文档</span>
+            </div>
+          </template>
+          <div class="card-body">
+            点击项目的文档按钮,为你的项目添加菜单,目录结构,文档等：
+            <ul>
+              <li>添加菜单</li>
+              <li>为每个菜单添加对应的目录结构和文档内容</li>
+              <li>编辑每个文档的内容</li>
+              <li>上传已经存在的markdown文件</li>
+              <li>保存你编辑好的文档</li>
+            </ul>
+            <div class="warning-section">
+                <p class="warning-title">注意：</p>
+                <ul class="warning-list">
+                    <li>
+                    仅仅支持二级目录,如果你文档有多级目录的需求,应该尽可能的将其平行化,不要进行嵌套。
+                    </li>
+                    <li>
+                    比如有个需求是要展示：中国-&gt;省-&gt;市这样的需求,你可以改成中国-江苏,中国-上海这样的结构目录
+                    </li>
+                    <li>
+                    多人协作一个项目时要尽可能的按照菜单和功能的划分来协作文档的书写,尽可能的减少多人同时操作同一个文档的可能,以此来减少文档的冲突
+                    </li>
+                </ul>
+            </div>
+          </div>
+        </el-card>
+
+        <el-card class="start-card" shadow="hover">
+          <template #header>
+            <div class="card-header">
+              <i class="iconfont icon-fabu"></i>
+              <span>5. 编译发布</span>
+            </div>
+          </template>
+          <div class="card-body">
+            当你认为文档写的差不多了,你就可以编译你的项目了,然后点击浏览地址就可以查看你的项目文档的内容了
+          </div>
+        </el-card>
       </div>
+
       <div
         id="start-video"
         class="container xgplayer xgplayer-pc xgplayer-nostart xgplayer-pause xgplayer-skin-default"
-        style="width: 1521.59px; height: 700px"
+        style="width: 100%; height: auto; aspect-ratio: 16/9; max-width: 1000px; margin: 40px auto;"
       >
         <xg-controls
           class="xgplayer-controls"
@@ -284,22 +327,99 @@ import Header from "@/components/Header.vue";
 </script>
 
 <style scoped>
-.container {
-  width: 80%;
-  margin: auto;
-}
-/* Copied and adapted from public/index-3018ea7565.css */
-.news {
-  padding: 10px;
-  border-bottom: 1px solid #f3f3f3;
+.start-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  padding-bottom: 40px;
 }
 
-.home {
-  margin-top: -60px;
-  padding-top: 100px;
-  height: 400px;
-  background: #10b98117;
-  /* background-image: url(../img/bg2.png);  -- Assuming image might be missing or needs correct path */
-  background-size: cover;
+@media (max-width: 768px) {
+  .start-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+}
+
+.start-card {
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  border: 1px solid #f0f0f0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  background: #fff;
+  height: 100%;
+}
+
+.start-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+  border-color: rgba(64, 158, 255, 0.2);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.card-header i {
+  margin-right: 8px;
+  font-size: 20px;
+  color: var(--primary-color);
+}
+
+.card-body {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.6;
+}
+
+.card-body ul {
+  padding-left: 20px;
+  margin: 10px 0;
+}
+
+.card-body li {
+  margin-bottom: 4px;
+}
+
+.highlight {
+  color: var(--primary-color);
+  font-weight: 500;
+}
+
+.warning-section {
+  background-color: #fef0f0;
+  padding: 12px;
+  border-radius: 6px;
+  margin-top: 12px;
+  font-size: 13px;
+}
+
+.warning-title {
+  color: #f56c6c;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.warning-list {
+  color: #f56c6c;
+  margin: 0;
+}
+
+.warning-list li {
+  margin-bottom: 4px;
+}
+
+/* Video Responsive */
+#start-video {
+  max-width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 </style>
