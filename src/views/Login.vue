@@ -179,10 +179,9 @@ const submitInfo = async () => {
 }
 
 /* Header styles (from index.html structure, assuming some base styles) */
-.header {
-    /* Add some basic header styling if missing from scoped css */
+/* .header {
     padding: 10px 0;
-}
+} */
 .container {
     width: 100%;
     max-width: 1200px;

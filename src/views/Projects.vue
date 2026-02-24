@@ -35,11 +35,11 @@
             <div class="action-grid">
               <div class="action-item" @click="handleProfile(project)">
                 <i class="iconfont icon-xiugai"></i>
-                <span>配置</span>
+                <span>设置</span>
               </div>
               <div class="action-item" @click="handleDocs(project)">
                 <i class="iconfont icon-jiaocheng"></i>
-                <span>文档</span>
+                <span>创作</span>
               </div>
               <div class="action-item" @click="handleCollaborate(project)">
                 <i class="iconfont icon-renren"></i>

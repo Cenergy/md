@@ -110,21 +110,30 @@
       <div
         class="right-nav"
         ref="editpanel"
-        :style="{ width: hideLinksPanel ? '100%' : 'calc(100% - 260px)' }"
+        :style="{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          width: 0, // Ensure flex item shrinks properly
+        }"
       >
         <div class="tools">
           <el-button size="mini" @click="importMd">导入Markdown</el-button>
           <el-button size="mini" @click="openUploadPanel">托管附件</el-button>
           <el-button size="mini" @click="saveDoc">保存文档</el-button>
         </div>
-        <div class="edit-container flex">
-          <div class="edit-panel flex" style="width: 100%">
+        <div class="edit-container flex" style="flex: 1; overflow: hidden">
+          <div class="edit-panel flex" style="flex: 1; height: 100%">
             <div id="editor" class="editor panel" v-show="editorShow"></div>
             <div class="editor-desc panel" v-show="!editorShow">
               点击左侧的列表项进行文档编辑
             </div>
           </div>
-          <div class="menuurls" v-show="!hideLinksPanel">
+          <div
+            class="menuurls"
+            v-show="!hideLinksPanel"
+            style="width: 260px; flex-shrink: 0"
+          >
             <h3>相对目录</h3>
             <div class="row" v-for="url in sliderURLS" :key="url.url">
               <button @click="copyValue(url.url)">复制</button>{{ url.label }}
