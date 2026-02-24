@@ -8,13 +8,6 @@
             <div class="login-header center">{{ headerTitle }}</div>
             <div class="login-form">
               <div class="login-content login-panel">
-                <div class="item flex">
-                  <input
-                    type="checkbox"
-                    class="ui-checkbox register-box"
-                    v-model="register"
-                  /><label>注册模式</label>
-                </div>
                 <div class="item">
                   <div class="label">邮箱</div>
                   <input
@@ -25,13 +18,22 @@
                     v-model="email"
                   />
                 </div>
+                <transition name="slide-fade">
                 <div class="item" v-if="register">
                    <div class="label">验证码</div>
-                   <div class="flex">
-                     <input type="text" v-model="code" class="input value" style="width: 60%" placeholder="验证码" />
-                     <button @click="getValidateCode" style="width: 35%; margin-left: 5%">获取</button>
-                   </div>
+                   <el-input
+                     v-model="code"
+                     placeholder="验证码"
+                     class="input-with-select"
+                     size="large"
+                     @keyup.enter="submitInfo"
+                   >
+                     <template #append>
+                       <el-button @click="getValidateCode" type="primary" style="width: 120px;">获取</el-button>
+                     </template>
+                   </el-input>
                 </div>
+                </transition>
                 <div class="item">
                   <div class="label">密码</div>
                   <input
@@ -39,11 +41,16 @@
                     placeholder="6-15位数"
                     class="input value"
                     v-model="password"
+                    @keyup.enter="submitInfo"
                   />
                 </div>
               </div>
               <div class="login-footer login-panel">
                 <button class="login-btn" @click="submitInfo">{{ submitTitle }}</button>
+                <div class="switch-mode">
+                  <span>{{ register ? '已有账号？' : '还没有账号？' }}</span>
+                  <span class="link" @click="register = !register">{{ register ? '去登录' : '去注册' }}</span>
+                </div>
               </div>
               <div class="login-other login-panel flex"></div>
             </div>
@@ -313,9 +320,9 @@ input.value:focus {
     top: -100px;
 }
 
-button {
+.login-btn {
     align-items: center;
-    background-image: linear-gradient(to right, #409eff 0, #141414 100%);
+    background-color: #409eff;
     border: none;
     border-radius: .25rem;
     box-shadow: rgba(0, 0, 0, .02) 0 1px 3px 0;
@@ -333,25 +340,26 @@ button {
     -webkit-user-select: none;
     touch-action: manipulation;
     vertical-align: baseline;
-    width: auto;
+    width: 100%;
 }
 
-button:focus,
-button:hover {
+.login-btn:focus,
+.login-btn:hover {
     border-color: rgba(0, 0, 0, .15);
     box-shadow: rgba(0, 0, 0, .1) 0 4px 12px;
-    color: rgba(0, 0, 0, .65);
+    background-color: #66b1ff;
+    color: #fff;
 }
 
-button:hover {
+.login-btn:hover {
     transform: translateY(-1px);
 }
 
-button:active {
-    background-color: #f0f0f1;
+.login-btn:active {
+    background-color: #3a8ee6;
     border-color: rgba(0, 0, 0, .15);
     box-shadow: rgba(0, 0, 0, .06) 0 2px 4px;
-    color: rgba(0, 0, 0, .65);
+    color: #fff;
     transform: translateY(0);
 }
 
@@ -375,103 +383,42 @@ button:active {
     100% { transform: translateX-(5px); }
 }
 
-.ui-checkbox {
-    --primary-color: #141414;
-    --secondary-color: #fff;
-    --primary-hover-color: #4096ff;
-    --checkbox-diameter: 20px;
-    --checkbox-border-radius: 5px;
-    --checkbox-border-color: #d9d9d9;
-    --checkbox-border-width: 1px;
-    --checkbox-border-style: solid;
-    --checkmark-size: 1.2;
+.switch-mode {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+    font-size: 14px;
+    color: #606266;
 }
 
-.ui-checkbox,
-.ui-checkbox *,
-.ui-checkbox ::after,
-.ui-checkbox ::before {
-    -webkit-box-sizing: border-box;
-    box-sizing: border-box;
-}
-
-.ui-checkbox {
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-    width: var(--checkbox-diameter);
-    height: var(--checkbox-diameter);
-    border-radius: var(--checkbox-border-radius);
-    background: var(--secondary-color);
-    border: var(--checkbox-border-width) var(--checkbox-border-style) var(--checkbox-border-color);
-    -webkit-transition: all .3s;
-    -o-transition: all .3s;
-    transition: all .3s;
+.switch-mode .link {
+    color: #409eff;
     cursor: pointer;
-    position: relative;
-    vertical-align: middle; /* Added for alignment with label */
-    margin-right: 5px;
+    margin-left: 8px;
+    font-weight: 500;
 }
 
-.ui-checkbox::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    -webkit-box-shadow: 0 0 0 calc(var(--checkbox-diameter)/ 2.5) var(--primary-color);
-    box-shadow: 0 0 0 calc(var(--checkbox-diameter)/ 2.5) var(--primary-color);
-    border-radius: inherit;
-    opacity: 0;
-    -webkit-transition: all .5s cubic-bezier(.12, .4, .29, 1.46);
-    -o-transition: all .5s cubic-bezier(.12, .4, .29, 1.46);
-    transition: all .5s cubic-bezier(.12, .4, .29, 1.46);
+.switch-mode .link:hover {
+    text-decoration: underline;
 }
 
-.ui-checkbox::before {
-    top: 40%;
-    left: 50%;
-    content: "";
-    position: absolute;
-    width: 4px;
-    height: 7px;
-    border-right: 2px solid var(--secondary-color);
-    border-bottom: 2px solid var(--secondary-color);
-    -webkit-transform: translate(-50%, -50%) rotate(45deg) scale(0);
-    -ms-transform: translate(-50%, -50%) rotate(45deg) scale(0);
-    transform: translate(-50%, -50%) rotate(45deg) scale(0);
-    opacity: 0;
-    -webkit-transition: all .1s cubic-bezier(.71, -.46, .88, .6), opacity .1s;
-    -o-transition: all .1s cubic-bezier(.71, -.46, .88, .6), opacity .1s;
-    transition: all .1s cubic-bezier(.71, -.46, .88, .6), opacity .1s;
+/* Transition styles */
+.slide-fade-enter-active,
+.slide-fade-leave-active {
+  transition: all 0.3s ease-out;
+  max-height: 100px;
+  opacity: 1;
+  overflow: hidden;
 }
 
-.ui-checkbox:hover {
-    border-color: var(--primary-color);
-}
-
-.ui-checkbox:checked {
-    background: var(--primary-color);
-    border-color: transparent;
-}
-
-.ui-checkbox:checked::before {
-    opacity: 1;
-    -webkit-transform: translate(-50%, -50%) rotate(45deg) scale(var(--checkmark-size));
-    -ms-transform: translate(-50%, -50%) rotate(45deg) scale(var(--checkmark-size));
-    transform: translate(-50%, -50%) rotate(45deg) scale(var(--checkmark-size));
-    -webkit-transition: all .2s cubic-bezier(.12, .4, .29, 1.46) .1s;
-    -o-transition: all .2s cubic-bezier(.12, .4, .29, 1.46) .1s;
-    transition: all .2s cubic-bezier(.12, .4, .29, 1.46) .1s;
-}
-
-.ui-checkbox:active:not(:checked)::after {
-    -webkit-transition: none;
-    -o-transition: none;
-    -webkit-box-shadow: none;
-    box-shadow: none;
-    transition: none;
-    opacity: 1;
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+  max-height: 0;
+  opacity: 0;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
 }
 </style>
