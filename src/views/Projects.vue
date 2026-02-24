@@ -37,10 +37,6 @@
                 <i class="iconfont icon-xiugai"></i>
                 <span>配置</span>
               </div>
-              <div class="action-item" @click="handleEdit(project)">
-                <i class="iconfont icon-file-markdown"></i>
-                <span>编辑</span>
-              </div>
               <div class="action-item" @click="handleDocs(project)">
                 <i class="iconfont icon-jiaocheng"></i>
                 <span>文档</span>
@@ -152,32 +148,28 @@
     <!-- Profile Drawer -->
     <el-drawer
       v-model="profileDrawerVisible"
-      :title="currentProject ? currentProject.name : ''"
       size="30%"
-      class="responsive-drawer"
+      class="responsive-drawer project-settings-drawer"
+      :with-header="true"
     >
+      <template #header>
+        <div class="custom-drawer-header">
+          <span class="drawer-title">{{ currentProject ? currentProject.name : '' }}</span>
+          <span class="drawer-subtitle">项目配置</span>
+        </div>
+      </template>
+      
       <div
-        aria-modal="true"
-        aria-labelledby="el-drawer__title"
-        aria-label="gishai"
-        role="dialog"
-        tabindex="-1"
-        class="el-drawer rtl"
-        style="width: 100%"
+        class="drawer-content-wrapper"
         v-if="currentProject"
       >
-        <header id="el-drawer__title" class="el-drawer__header">
-          <span role="heading" title="gishai">gishai</span
-          ><button
-            aria-label="close gishai"
-            type="button"
-            class="el-drawer__close-btn"
-          >
-            <i class="el-dialog__close el-icon el-icon-close"></i>
-          </button>
-        </header>
-        <section class="el-drawer__body">
-          <el-form :model="currentProject" label-width="120px" size="mini">
+        <el-form :model="currentProject" label-width="120px" size="mini">
+            <el-form-item label="项目名称">
+              <el-input
+                v-model="currentProject.name"
+                placeholder="VitePress"
+              ></el-input>
+            </el-form-item>
             <el-form-item label="markdown主题">
               <el-select
                 v-model="currentProject.theme"
@@ -206,12 +198,7 @@
                 size="mini"
               ></el-color-picker>
             </el-form-item>
-            <el-form-item label="产品名字">
-              <el-input
-                v-model="currentProject.name"
-                placeholder="VitePress"
-              ></el-input>
-            </el-form-item>
+
             <el-form-item label="简易描述">
               <el-input
                 v-model="currentProject.text"
@@ -299,8 +286,20 @@
             <el-form-item>
               <el-button type="primary" @click="saveProfile">保存</el-button>
             </el-form-item>
+            
+            <div class="danger-zone">
+              <div class="danger-title">⚠️危险操作</div>
+              <div class="danger-content">
+                <div class="danger-item">
+                  <div class="danger-info">
+                    <h4>删除项目</h4>
+                    <p>一旦你删除项目，所有数据都会被永久删除，无法找回。请谨慎操作。</p>
+                  </div>
+                  <el-button type="danger" plain @click="handleDeleteProject">删除项目</el-button>
+                </div>
+              </div>
+            </div>
           </el-form>
-        </section>
       </div>
     </el-drawer>
 
@@ -383,7 +382,9 @@ import {
   queryProjectLinkUsers,
   saveProjectLinkUser,
   deleteProjectLinkUser,
+  deleteProject,
 } from "../request/http";
+import { ElMessageBox } from "element-plus";
 
 const router = useRouter();
 
@@ -484,13 +485,6 @@ const handleAddProject = () => {
   dialogVisible.value = true;
 };
 
-const handleEdit = (project) => {
-  isEdit.value = true;
-  form.name = project.name;
-  form.id = project.id;
-  dialogVisible.value = true;
-};
-
 const submitProject = async () => {
   if (!form.name || form.name.length < 3) {
     ElMessage.warning("请填写你的项目名称（至少3个字符）");
@@ -578,15 +572,54 @@ const deleteFeature = (index) => {
 const saveProfile = async () => {
   if (!currentProject.value) return;
   try {
+    // Update project name first
+    if (currentProject.value.name) {
+      await updateProject({ 
+        id: currentProject.value.id, 
+        name: currentProject.value.name 
+      });
+    }
+
     await saveProjectProfile({
       projectId: currentProject.value.id,
       profileData: currentProject.value,
     });
-    ElMessage.success(`保存 ${currentProject.value.name} 首页文案信息成功`);
+    ElMessage.success(`保存 ${currentProject.value.name} 配置成功`);
     profileDrawerVisible.value = false;
+    // Refresh project list to reflect name changes
+    loadProjects();
   } catch (e) {
+    console.error(e);
     ElMessage.error("保存失败");
   }
+};
+
+const handleDeleteProject = () => {
+  if (!currentProject.value) return;
+  
+  ElMessageBox.prompt(
+    `此操作将永久删除项目 ${currentProject.value.name}，请输入项目ID "${currentProject.value.id}" 确认`,
+    '删除确认',
+    {
+      confirmButtonText: '确定删除',
+      cancelButtonText: '取消',
+      inputPattern: new RegExp(`^${currentProject.value.id}$`),
+      inputErrorMessage: '项目ID不匹配',
+      type: 'warning',
+      customClass: 'delete-confirm-box'
+    }
+  ).then(async ({ value }) => {
+    try {
+      await deleteProject({ projectId: currentProject.value.id });
+      ElMessage.success('项目删除成功');
+      profileDrawerVisible.value = false;
+      loadProjects();
+    } catch (e) {
+      ElMessage.error(e.message || '删除失败');
+    }
+  }).catch(() => {
+    // Cancelled
+  });
 };
 
 // Collaborate Methods
@@ -812,7 +845,7 @@ onMounted(() => {
 
 .action-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 10px;
   margin-bottom: 20px;
 }
@@ -895,6 +928,65 @@ onMounted(() => {
 }
 .clearfix:after {
   clear: both;
+}
+
+.danger-zone {
+  margin-top: 40px;
+  border: 1px solid #ffccc7;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.danger-title {
+  padding: 12px 24px;
+  background-color: #fff1f0;
+  border-bottom: 1px solid #ffccc7;
+  font-size: 14px;
+  font-weight: 600;
+  color: #cf1322;
+}
+
+.danger-content {
+  padding: 0 24px;
+  background-color: #fff;
+}
+
+.danger-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 0;
+}
+
+.danger-info h4 {
+  margin: 0 0 4px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #262626;
+}
+
+.danger-info p {
+  margin: 0;
+  font-size: 14px;
+  color: #595959;
+}
+
+@media (max-width: 768px) {
+  .danger-title,
+  .danger-content {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .danger-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  
+  .danger-item .el-button {
+    width: 100%;
+  }
 }
 </style>
 
@@ -1014,5 +1106,36 @@ onMounted(() => {
   margin-right: 10px;
   font-size: 14px;
   color: #606266;
+}
+
+/* Project Settings Drawer Header Styles */
+.project-settings-drawer .el-drawer__header {
+  margin-bottom: 0 !important;
+  padding: 20px 24px !important;
+  border-bottom: 1px solid #f0f0f0;
+  background-color: #fafafa;
+}
+
+.custom-drawer-header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.drawer-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  line-height: 1.4;
+}
+
+.drawer-subtitle {
+  font-size: 14px;
+  color: #999;
+  font-weight: normal;
+}
+
+.drawer-content-wrapper {
+  padding: 20px 0;
 }
 </style>

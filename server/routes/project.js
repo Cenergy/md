@@ -95,6 +95,34 @@ router.post('/project/profile', verifyToken, async (req, res) => {
     }
 });
 
+router.post('/project/delete', verifyToken, async (req, res) => {
+    const { projectId } = req.body;
+    
+    // Check if project exists and user is owner
+    const project = await prisma.projects.findUnique({
+        where: { id: projectId }
+    });
+
+    if (!project) {
+        return res.status(404).json({ ok: false, message: 'Project not found' });
+    }
+
+    if (project.owner_id !== req.user.id) {
+        return res.status(403).json({ ok: false, message: 'No permission to delete this project' });
+    }
+
+    // Delete all related data in transaction
+    await prisma.$transaction([
+        prisma.menus.deleteMany({ where: { project_id: projectId } }),
+        prisma.sliders.deleteMany({ where: { project_id: projectId } }),
+        prisma.project_links.deleteMany({ where: { project_id: projectId } }),
+        prisma.build_tasks.deleteMany({ where: { project_id: projectId } }),
+        prisma.projects.delete({ where: { id: projectId } })
+    ]);
+
+    res.json({ ok: true });
+});
+
 // Collaboration
 router.get('/project/collaborate', verifyToken, async (req, res) => {
     const links = await prisma.project_links.findMany({
