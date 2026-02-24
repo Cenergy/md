@@ -53,8 +53,8 @@
   position: sticky;
   top: 0px;
   z-index: 1;
-  /* padding-top: 3px; */
-  /* line-height: 30px; */
+  /* Ensure container expands to fit floated children */
+  display: flow-root;
 }
 
 .mdeditor-tools .item {
