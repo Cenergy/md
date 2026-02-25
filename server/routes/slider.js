@@ -5,12 +5,46 @@ const verifyToken = require('../middleware/auth');
 const { generateId } = require('../utils/common');
 const { sliderSaveSchema } = require('../data/schemas');
 
+
+
 router.get('/slider/all', verifyToken, async (req, res) => {
     const { projectId } = req.query;
-    const sliders = await prisma.sliders.findMany({
-        where: { project_id: projectId }
+    const menus = await prisma.menus.findMany({
+        where: { project_id: projectId },
+        orderBy: { sort_order: 'asc' }
     });
-    res.json({ ok: true, data: sliders });
+    
+    const getSliders = async (menuLink, parentId = null) => {
+        const where = {
+            project_id: projectId,
+            parent_id: parentId
+        };
+        if (parentId === null) {
+            where.menu_link = menuLink;
+        }
+
+        const sliders = await prisma.sliders.findMany({
+            where,
+            orderBy: { sort_order: 'asc' }
+        });
+
+        for (const slider of sliders) {
+            slider.isActive = false;
+            if (slider.is_group) {
+                slider.group = true; 
+                slider.children = await getSliders(menuLink, slider.id);
+            } else {
+                slider.group = false;
+            }
+        }
+        return sliders;
+    };
+
+    for (const menu of menus) {
+        menu.sliders = await getSliders(menu.link);
+    }
+    
+    res.json({ ok: true, data: menus });
 });
 
 router.get('/slider/list', verifyToken, async (req, res) => {
