@@ -215,6 +215,77 @@ function saveRegistry(registry) {
     fs.writeFileSync(REGISTRY_PATH, JSON.stringify(registry, null, 2));
 }
 
+// --- Theme Management ---
+
+function setupTheme(themeName) {
+    const themeDir = path.join(VITEPRESS_DIR, 'theme');
+    ensureDir(themeDir);
+    
+    const themeSrc = path.join(__dirname, '../public/theme', `${themeName}.css`);
+    const themeDest = path.join(themeDir, 'custom.css');
+    
+    let hasCustomTheme = false;
+    if (fs.existsSync(themeSrc)) {
+        fs.copyFileSync(themeSrc, themeDest);
+        hasCustomTheme = true;
+        console.log(`Applied theme: ${themeName}`);
+    } else {
+        console.warn(`Theme CSS not found for: ${themeName}, using default.`);
+    }
+
+    const themeLayoutContent = `
+<script setup>
+import DefaultTheme from 'vitepress/theme'
+import { onMounted, watch, nextTick } from 'vue'
+import { useRoute } from 'vitepress'
+
+const { Layout } = DefaultTheme
+const route = useRoute()
+
+const initTheme = () => {
+  nextTick(() => {
+    // Only apply .markdown-body to the document content, avoiding sidebar/nav
+    const doc = document.querySelector('.vp-doc')
+    if (doc && !doc.classList.contains('markdown-body')) {
+      doc.classList.add('markdown-body')
+    }
+  })
+}
+
+onMounted(() => {
+  initTheme()
+  // Observer for dynamic content changes
+  const observer = new MutationObserver(() => {
+    initTheme()
+  })
+  observer.observe(document.body, { childList: true, subtree: true })
+})
+
+watch(
+  () => route.path,
+  () => initTheme()
+)
+</script>
+
+<template>
+  <Layout />
+</template>
+`;
+    fs.writeFileSync(path.join(themeDir, 'Layout.vue'), themeLayoutContent);
+
+    const themeIndexContent = `
+import DefaultTheme from 'vitepress/theme'
+import Layout from './Layout.vue'
+${hasCustomTheme ? "import './custom.css'" : ""}
+
+export default {
+  extends: DefaultTheme,
+  Layout: Layout
+}
+`;
+    fs.writeFileSync(path.join(themeDir, 'index.js'), themeIndexContent);
+}
+
 // --- Main Workflow ---
 
 async function cleanAndSetupDirs() {
@@ -295,6 +366,10 @@ async function main() {
 
     const project = await fetchProject();
     console.log(`Project: ${project.name}`);
+
+    // Setup Theme
+    const themeName = (project.hero && project.hero.theme) || 'vitepress';
+    setupTheme(themeName);
 
     const menus = await fetchMenus();
     console.log(`Found ${menus.length} menus`);
