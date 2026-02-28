@@ -37,83 +37,93 @@
       class="content flex"
       ref="contentRef"
     >
-      <div class="left-nav animate__animated" ref="leftnav">
-        <div class="link-panel">
-          <div class="flex" style="align-items: center; padding: 5px">
-            <el-input
-              size="mini"
-              v-model="currentLink"
-              disabled
-              style="flex: 1; margin-right: 5px"
-            ></el-input>
-            <el-button
-              type="primary"
-              size="mini"
-              @click="toggleSliderDialog"
-              plain
-            >
-              <i class="iconfont icon-tianjia"></i> +文档
-            </el-button>
+      <div class="left-nav animate__animated" :class="{ collapsed: isCollapsed }" ref="leftnav">
+        <div class="left-nav-header">
+          <div class="nav-toggle" @click="toggleLeftNav" :title="isCollapsed ? '展开侧边栏' : '收起侧边栏'">
+            <i class="iconfont" style="font-style: normal; font-size: 16px;" v-html="isCollapsed ? '&#10095;' : '&#10094;'"></i>
+          </div>
+          <el-button
+            type="primary"
+            size="mini"
+            @click.stop="toggleSliderDialog"
+            plain
+            v-if="!isCollapsed"
+            style="flex: 1; margin: 0 10px;"
+          >
+            <i class="iconfont icon-tianjia"></i> +文档
+          </el-button>
+        </div>
+        <div class="nav-content">
+          <div class="slider-content">
+            <Container @drop="sliderDrop" class="smooth-dnd-container vertical">
+              <Draggable v-for="(slider, index) in sliders" :key="index">
+                <div
+                  class="slider-item"
+                  :class="{ active: slider.isActive, group: slider.group }"
+                  @click="docItemClick(slider)"
+                >
+                  <div class="slider-header">
+                    <i
+                      class="column-drag-handle iconfont icon-tuozhuaicaidandaohang"
+                    ></i>
+                    <button class="btn" @click.stop="editDocItem(slider)">
+                      <i class="iconfont icon-xiugai"></i>
+                    </button>
+                    <span :class="{ label: slider.group }">{{
+                      slider.name
+                    }}</span>
+                    <button
+                      class="btn"
+                      v-if="slider.group"
+                      @click.stop="groupAddDocItem(slider)"
+                      style="margin-left: 5px"
+                    >
+                      <i class="iconfont icon-tianjia"></i>+
+                    </button>
+                  </div>
+                  <!-- Simplified group handling -->
+                  <div v-if="slider.group" class="group-children">
+                    <Container
+                      @drop="(e) => sliderItemDrop(e, slider)"
+                      :min-height="10"
+                    >
+                      <Draggable
+                        v-for="(child, cIndex) in slider.children || []"
+                        :key="cIndex"
+                      >
+                        <div
+                          class="slider-item child-item"
+                          :class="{ active: child.isActive }"
+                          @click.stop="docItemClick(child)"
+                        >
+                          <div class="slider-header">
+                            <i
+                              class="column-drag-handle iconfont icon-tuozhuaicaidandaohang"
+                            ></i>
+                            <button class="btn" @click.stop="editDocItem(child)">
+                              <i class="iconfont icon-xiugai"></i>
+                            </button>
+                            <span>{{ child.name }}</span>
+                          </div>
+                        </div>
+                      </Draggable>
+                    </Container>
+                  </div>
+                </div>
+              </Draggable>
+            </Container>
           </div>
         </div>
-        <div class="slider-content">
-          <Container @drop="sliderDrop" class="smooth-dnd-container vertical">
-            <Draggable v-for="(slider, index) in sliders" :key="index">
-              <div
-                class="slider-item"
-                :class="{ active: slider.isActive, group: slider.group }"
-                @click="docItemClick(slider)"
-              >
-                <div class="slider-header">
-                  <i
-                    class="column-drag-handle iconfont icon-tuozhuaicaidandaohang"
-                  ></i>
-                  <button class="btn" @click.stop="editDocItem(slider)">
-                    <i class="iconfont icon-xiugai"></i>
-                  </button>
-                  <span :class="{ label: slider.group }">{{
-                    slider.name
-                  }}</span>
-                  <button
-                    class="btn"
-                    v-if="slider.group"
-                    @click.stop="groupAddDocItem(slider)"
-                    style="margin-left: 5px"
-                  >
-                    <i class="iconfont icon-tianjia"></i>+
-                  </button>
-                </div>
-                <!-- Simplified group handling -->
-                <div v-if="slider.group" class="group-children">
-                  <Container
-                    @drop="(e) => sliderItemDrop(e, slider)"
-                    :min-height="10"
-                  >
-                    <Draggable
-                      v-for="(child, cIndex) in slider.children || []"
-                      :key="cIndex"
-                    >
-                      <div
-                        class="slider-item child-item"
-                        :class="{ active: child.isActive }"
-                        @click.stop="docItemClick(child)"
-                      >
-                        <div class="slider-header">
-                          <i
-                            class="column-drag-handle iconfont icon-tuozhuaicaidandaohang"
-                          ></i>
-                          <button class="btn" @click.stop="editDocItem(child)">
-                            <i class="iconfont icon-xiugai"></i>
-                          </button>
-                          <span>{{ child.name }}</span>
-                        </div>
-                      </div>
-                    </Draggable>
-                  </Container>
-                </div>
-              </div>
-            </Draggable>
-          </Container>
+        <div class="left-nav-footer">
+          <div class="link-info" v-if="currentLink">
+            <el-button type="text" size="mini" @click="copyValue(currentLink)" class="copy-btn" title="点击复制">
+              <i class="iconfont icon-fuzhi1"></i>
+            </el-button>
+            <span class="link-text" :title="currentLink">{{ currentLink }}</span>
+          </div>
+          <div class="link-info empty" v-else>
+            <span class="placeholder">暂无文档链接</span>
+          </div>
         </div>
       </div>
 
@@ -138,9 +148,14 @@
             v-show="!hideLinksPanel"
             style="width: 260px; flex-shrink: 0"
           >
-            <h3>相对目录</h3>
-            <div class="row" v-for="url in sliderURLS" :key="url.url">
-              <button @click="copyValue(url.url)">复制</button>{{ url.label }}
+            <div class="menuurls-header">
+              <i class="iconfont icon-link"></i> 相对目录参考
+            </div>
+            <div class="menuurls-list">
+              <div class="row" v-for="url in sliderURLS" :key="url.url">
+                <div class="url-label" :title="url.url">{{ url.label }}</div>
+                <el-button type="primary" link size="small" @click="copyValue(url.url)">复制</el-button>
+              </div>
             </div>
           </div>
         </div>
@@ -378,6 +393,19 @@ const uploadFiles = ref([]);
 const docEditDialog = ref(false);
 const docEditData = ref(null);
 const docEditTitle = ref("");
+const isCollapsed = ref(false);
+
+const toggleLeftNav = () => {
+  isCollapsed.value = !isCollapsed.value;
+};
+
+const handleResize = () => {
+  if (window.innerWidth < 900) {
+    isCollapsed.value = true;
+  } else {
+    isCollapsed.value = false;
+  }
+};
 const isLogin = ref(false);
 const isDirty = ref(false);
 const previewDialogVisible = ref(false);
@@ -998,6 +1026,8 @@ const sliderItemDrop = (dropResult, slider) => {
 
 // Lifecycle
 onMounted(async () => {
+  handleResize();
+  window.addEventListener("resize", handleResize);
   const loading = ElLoading.service({
     lock: true,
     text: "Initializing Editor...",
@@ -1050,6 +1080,7 @@ onBeforeRouteLeave((to, from) => {
 });
 
 onBeforeUnmount(() => {
+  window.removeEventListener("resize", handleResize);
   if (editorDisposable) {
     editorDisposable.dispose();
   }
@@ -1059,6 +1090,9 @@ onBeforeUnmount(() => {
 </script>
 
 <style>
+.markdown-body>*:first-child {
+    margin-top: 0 !important;
+}
 /* Add any necessary global styles or overrides here */
 .main {
   height: 100%;
