@@ -446,7 +446,8 @@ const getHost = () => {
 
 const formatProjectURL = (project) => {
   if (import.meta.env.DEV) {
-    return `http://localhost:3000/p/${project.id}/`;
+    const host = getHost();
+    return `${host}/p/${project.id}/`;
   }
   return `https://note.gishai.top/p/${project.id}/`;
 };
