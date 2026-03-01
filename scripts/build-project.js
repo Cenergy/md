@@ -245,7 +245,8 @@ const route = useRoute()
 const initTheme = () => {
   nextTick(() => {
     // Only apply .markdown-body to the document content, avoiding sidebar/nav
-    const doc = document.querySelector('.vp-doc')
+    // VPContent is the container for the main content area including doc, api, etc.
+    const doc = document.querySelector('#VPContent')
     if (doc && !doc.classList.contains('markdown-body')) {
       doc.classList.add('markdown-body')
     }
