@@ -339,9 +339,11 @@ a.active {
   text-decoration: underline;
 }
 .content-container {
-  min-height: calc(100vh - 100px);
+  /* min-height: calc(100vh - 100px); */
+  flex: 1;
   width: 100%;
   max-width: 100%;
+  overflow-y: auto;
 }
 .m-message-container {
   z-index: 20001 !important;

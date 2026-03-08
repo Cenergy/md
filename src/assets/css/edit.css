@@ -52,6 +52,9 @@ body {
 .content {
   /* height handled by flex in Editor.vue */
   display: flex;
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
 }
 .left-nav {
   width: 300px;
