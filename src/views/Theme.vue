@@ -1,7 +1,7 @@
 <template>
   <div class="main">
     <Header />
-    <div class="content-container news-container">
+    <div class="content-container news-container" id="theme-container">
       <div class="container news">
         <div class="context">
           这里是主题页面，您可以在这里浏览和切换不同的主题风格。
@@ -45,3 +45,8 @@ import Header from "@/components/Header.vue";
   background-size: cover;
 }
 </style>
+<script>
+
+
+</script>
+
