@@ -9,6 +9,7 @@
       <div class="menu flex desktop-menu">
         <div class="item"><router-link to="/start"><i class="iconfont icon-jiaocheng"></i> 教程</router-link></div>
         <div class="item"><router-link to="/projects"><i class="iconfont icon-xiangmu"></i> 项目</router-link></div>
+        <div class="item"><router-link to="/theme"><i class="iconfont icon-xiugai"></i> 主题</router-link></div>
         <div class="item"><router-link to="/problem"><i class="iconfont icon-gonggao"></i> 常见问题</router-link></div>
         <div class="item"><router-link to="/about"><i class="iconfont icon-renren"></i> 关于</router-link></div>
       </div>
@@ -29,6 +30,7 @@
       <div class="mobile-menu" v-if="isMenuOpen">
         <div class="item" @click="closeMenu"><router-link to="/start"><i class="iconfont icon-jiaocheng"></i> 教程</router-link></div>
         <div class="item" @click="closeMenu"><router-link to="/projects"><i class="iconfont icon-xiangmu"></i> 项目</router-link></div>
+        <div class="item" @click="closeMenu"><router-link to="/theme"><i class="iconfont icon-xiugai"></i> 主题</router-link></div>
         <div class="item" @click="closeMenu"><router-link to="/problem"><i class="iconfont icon-gonggao"></i> 常见问题</router-link></div>
         <div class="item" @click="closeMenu"><router-link to="/about"><i class="iconfont icon-renren"></i> 关于</router-link></div>
       </div>
