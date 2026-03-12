@@ -138,7 +138,7 @@
         </div>
         <div class="edit-container flex" style="flex: 1; overflow: hidden">
           <div class="edit-panel flex" style="flex: 1; height: 100%">
-            <div id="editor" class="editor panel" v-show="editorShow"></div>
+            <div id="editor" ref="editorContainer" class="editor panel" v-show="editorShow"></div>
             <div class="editor-desc panel" v-show="!editorShow">
               点击左侧的列表项进行文档编辑
             </div>
@@ -343,12 +343,21 @@ import {
   querySliderList,
   uploadImageFile,
 } from "@/request/http";
-import {
-  loadMonaco,
-  createEditor,
-  getEditor,
-  destroyEditor,
-} from "@/utils/editor";
+import { MDEditor, setShikiPaths } from 'mdpress-monaco-editor';
+import * as mdpress from 'mdpress-monaco-editor';
+import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
+import jsonWorker from 'monaco-editor/esm/vs/language/json/json.worker?worker';
+import cssWorker from 'monaco-editor/esm/vs/language/css/css.worker?worker';
+import htmlWorker from 'monaco-editor/esm/vs/language/html/html.worker?worker';
+import tsWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker?worker';
+
+import 'highlight.js/styles/atom-one-dark.min.css';
+import 'katex/dist/katex.min.css';
+import 'viewerjs/dist/viewer.min.css';
+import 'swiper/css/bundle';
+import 'x-data-spreadsheet/dist/xspreadsheet.css';
+import 'mdpress-monaco-editor/dist/style.css';
+
 import { ElMessage, ElLoading, ElMessageBox } from "element-plus";
 import { pinyin } from "pinyin-pro";
 import useClipboard from "vue-clipboard3";
@@ -359,7 +368,30 @@ const route = useRoute();
 const router = useRouter();
 const { toClipboard } = useClipboard();
 
+// Monaco Environment Setup
+const workers = {
+    json: jsonWorker,
+    css: cssWorker,
+    scss: cssWorker,
+    less: cssWorker,
+    html: htmlWorker,
+    handlebars: htmlWorker,
+    razor: htmlWorker,
+    typescript: tsWorker,
+    javascript: tsWorker
+};
+
+self.MonacoEnvironment = {
+    getWorker(_, label) {
+        return new (workers[label] || editorWorker)();
+    }
+};
+
+window.mdpress = mdpress;
+
 // State
+const editorContainer = ref(null);
+let mEditor = null;
 const hideHeader = ref(true);
 const hideLinksPanel = ref(true);
 const dialog = ref(false);
@@ -410,10 +442,10 @@ const isLogin = ref(false);
 const isDirty = ref(false);
 const previewDialogVisible = ref(false);
 const previewImageUrl = ref("");
-let editorDisposable = null;
 let isSettingValue = false;
 
 const contentRef = ref(null);
+const leftnav = ref(null);
 const shopcar = ref(null);
 
 // Helpers
@@ -743,20 +775,6 @@ const beforeUnloadListener = (e) => {
   }
 };
 
-const attachEditorListener = () => {
-  const editor = getEditor();
-  if (editor && editor.editor) {
-    if (editorDisposable) {
-      editorDisposable.dispose();
-    }
-    editorDisposable = editor.editor.onDidChangeModelContent(() => {
-      if (!isSettingValue) {
-        isDirty.value = true;
-      }
-    });
-  }
-};
-
 const checkSave = (next, onCancel) => {
   if (isDirty.value) {
     ElMessageBox.confirm(
@@ -813,39 +831,26 @@ const docItemClick = (slider) => {
     }).then((res) => {
         console.log("🚀 ~ docItemClick ~ hero:", hero.value)
 
-      const editorConfig = {
-        theme: hero.value.theme,
-        getLeftNav: () => leftnav.value,
-        warn: (msg) => ElMessage.warning(msg),
-        info: (msg) => ElMessage.info(msg),
-        uploadFile: uploadFile,
-        importMd: importMd,
-        openUploadPanel: openUploadPanel,
-        saveDoc: saveDoc,
-      };
-      createEditor("#editor", editorConfig, () => {
-        const editor = getEditor();
-        if (editor) {
+      if (mEditor) {
+          if (hero.value.theme) mEditor.setTheme(hero.value.theme);
           isSettingValue = true;
-          editor.setValue(res);
+          mEditor.setValue(res);
           isSettingValue = false;
           isDirty.value = false;
-          attachEditorListener();
-        }
-      });
+      }
     });
   });
 };
 
 const saveDoc = () => {
   if (!currentMenu.value || !currentDoc.value) return Promise.resolve();
-  if (!getEditor()) return Promise.resolve();
+  if (!mEditor) return Promise.resolve();
   return apiSaveDoc({
     projectId: projectId.value,
     token: getToken(),
     link: currentMenu.value.link,
     item: currentDoc.value.link,
-    data: getEditor().getValue(),
+    data: mEditor.getValue(),
   }).then((res) => {
     success(`(${currentMenu.value.name}/${currentDoc.value.name})文档保存成功`);
     isDirty.value = false;
@@ -979,7 +984,7 @@ const importMd = () => {
       let file = input.files[0];
       let reader = new FileReader();
       reader.onload = () => {
-        if (getEditor() && reader.result) getEditor().setValue(reader.result);
+        if (mEditor && reader.result) mEditor.setValue(reader.result);
       };
       reader.readAsText(file);
     } else {
@@ -1048,8 +1053,88 @@ onMounted(async () => {
       getMenus();
     }
 
-    // Register monaco if needed by mdpress
-    loadMonaco();
+    // Init MDEditor
+    if (editorContainer.value) {
+      mEditor = new MDEditor(editorContainer.value, {
+        theme: hero.value.theme || 'serene-rose',
+        themeURL: 'http://localhost:3001/theme/',
+        autoParseVSCodePasteData: true,
+        monacoOptions: {
+          minimap: { enabled: false }
+        }
+      });
+      
+      // Dirty check listener
+      mEditor.editor.onDidChangeModelContent(() => {
+        if (!isSettingValue) {
+          isDirty.value = true;
+        }
+      });
+      
+      const LEFT_NAV_FLOAT = "left-nav-float";
+      const ANIMATION_FADEINLEFT = "animate__fadeInLeft";
+
+      mEditor.on("closefullscreen", function() {
+        const leftNavEl = leftnav.value;
+        if (leftNavEl) {
+          const classList = leftNavEl.classList;
+          classList.remove(LEFT_NAV_FLOAT);
+          classList.remove(ANIMATION_FADEINLEFT);
+        }
+      });
+
+      // Paste handler
+      mEditor.on("paste", function(e) {
+        const files = e.clipboardData.files || [];
+        if (files.length > 0) {
+          Array.from(files).forEach(file => {
+             if (file.size > 20 * 1024 * 1024) {
+                 warn(`文件 ${file.name} 超过 20M，跳过上传`);
+                 return;
+             }
+             uploadFile(file, (url) => {
+                const isImage = file.type.startsWith('image/');
+                const text = isImage ? `![${file.name}](${url})` : `[${file.name}](${url})`;
+                const range = mEditor.getCurrentRange()[0];
+                mEditor.editor.executeEdits("", [{ range: range, text: "\n" + text + "\n" }]);
+             });
+          });
+        }
+      });
+
+      // Tool Icons
+      const className = "majoricon";
+      const icons = [
+        { icon: "icon-zhankaicaidan", title: "打开左侧侧边栏", className: className, position: "right" },
+        { icon: "icon-file-markdown1", title: "导入markdown", className: className },
+        { icon: "icon-fujian1", title: "托管附件", className: className, position: "right" },
+        { icon: "icon-baocun1", title: "保存文档", className: className, position: "right" }
+      ].map(opts => new mdpress.ToolIcon(opts));
+
+      icons.forEach(icon => icon.addTo(mEditor));
+
+      icons[0].on("click", function() {
+        if (mEditor.isFullScreen()) {
+          const leftNavEl = leftnav.value;
+          if (leftNavEl) {
+            const classList = leftNavEl.classList;
+            if (classList.contains(LEFT_NAV_FLOAT)) {
+              classList.remove(LEFT_NAV_FLOAT);
+              classList.remove(ANIMATION_FADEINLEFT);
+            } else {
+              classList.add(LEFT_NAV_FLOAT);
+              classList.add(ANIMATION_FADEINLEFT);
+            }
+          }
+        } else {
+          info("当编辑器全屏时才可以进行该操作");
+        }
+      });
+
+      icons[1].on("click", () => { importMd() });
+      icons[2].on("click", () => { openUploadPanel() });
+      icons[3].on("click", () => { saveDoc() });
+    }
 
     getAllSliders();
 
@@ -1081,11 +1166,11 @@ onBeforeRouteLeave((to, from) => {
 
 onBeforeUnmount(() => {
   window.removeEventListener("resize", handleResize);
-  if (editorDisposable) {
-    editorDisposable.dispose();
-  }
   window.removeEventListener("beforeunload", beforeUnloadListener);
-  destroyEditor();
+  if (mEditor && typeof mEditor.dispose === 'function') {
+      mEditor.dispose();
+  }
+  mEditor = null;
 });
 </script>
 

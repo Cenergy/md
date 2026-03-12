@@ -10,6 +10,9 @@ export default defineConfig({
       punycode: "punycode",
     },
   },
+  optimizeDeps: {
+    include: ['mdpress-monaco-editor'],
+  },
   server: {
     port: 3000,
     allowedHosts: ["note.gishai.top"],
