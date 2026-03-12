@@ -753,3 +753,26 @@
   color: #3451b2;
   background-color: rgba(100, 108, 255, 0.14);
 }
+
+/* Mobile view toggle */
+.mdeditor-toggle-btn {
+  display: none;
+  width: 40px;
+  height: 40px;
+  line-height: 40px;
+  text-align: center;
+  font-size: 14px;
+  background: rgba(0, 0, 0, 0.7);
+  color: #fff;
+  border-radius: 50%;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  cursor: pointer;
+  z-index: 1000;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.mdeditor-toggle-btn:hover {
+  background: rgba(0, 0, 0, 0.85);
+}

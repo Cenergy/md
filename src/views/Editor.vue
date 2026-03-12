@@ -343,7 +343,7 @@ import {
   querySliderList,
   uploadImageFile,
 } from "@/request/http";
-import { MDEditor, setShikiPaths } from 'mdpress-monaco-editor';
+import { MDEditor } from 'mdpress-monaco-editor';
 import * as mdpress from 'mdpress-monaco-editor';
 import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
 import jsonWorker from 'monaco-editor/esm/vs/language/json/json.worker?worker';
@@ -356,7 +356,7 @@ import 'katex/dist/katex.min.css';
 import 'viewerjs/dist/viewer.min.css';
 import 'swiper/css/bundle';
 import 'x-data-spreadsheet/dist/xspreadsheet.css';
-import 'mdpress-monaco-editor/dist/style.css';
+import 'mdpress-monaco-editor/dist/mdpress-monaco-editor.css';
 
 import { ElMessage, ElLoading, ElMessageBox } from "element-plus";
 import { pinyin } from "pinyin-pro";
@@ -1053,14 +1053,16 @@ onMounted(async () => {
       getMenus();
     }
 
+    
+
     // Init MDEditor
     if (editorContainer.value) {
       mEditor = new MDEditor(editorContainer.value, {
         theme: hero.value.theme || 'serene-rose',
-        themeURL: 'http://localhost:3001/theme/',
-        autoParseVSCodePasteData: true,
+        // themeURL: 'http://localhost:3001/theme/',
+        // autoParseVSCodePasteData: true,
         monacoOptions: {
-          minimap: { enabled: false }
+          // minimap: { enabled: false }
         }
       });
       
