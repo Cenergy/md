@@ -343,20 +343,12 @@ import {
   querySliderList,
   uploadImageFile,
 } from "@/request/http";
-import { MDEditor } from 'mdpress-monaco-editor';
-import * as mdpress from 'mdpress-monaco-editor';
-import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
-import jsonWorker from 'monaco-editor/esm/vs/language/json/json.worker?worker';
-import cssWorker from 'monaco-editor/esm/vs/language/css/css.worker?worker';
-import htmlWorker from 'monaco-editor/esm/vs/language/html/html.worker?worker';
-import tsWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker?worker';
-
-import 'highlight.js/styles/atom-one-dark.min.css';
-import 'katex/dist/katex.min.css';
-import 'viewerjs/dist/viewer.min.css';
-import 'swiper/css/bundle';
-import 'x-data-spreadsheet/dist/xspreadsheet.css';
-import 'mdpress-monaco-editor/dist/mdpress-monaco-editor.css';
+import {
+  loadMonaco,
+  createEditor,
+  getEditor,
+  destroyEditor
+} from "@/utils/editor";
 
 import { ElMessage, ElLoading, ElMessageBox } from "element-plus";
 import { pinyin } from "pinyin-pro";
@@ -368,30 +360,8 @@ const route = useRoute();
 const router = useRouter();
 const { toClipboard } = useClipboard();
 
-// Monaco Environment Setup
-const workers = {
-    json: jsonWorker,
-    css: cssWorker,
-    scss: cssWorker,
-    less: cssWorker,
-    html: htmlWorker,
-    handlebars: htmlWorker,
-    razor: htmlWorker,
-    typescript: tsWorker,
-    javascript: tsWorker
-};
-
-self.MonacoEnvironment = {
-    getWorker(_, label) {
-        return new (workers[label] || editorWorker)();
-    }
-};
-
-window.mdpress = mdpress;
-
 // State
 const editorContainer = ref(null);
-let mEditor = null;
 const hideHeader = ref(true);
 const hideLinksPanel = ref(true);
 const dialog = ref(false);
@@ -831,10 +801,10 @@ const docItemClick = (slider) => {
     }).then((res) => {
         console.log("🚀 ~ docItemClick ~ hero:", hero.value)
 
-      if (mEditor) {
-          if (hero.value.theme) mEditor.setTheme(hero.value.theme);
+      if (getEditor()) {
+          if (hero.value.theme) getEditor().setTheme(hero.value.theme);
           isSettingValue = true;
-          mEditor.setValue(res);
+          getEditor().setValue(res);
           isSettingValue = false;
           isDirty.value = false;
       }
@@ -844,13 +814,13 @@ const docItemClick = (slider) => {
 
 const saveDoc = () => {
   if (!currentMenu.value || !currentDoc.value) return Promise.resolve();
-  if (!mEditor) return Promise.resolve();
+  if (!getEditor()) return Promise.resolve();
   return apiSaveDoc({
     projectId: projectId.value,
     token: getToken(),
     link: currentMenu.value.link,
     item: currentDoc.value.link,
-    data: mEditor.getValue(),
+    data: getEditor().getValue(),
   }).then((res) => {
     success(`(${currentMenu.value.name}/${currentDoc.value.name})文档保存成功`);
     isDirty.value = false;
@@ -1057,85 +1027,24 @@ onMounted(async () => {
 
     // Init MDEditor
     if (editorContainer.value) {
-      mEditor = new MDEditor(editorContainer.value, {
+      createEditor(editorContainer.value, {
         theme: hero.value.theme || 'serene-rose',
-        // themeURL: 'http://localhost:3001/theme/',
-        // autoParseVSCodePasteData: true,
-        monacoOptions: {
-          // minimap: { enabled: false }
-        }
-      });
-      
-      // Dirty check listener
-      mEditor.editor.onDidChangeModelContent(() => {
-        if (!isSettingValue) {
-          isDirty.value = true;
-        }
-      });
-      
-      const LEFT_NAV_FLOAT = "left-nav-float";
-      const ANIMATION_FADEINLEFT = "animate__fadeInLeft";
-
-      mEditor.on("closefullscreen", function() {
-        const leftNavEl = leftnav.value;
-        if (leftNavEl) {
-          const classList = leftNavEl.classList;
-          classList.remove(LEFT_NAV_FLOAT);
-          classList.remove(ANIMATION_FADEINLEFT);
-        }
-      });
-
-      // Paste handler
-      mEditor.on("paste", function(e) {
-        const files = e.clipboardData.files || [];
-        if (files.length > 0) {
-          Array.from(files).forEach(file => {
-             if (file.size > 20 * 1024 * 1024) {
-                 warn(`文件 ${file.name} 超过 20M，跳过上传`);
-                 return;
-             }
-             uploadFile(file, (url) => {
-                const isImage = file.type.startsWith('image/');
-                const text = isImage ? `![${file.name}](${url})` : `[${file.name}](${url})`;
-                const range = mEditor.getCurrentRange()[0];
-                mEditor.editor.executeEdits("", [{ range: range, text: "\n" + text + "\n" }]);
-             });
-          });
-        }
-      });
-
-      // Tool Icons
-      const className = "majoricon";
-      const icons = [
-        { icon: "icon-zhankaicaidan", title: "打开左侧侧边栏", className: className, position: "right" },
-        { icon: "icon-file-markdown1", title: "导入markdown", className: className },
-        { icon: "icon-fujian1", title: "托管附件", className: className, position: "right" },
-        { icon: "icon-baocun1", title: "保存文档", className: className, position: "right" }
-      ].map(opts => new mdpress.ToolIcon(opts));
-
-      icons.forEach(icon => icon.addTo(mEditor));
-
-      icons[0].on("click", function() {
-        if (mEditor.isFullScreen()) {
-          const leftNavEl = leftnav.value;
-          if (leftNavEl) {
-            const classList = leftNavEl.classList;
-            if (classList.contains(LEFT_NAV_FLOAT)) {
-              classList.remove(LEFT_NAV_FLOAT);
-              classList.remove(ANIMATION_FADEINLEFT);
-            } else {
-              classList.add(LEFT_NAV_FLOAT);
-              classList.add(ANIMATION_FADEINLEFT);
-            }
+        warn: warn,
+        info: info,
+        uploadFile: uploadFile,
+        saveDoc: saveDoc,
+        importMd: importMd,
+        openUploadPanel: openUploadPanel,
+        getLeftNav: () => leftnav.value
+      }, () => {
+        const mEditor = getEditor();
+        // Dirty check listener
+        mEditor.editor.onDidChangeModelContent(() => {
+          if (!isSettingValue) {
+            isDirty.value = true;
           }
-        } else {
-          info("当编辑器全屏时才可以进行该操作");
-        }
+        });
       });
-
-      icons[1].on("click", () => { importMd() });
-      icons[2].on("click", () => { openUploadPanel() });
-      icons[3].on("click", () => { saveDoc() });
     }
 
     getAllSliders();

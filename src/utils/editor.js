@@ -1,4 +1,46 @@
-import * as monaco from 'monaco-editor'
+import { MDEditor } from 'mdpress-monaco-editor';
+import * as mdpress from 'mdpress-monaco-editor';
+import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
+import jsonWorker from 'monaco-editor/esm/vs/language/json/json.worker?worker';
+import cssWorker from 'monaco-editor/esm/vs/language/css/css.worker?worker';
+import htmlWorker from 'monaco-editor/esm/vs/language/html/html.worker?worker';
+import tsWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker?worker';
+
+import 'highlight.js/styles/atom-one-dark.min.css';
+import 'katex/dist/katex.min.css';
+import 'viewerjs/dist/viewer.min.css';
+import 'swiper/css/bundle';
+import 'x-data-spreadsheet/dist/xspreadsheet.css';
+import 'mdpress-monaco-editor/dist/mdpress-monaco-editor.css';
+
+// Monaco Environment Setup
+const workers = {
+    json: jsonWorker,
+    css: cssWorker,
+    scss: cssWorker,
+    less: cssWorker,
+    html: htmlWorker,
+    handlebars: htmlWorker,
+    razor: htmlWorker,
+    typescript: tsWorker,
+    javascript: tsWorker
+};
+
+let isMonacoInitialized = false;
+
+function initMonacoEnv() {
+    if (isMonacoInitialized) return;
+    
+    self.MonacoEnvironment = {
+        getWorker(_, label) {
+            return new (workers[label] || editorWorker)();
+        }
+    };
+    
+    // Mount mdpress to window for compatibility if needed elsewhere
+    window.mdpress = mdpress;
+    isMonacoInitialized = true;
+}
 
 let mdEditor = null;
 
@@ -8,11 +50,9 @@ export function getEditor() {
 
 export function destroyEditor() {
     if (mdEditor) {
-        // Try to dispose monaco instance if exposed
         if (mdEditor.editor && typeof mdEditor.editor.dispose === 'function') {
             mdEditor.editor.dispose();
         }
-        // If MDEditor has a dispose/destroy method, call it
         if (typeof mdEditor.dispose === 'function') {
             mdEditor.dispose();
         }
@@ -21,12 +61,7 @@ export function destroyEditor() {
 }
 
 export function loadMonaco(callback) {
-    if (window.registerMdPlugins) {
-        window.registerMdPlugins();
-    }
-    if (window.mdpress) {
-        window.mdpress.registerMonaco(monaco);
-    }
+    initMonacoEnv();
     if (callback) callback();
 }
 
@@ -36,29 +71,24 @@ export function createEditor(selector, config, callback) {
         return getEditor();
     }
 
-    const mdpress = window.mdpress;
-    if (!mdpress) {
-        console.error("mdpress not found");
-        return;
-    }
+    initMonacoEnv();
 
-    const theme = config.theme || "vitepress";
+    const theme = config.theme || "serene-rose";
     
-    mdEditor = new mdpress.MDEditor(selector, {
-        autoParseVSCodePasteData: true,
-        // themeURL: "./theme/", 
-        monacoOptions: {
+    mdEditor = new MDEditor(selector, {
+        theme: theme,
+        // themeURL: config.themeURL,
+        // autoParseVSCodePasteData: config.autoParseVSCodePasteData !== false,
+        monacoOptions: config.monacoOptions || {
             minimap: { enabled: false }
         }
     });
     
-    mdEditor.setTheme(theme);
-
     // Event listeners
     const LEFT_NAV_FLOAT = "left-nav-float";
     const ANIMATION_FADEINLEFT = "animate__fadeInLeft";
 
-    getEditor().on("closefullscreen", function() {
+    mdEditor.on("closefullscreen", function() {
         const leftNav = config.getLeftNav ? config.getLeftNav() : null;
         if (leftNav) {
             const classList = leftNav.classList;
@@ -68,12 +98,9 @@ export function createEditor(selector, config, callback) {
     });
 
     // Paste handler
-    getEditor().on("paste", function(e) {
+    mdEditor.on("paste", function(e) {
         const files = e.clipboardData.files || [];
         if (files.length > 0) {
-             // Basic implementation of file upload on paste
-             // The original logic filtered by size (20MB) and count (10)
-             // and called config.uploadFile
              Array.from(files).forEach(file => {
                  if (file.size > 20 * 1024 * 1024) {
                      if (config.warn) config.warn(`文件 ${file.name} 超过 20M，跳过上传`);
@@ -85,8 +112,8 @@ export function createEditor(selector, config, callback) {
                         const isImage = file.type.startsWith('image/');
                         const text = isImage ? `![${file.name}](${url})` : `[${file.name}](${url})`;
                         
-                        const range = getEditor().getCurrentRange()[0];
-                        getEditor().editor.executeEdits("", [{ range: range, text: "\n" + text + "\n" }]);
+                        const range = mdEditor.getCurrentRange()[0];
+                        mdEditor.editor.executeEdits("", [{ range: range, text: "\n" + text + "\n" }]);
                     });
                  }
              });
@@ -100,7 +127,6 @@ export function createEditor(selector, config, callback) {
 }
 
 function addToolicons(config) {
-    const mdpress = window.mdpress;
     const className = "majoricon";
     const icons = [
         { icon: "icon-zhankaicaidan", title: "打开左侧侧边栏", className: className, position: "right" },
@@ -109,13 +135,13 @@ function addToolicons(config) {
         { icon: "icon-baocun1", title: "保存文档", className: className, position: "right" }
     ].map(opts => new mdpress.ToolIcon(opts));
 
-    icons.forEach(icon => icon.addTo(getEditor()));
+    icons.forEach(icon => icon.addTo(mdEditor));
 
     const LEFT_NAV_FLOAT = "left-nav-float";
     const ANIMATION_FADEINLEFT = "animate__fadeInLeft";
 
     icons[0].on("click", function() {
-        if (getEditor().isFullScreen()) {
+        if (mdEditor.isFullScreen()) {
             const leftNav = config.getLeftNav ? config.getLeftNav() : null;
             if (leftNav) {
                 const classList = leftNav.classList;
