@@ -11,7 +11,7 @@ npm run dev
 
 ### 数据库管理 (Prisma)
 
-本项目使用 Prisma ORM + SQLite。Schema 文件位于 `server/prisma/schema.prisma`。
+本项目使用 Prisma ORM + SQLite。Schema 文件位于 `server/data/schema.prisma`。
 已在 `package.json` 中配置了 schema 路径，因此无需手动指定 `--schema` 参数。
 
 - **同步数据库结构 (开发常用)**
@@ -38,8 +38,6 @@ npm run dev
   npx prisma studio
   ```
 
-  npx prisma db push --schema=server/data/schema.prisma
-
 ## 构建 (Build)
 
 ### 构建前端 (Frontend Build)
@@ -56,16 +54,22 @@ npm run build:docs
 **注意**: 如果未设置 `PROJECT_ID` 环境变量，脚本将自动尝试从数据库中获取第一个项目进行构建。
 确保在运行此命令前，本地后端服务 (`npm run dev` 或 `npm run server`) 已经启动。
 
+## 部署 (Deployment)
+
+### Docker 部署
 
 Docker 部署所需的三个核心文件：
 
-1. Dockerfile : 定义了如何构建你的项目镜像（安装依赖 -> 构建前端 -> 生成数据库客户端 -> 启动服务）。
-2. .dockerignore : 告诉 Docker 忽略哪些文件（比如本地的 node_modules 和 .env ），减小镜像体积。
-3. docker-compose.yml : 定义了运行配置。特别配置了 Volumes（卷挂载） ，把服务器上的数据库文件 ( database.sqlite )、上传文件 ( uploads ) 和生成的文档 ( docs ) 映射出来。这样即使你重启或升级容器，数据也不会丢失。
+1. **Dockerfile**: 定义了如何构建你的项目镜像（安装依赖 -> 构建前端 -> 生成数据库客户端 -> 启动服务）。
+2. **.dockerignore**: 告诉 Docker 忽略哪些文件（比如本地的 `node_modules` 和 `.env`），减小镜像体积。
+3. **docker-compose.yml**: 定义了运行配置。特别配置了 Volumes（卷挂载），把服务器上的数据库文件 (`database.sqlite`)、上传文件 (`uploads`) 和生成的文档 (`docs`) 映射出来。这样即使你重启或升级容器，数据也不会丢失。
+
 ### 🚀 如何使用？
+
 只需要把整个项目代码上传到服务器，然后运行一条命令：
 
+```bash
+docker-compose up -d --build
 ```
-docker-compose up -d --build
-```
+
 系统就会自动完成构建并在后台启动，运行在 3001 端口。
