@@ -954,7 +954,7 @@ const importMd = () => {
       let file = input.files[0];
       let reader = new FileReader();
       reader.onload = () => {
-        if (mEditor && reader.result) mEditor.setValue(reader.result);
+        if (getEditor() && reader.result) getEditor().setValue(reader.result);
       };
       reader.readAsText(file);
     } else {
@@ -1078,10 +1078,7 @@ onBeforeRouteLeave((to, from) => {
 onBeforeUnmount(() => {
   window.removeEventListener("resize", handleResize);
   window.removeEventListener("beforeunload", beforeUnloadListener);
-  if (mEditor && typeof mEditor.dispose === 'function') {
-      mEditor.dispose();
-  }
-  mEditor = null;
+  destroyEditor();
 });
 </script>
 
