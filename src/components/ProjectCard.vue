@@ -14,25 +14,25 @@
     </div>
 
     <div class="project-body">
-      <div class="action-grid">
+      <div class="action-grid" :class="{ 'is-owner': mode === 'owner', 'is-collaborator': mode !== 'owner' }">
         <template v-if="mode === 'owner'">
-          <div class="action-item" @click="emit('profile', project)">
+          <div class="action-item action-item-secondary" @click="emit('profile', project)">
             <i class="iconfont icon-xiugai"></i>
             <span>设置</span>
           </div>
-          <div class="action-item" @click="emit('docs', project)">
+          <div class="action-item action-item-primary" @click="emit('docs', project)">
             <i class="iconfont icon-jiaocheng"></i>
             <span>创作</span>
           </div>
-          <div class="action-item" @click="emit('collaborate', project)">
-            <i class="iconfont icon-renren"></i>
-            <span>协作</span>
-          </div>
         </template>
         <template v-else>
-          <div class="action-item" @click="emit('docs', project)">
+          <div class="action-item action-item-secondary" @click="emit('profile', project)">
+            <i class="iconfont icon-xiugai"></i>
+            <span>设置</span>
+          </div>
+          <div class="action-item action-item-primary" @click="emit('docs', project)">
             <i class="iconfont icon-jiaocheng"></i>
-            <span>文档</span>
+            <span>创作</span>
           </div>
         </template>
       </div>
@@ -75,7 +75,7 @@ defineProps({
   },
 });
 
-const emit = defineEmits(["profile", "docs", "collaborate", "build"]);
+const emit = defineEmits(["profile", "docs", "build"]);
 </script>
 
 <style scoped>
@@ -157,9 +157,16 @@ const emit = defineEmits(["profile", "docs", "collaborate", "build"]);
 
 .action-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+  gap: 12px;
   margin-bottom: 20px;
+}
+
+.action-grid.is-owner {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.action-grid.is-collaborator {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .action-item {
@@ -178,6 +185,30 @@ const emit = defineEmits(["profile", "docs", "collaborate", "build"]);
 .action-item:hover {
   background: #eef2ff;
   color: var(--primary-color);
+}
+
+.action-item-secondary {
+  background: #f7f8fa;
+  border: 1px solid #ebeef5;
+  color: #606266;
+}
+
+.action-item-secondary:hover {
+  background: #f2f3f5;
+  border-color: #dcdfe6;
+  color: #409eff;
+}
+
+.action-item-primary {
+  background: rgba(64, 158, 255, 0.1);
+  border: 1px solid rgba(64, 158, 255, 0.28);
+  color: #2f76d2;
+}
+
+.action-item-primary:hover {
+  background: rgba(64, 158, 255, 0.16);
+  border-color: rgba(64, 158, 255, 0.4);
+  color: #1f5fb8;
 }
 
 .action-item .iconfont {
@@ -235,7 +266,6 @@ const emit = defineEmits(["profile", "docs", "collaborate", "build"]);
 
 @media (max-width: 768px) {
   .action-grid {
-    grid-template-columns: repeat(2, 1fr);
     gap: 8px;
   }
 

@@ -27,10 +27,10 @@
           <div class="tab-panel">
             <el-form :model="currentProject" label-width="120px" size="mini">
               <el-form-item label="项目名称">
-                <el-input v-model="currentProject.name" placeholder="VitePress"></el-input>
+                <el-input v-model="currentProject.name" :readonly="!canEdit" placeholder="VitePress"></el-input>
               </el-form-item>
               <el-form-item label="markdown主题">
-                <el-select v-model="currentProject.theme" placeholder="请选择" style="width: 100%">
+                <el-select v-model="currentProject.theme" :disabled="!canEdit" placeholder="请选择" style="width: 100%">
                   <el-option
                     v-for="item in themes"
                     :key="item.value"
@@ -44,12 +44,13 @@
                 >
               </el-form-item>
               <el-form-item label="菜单主题颜色">
-                <el-color-picker v-model="currentProject.themeColor" size="mini"></el-color-picker>
+                <el-color-picker v-model="currentProject.themeColor" :disabled="!canEdit" size="mini"></el-color-picker>
               </el-form-item>
 
               <el-form-item label="简易描述">
                 <el-input
                   v-model="currentProject.text"
+                  :readonly="!canEdit"
                   placeholder="Vite & Vue Powered Static Site Generator"
                 ></el-input>
               </el-form-item>
@@ -57,12 +58,13 @@
                 <el-input
                   type="textarea"
                   v-model="currentProject.tagline"
+                  :readonly="!canEdit"
                   placeholder="Simple, powerful, and fast. Meet the modern SSG framework you've always wanted."
                   :rows="2"
                 ></el-input>
               </el-form-item>
               <el-form-item label="特点">
-                <el-button type="text" @click="emit('add-feature')">+添加</el-button>
+                <el-button v-if="canEdit" type="text" @click="emit('add-feature')">+添加</el-button>
                 <div class="feature-row">
                   <div
                     v-for="(feature, index) in currentProject.features"
@@ -75,12 +77,13 @@
                       <el-col :span="15" :xs="18">
                         <el-input
                           v-model="feature.title"
+                          :readonly="!canEdit"
                           placeholder="Focus on Your Content"
                           size="mini"
                         ></el-input>
                       </el-col>
                       <el-col :span="6" :xs="6">
-                        <el-button type="danger" size="mini" @click="emit('delete-feature', index)"
+                        <el-button v-if="canEdit" type="danger" size="mini" @click="emit('delete-feature', index)"
                           >删除</el-button
                         >
                       </el-col>
@@ -91,6 +94,7 @@
                         <el-input
                           type="textarea"
                           v-model="feature.details"
+                          :readonly="!canEdit"
                           placeholder="Effortlessly create beautiful documentation sites with just markdown."
                           :rows="2"
                           size="mini"
@@ -103,29 +107,33 @@
               <el-form-item label="github地址">
                 <el-input
                   v-model="currentProject.github"
+                  :readonly="!canEdit"
                   placeholder="https://github.com/deyihu/maptalks-study"
                 ></el-input>
               </el-form-item>
               <el-form-item label="知乎地址">
                 <el-input
                   v-model="currentProject.zhihu"
+                  :readonly="!canEdit"
                   placeholder="https://www.zhihu.com/people/de-yi-3-36"
                 ></el-input>
               </el-form-item>
               <el-form-item label="稀土掘金地址">
                 <el-input
                   v-model="currentProject.juejin"
+                  :readonly="!canEdit"
                   placeholder="https://juejin.cn/user/1714850585917101"
                 ></el-input>
               </el-form-item>
               <el-form-item label="iconfont地址">
                 <el-input
                   v-model="currentProject.iconfontUrl"
+                  :readonly="!canEdit"
                   placeholder="//at.alicdn.com/t/c/font_3975977_4a47fo4twin.css"
                 ></el-input>
               </el-form-item>
 
-              <div class="danger-zone">
+              <div v-if="canEdit" class="danger-zone">
                 <div class="danger-title">⚠️危险操作</div>
                 <div class="danger-content">
                   <div class="danger-item">
@@ -160,7 +168,7 @@
         </el-tab-pane>
         <el-tab-pane label="协作管理" name="collaborate">
           <div class="tab-panel">
-            <div class="search-box">
+            <div v-if="canEdit" class="search-box">
               <el-input
                 :model-value="searchKeywords"
                 @update:model-value="(value) => emit('update:searchKeywords', value)"
@@ -171,7 +179,7 @@
                 >搜索</el-button
               >
             </div>
-            <div v-if="searchData.length > 0" class="search-results">
+            <div v-if="canEdit && searchData.length > 0" class="search-results">
               <h4>搜索结果</h4>
               <div v-for="(user, idx) in searchData" :key="user.id" class="user-item">
                 <span class="user-email" :title="user.email">{{ user.email }}</span>
@@ -185,7 +193,7 @@
             <div v-for="user in linkUsers" :key="user.id" class="user-item">
               <span class="user-email" :title="user.email">{{ user.email }}</span>
               <el-button type="danger" size="small" @click="emit('delete-link-user', user)"
-                >删除</el-button
+                >{{ canEdit ? "删除" : "退出" }}</el-button
               >
             </div>
           </div>
@@ -197,7 +205,7 @@
         <el-button @click="emit('update:visible', false)">{{
           modalActiveTab === "settings" ? "取消" : "关闭"
         }}</el-button>
-        <el-button v-if="modalActiveTab === 'settings'" type="primary" @click="emit('save-profile')"
+        <el-button v-if="modalActiveTab === 'settings' && canEdit" type="primary" @click="emit('save-profile')"
           >保存</el-button
         >
       </span>
@@ -250,6 +258,10 @@ defineProps({
   deleteLoading: {
     type: Boolean,
     default: false,
+  },
+  canEdit: {
+    type: Boolean,
+    default: true,
   },
 });
 

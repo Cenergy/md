@@ -25,7 +25,6 @@
           mode="owner"
           @profile="handleProfile"
           @docs="handleDocs"
-          @collaborate="handleCollaborate"
           @build="handleBuild"
         />
       </div>
@@ -42,6 +41,7 @@
           :key="project.id"
           :project="project"
           mode="collaborator"
+          @profile="handleProfile"
           @docs="handleDocs"
           @build="handleBuild"
         />
@@ -78,6 +78,7 @@
       v-model:search-keywords="searchKeywords"
       v-model:delete-confirm-input="deleteConfirmInput"
       :current-project="currentProject"
+      :can-edit="currentProjectCanEdit"
       :themes="themes"
       :search-loading="searchLoading"
       :search-data="searchData"
@@ -139,6 +140,7 @@ const form = reactive({
 const showSettingsModal = ref(false);
 const modalActiveTab = ref("settings");
 const currentProject = ref(null);
+const currentProjectCanEdit = ref(true);
 const themes = [
   "vitepress",
   "v-green",
@@ -187,6 +189,10 @@ const formatProjectURL = (project) => {
     return `${host}/p/${project.id}/`;
   }
   return `https://note.gishai.top/p/${project.id}/`;
+};
+
+const isOwnerProject = (projectId) => {
+  return projects.value.some((item) => item.id === projectId);
 };
 
 const loadProjects = async () => {
@@ -273,6 +279,10 @@ const handleBuild = async (project) => {
 
 const openProjectModal = async (project, tab = "settings") => {
   try {
+    currentProjectCanEdit.value = isOwnerProject(project.id);
+    if (!currentProjectCanEdit.value && tab === "collaborate") {
+      tab = "settings";
+    }
     const data = await queryProjectProfile({ projectId: project.id });
     currentProject.value = {
       features: [],
@@ -315,6 +325,10 @@ const deleteFeature = (index) => {
 
 const saveProfile = async () => {
   if (!currentProject.value) return;
+  if (!currentProjectCanEdit.value) {
+    ElMessage.warning("当前项目为只读，无法保存");
+    return;
+  }
   try {
     // Update project name first
     if (currentProject.value.name) {
@@ -348,6 +362,10 @@ const cancelDeleteConfirm = () => {
 
 const handleDeleteProject = async () => {
   if (!currentProject.value) return;
+  if (!currentProjectCanEdit.value) {
+    ElMessage.warning("当前项目为只读，无法删除");
+    return;
+  }
   if (!showDeleteConfirmInput.value) {
     showDeleteConfirmInput.value = true;
     return;
@@ -388,6 +406,7 @@ const handleSettingsTabClick = async (tab) => {
 
 const handleSettingsModalClosed = () => {
   modalActiveTab.value = "settings";
+  currentProjectCanEdit.value = true;
   searchKeywords.value = "";
   searchData.value = [];
   resetDeleteConfirm();
@@ -403,6 +422,10 @@ const loadLinkUsers = async (projectId) => {
 };
 
 const handleSearchUser = async () => {
+  if (!currentProjectCanEdit.value) {
+    ElMessage.warning("当前项目为只读，无法管理协作者");
+    return;
+  }
   if (!searchKeywords.value) return;
   searchLoading.value = true;
   try {
@@ -421,6 +444,10 @@ const handleSearchUser = async () => {
 };
 
 const addLinkUser = async (index, user) => {
+  if (!currentProjectCanEdit.value) {
+    ElMessage.warning("当前项目为只读，无法管理协作者");
+    return;
+  }
   if (!currentLinkProject.value) return;
   try {
     await saveProjectLinkUser({
@@ -445,10 +472,16 @@ const handleDeleteLinkUser = async (user) => {
       projectId: currentLinkProject.value.id,
       uid: user.id,
     });
-    ElMessage.success(`删除协作者 ${user.email} 成功`);
+    if (currentProjectCanEdit.value) {
+      ElMessage.success(`删除协作者 ${user.email} 成功`);
+    } else {
+      ElMessage.success(`已退出 ${currentLinkProject.value.name} 协作`);
+      showSettingsModal.value = false;
+      await loadCollaborateProjects();
+    }
     loadLinkUsers(currentLinkProject.value.id);
   } catch (e) {
-    ElMessage.error("删除协作者失败");
+    ElMessage.error(currentProjectCanEdit.value ? "删除协作者失败" : "退出协作失败");
   }
 };
 
