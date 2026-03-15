@@ -1,5 +1,6 @@
 import axios from "axios";
-import { getToken } from "@/utils";
+import { getToken, removeToken } from "@/utils";
+import router from "@/router";
 
 axios.defaults.baseURL = import.meta.env.VITE_BASE_URL;
 
@@ -11,10 +12,6 @@ service.interceptors.request.use(
   (config) => {
     const token = getToken();
     if (token) {
-      // Assuming standard Bearer token or custom header.
-      // The original code in uploadFile used formData.append('token', getToken())
-      // But for get/post it likely used headers or query params.
-      // Without seeing the original get/post implementation, I'll add it to headers.
       config.headers["token"] = token;
     }
     return config;
@@ -29,6 +26,10 @@ service.interceptors.response.use(
     return response.data;
   },
   (error) => {
+    if (error.response && error.response.status === 401) {
+      removeToken();
+      router.push("/login");
+    }
     return Promise.reject(error);
   },
 );
