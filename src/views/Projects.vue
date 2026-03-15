@@ -145,221 +145,240 @@
       </template>
     </el-dialog>
 
-    <!-- Profile Drawer -->
-    <el-drawer
-      v-model="profileDrawerVisible"
-      size="30%"
-      class="responsive-drawer project-settings-drawer"
-      :with-header="true"
+    <!-- Project Settings Modal -->
+    <el-dialog
+      v-model="showSettingsModal"
+      class="project-settings-modal"
+      width="60%"
+      top="0"
+      transition="fade-dialog"
+      :close-on-click-modal="true"
+      :close-on-press-escape="true"
+      @closed="handleSettingsModalClosed"
     >
       <template #header>
-        <div class="custom-drawer-header">
-          <span class="drawer-title">{{ currentProject ? currentProject.name : '' }}</span>
-          <span class="drawer-subtitle">项目配置</span>
+        <div class="custom-modal-header">
+          <span class="modal-title">{{ currentProject ? currentProject.name : '' }}</span>
+          <span class="modal-subtitle">项目配置</span>
         </div>
       </template>
-      
-      <div
-        class="drawer-content-wrapper"
-        v-if="currentProject"
-      >
-        <el-form :model="currentProject" label-width="120px" size="mini">
-            <el-form-item label="项目名称">
-              <el-input
-                v-model="currentProject.name"
-                placeholder="VitePress"
-              ></el-input>
-            </el-form-item>
-            <el-form-item label="markdown主题">
-              <el-select
-                v-model="currentProject.theme"
-                placeholder="请选择"
-                style="width: 100%"
-              >
-                <el-option
-                  v-for="item in themes"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value"
-                >
-                </el-option>
-              </el-select>
-              <a
-                href="./theme.html"
-                target="_blank"
-                class="el-link el-link--default is-underline"
-                ><!----><span class="el-link--inner">不知道怎么选?点我</span
-                ><!----></a
-              ><!---->
-            </el-form-item>
-            <el-form-item label="菜单主题颜色">
-              <el-color-picker
-                v-model="currentProject.themeColor"
-                size="mini"
-              ></el-color-picker>
-            </el-form-item>
+      <div class="modal-content-wrapper" v-if="currentProject">
+        <el-tabs v-model="modalActiveTab" class="settings-tabs" @tab-click="handleSettingsTabClick">
+          <el-tab-pane label="项目配置" name="settings">
+            <div class="tab-panel">
+              <el-form :model="currentProject" label-width="120px" size="mini">
+                <el-form-item label="项目名称">
+                  <el-input
+                    v-model="currentProject.name"
+                    placeholder="VitePress"
+                  ></el-input>
+                </el-form-item>
+                <el-form-item label="markdown主题">
+                  <el-select
+                    v-model="currentProject.theme"
+                    placeholder="请选择"
+                    style="width: 100%"
+                  >
+                    <el-option
+                      v-for="item in themes"
+                      :key="item.value"
+                      :label="item.label"
+                      :value="item.value"
+                    >
+                    </el-option>
+                  </el-select>
+                  <a
+                    href="./theme.html"
+                    target="_blank"
+                    class="el-link el-link--default is-underline"
+                    ><!----><span class="el-link--inner">不知道怎么选?点我</span
+                    ><!----></a
+                  ><!---->
+                </el-form-item>
+                <el-form-item label="菜单主题颜色">
+                  <el-color-picker
+                    v-model="currentProject.themeColor"
+                    size="mini"
+                  ></el-color-picker>
+                </el-form-item>
 
-            <el-form-item label="简易描述">
-              <el-input
-                v-model="currentProject.text"
-                placeholder="Vite & Vue Powered Static Site Generator"
-              ></el-input>
-            </el-form-item>
-            <el-form-item label="宣传语">
-              <el-input
-                type="textarea"
-                v-model="currentProject.tagline"
-                placeholder="Simple, powerful, and fast. Meet the modern SSG framework you've always wanted."
-                :rows="2"
-              ></el-input>
-            </el-form-item>
-            <el-form-item label="特点">
-              <el-button type="text" @click="addFeature">+添加</el-button>
-              <div class="feature-row">
-                <div
-                  v-for="(feature, index) in currentProject.features"
-                  :key="index"
-                  class="item"
-                  style="
-                    margin-bottom: 10px;
-                    border: 1px solid #eee;
-                    padding: 10px;
-                  "
+                <el-form-item label="简易描述">
+                  <el-input
+                    v-model="currentProject.text"
+                    placeholder="Vite & Vue Powered Static Site Generator"
+                  ></el-input>
+                </el-form-item>
+                <el-form-item label="宣传语">
+                  <el-input
+                    type="textarea"
+                    v-model="currentProject.tagline"
+                    placeholder="Simple, powerful, and fast. Meet the modern SSG framework you've always wanted."
+                    :rows="2"
+                  ></el-input>
+                </el-form-item>
+                <el-form-item label="特点">
+                  <el-button type="text" @click="addFeature">+添加</el-button>
+                  <div class="feature-row">
+                    <div
+                      v-for="(feature, index) in currentProject.features"
+                      :key="index"
+                      class="item"
+                      style="
+                        margin-bottom: 10px;
+                        border: 1px solid #eee;
+                        padding: 10px;
+                      "
+                    >
+                      <el-row :gutter="10" style="margin-bottom: 5px">
+                        <el-col :span="3" :xs="24" class="mobile-label">标题</el-col>
+                        <el-col :span="15" :xs="18">
+                          <el-input
+                            v-model="feature.title"
+                            placeholder="Focus on Your Content"
+                            size="mini"
+                          ></el-input>
+                        </el-col>
+                        <el-col :span="6" :xs="6">
+                          <el-button
+                            type="danger"
+                            size="mini"
+                            @click="deleteFeature(index)"
+                            >删除</el-button
+                          >
+                        </el-col>
+                      </el-row>
+                      <el-row :gutter="10">
+                        <el-col :span="3" :xs="24" class="mobile-label">描述</el-col>
+                        <el-col :span="18" :xs="24">
+                          <el-input
+                            type="textarea"
+                            v-model="feature.details"
+                            placeholder="Effortlessly create beautiful documentation sites with just markdown."
+                            :rows="2"
+                            size="mini"
+                          ></el-input>
+                        </el-col>
+                      </el-row>
+                    </div>
+                  </div>
+                </el-form-item>
+                <el-form-item label="github地址">
+                  <el-input
+                    v-model="currentProject.github"
+                    placeholder="https://github.com/deyihu/maptalks-study"
+                  ></el-input>
+                </el-form-item>
+                <el-form-item label="知乎地址">
+                  <el-input
+                    v-model="currentProject.zhihu"
+                    placeholder="https://www.zhihu.com/people/de-yi-3-36"
+                  ></el-input>
+                </el-form-item>
+                <el-form-item label="稀土掘金地址">
+                  <el-input
+                    v-model="currentProject.juejin"
+                    placeholder="https://juejin.cn/user/1714850585917101"
+                  ></el-input>
+                </el-form-item>
+                <el-form-item label="iconfont地址">
+                  <el-input
+                    v-model="currentProject.iconfontUrl"
+                    placeholder="//at.alicdn.com/t/c/font_3975977_4a47fo4twin.css"
+                  ></el-input>
+                </el-form-item>
+
+                <div class="danger-zone">
+                  <div class="danger-title">⚠️危险操作</div>
+                  <div class="danger-content">
+                    <div class="danger-item">
+                      <div class="danger-info">
+                        <h4>删除项目</h4>
+                        <p>一旦你删除项目，所有数据都会被永久删除，无法找回。请谨慎操作。</p>
+                        <el-input
+                          v-if="showDeleteConfirmInput"
+                          v-model="deleteConfirmInput"
+                          class="delete-confirm-input"
+                          :placeholder="`请输入项目ID ${currentProject.id} 确认删除`"
+                        ></el-input>
+                      </div>
+                      <div class="danger-actions">
+                        <el-button
+                          v-if="showDeleteConfirmInput"
+                          @click="cancelDeleteConfirm"
+                        >取消</el-button>
+                        <el-button
+                          type="danger"
+                          :plain="!showDeleteConfirmInput"
+                          :loading="deleteLoading"
+                          @click="handleDeleteProject"
+                        >{{ showDeleteConfirmInput ? "确认删除" : "删除项目" }}</el-button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </el-form>
+            </div>
+          </el-tab-pane>
+          <el-tab-pane label="协作管理" name="collaborate">
+            <div class="tab-panel">
+              <div class="search-box">
+                <el-input
+                  v-model="searchKeywords"
+                  placeholder="输入邮箱搜索用户"
+                  class="search-input"
+                ></el-input>
+                <el-button
+                  type="primary"
+                  @click="handleSearchUser"
+                  :loading="searchLoading"
+                  >搜索</el-button
                 >
-                  <el-row :gutter="10" style="margin-bottom: 5px">
-                    <el-col :span="3" :xs="24" class="mobile-label">标题</el-col>
-                    <el-col :span="15" :xs="18">
-                      <el-input
-                        v-model="feature.title"
-                        placeholder="Focus on Your Content"
-                        size="mini"
-                      ></el-input>
-                    </el-col>
-                    <el-col :span="6" :xs="6">
-                      <el-button
-                        type="danger"
-                        size="mini"
-                        @click="deleteFeature(index)"
-                        >删除</el-button
-                      >
-                    </el-col>
-                  </el-row>
-                  <el-row :gutter="10">
-                    <el-col :span="3" :xs="24" class="mobile-label">描述</el-col>
-                    <el-col :span="18" :xs="24">
-                      <el-input
-                        type="textarea"
-                        v-model="feature.details"
-                        placeholder="Effortlessly create beautiful documentation sites with just markdown."
-                        :rows="2"
-                        size="mini"
-                      ></el-input>
-                    </el-col>
-                  </el-row>
+              </div>
+              <div
+                v-if="searchData.length > 0"
+                class="search-results"
+              >
+                <h4>搜索结果</h4>
+                <div
+                  v-for="(user, idx) in searchData"
+                  :key="user.id"
+                  class="user-item"
+                >
+                  <span class="user-email" :title="user.email">{{ user.email }}</span>
+                  <el-button
+                    type="success"
+                    size="small"
+                    @click="addLinkUser(idx, user)"
+                    >添加</el-button
+                  >
                 </div>
               </div>
-            </el-form-item>
-            <el-form-item label="github地址">
-              <el-input
-                v-model="currentProject.github"
-                placeholder="https://github.com/deyihu/maptalks-study"
-              ></el-input>
-            </el-form-item>
-            <el-form-item label="知乎地址">
-              <el-input
-                v-model="currentProject.zhihu"
-                placeholder="https://www.zhihu.com/people/de-yi-3-36"
-              ></el-input>
-            </el-form-item>
-            <el-form-item label="稀土掘金地址">
-              <el-input
-                v-model="currentProject.juejin"
-                placeholder="https://juejin.cn/user/1714850585917101"
-              ></el-input>
-            </el-form-item>
-            <el-form-item label="iconfont地址">
-              <el-input
-                v-model="currentProject.iconfontUrl"
-                placeholder="//at.alicdn.com/t/c/font_3975977_4a47fo4twin.css"
-              ></el-input>
-            </el-form-item>
-            <el-form-item>
-              <el-button type="primary" @click="saveProfile">保存</el-button>
-            </el-form-item>
-            
-            <div class="danger-zone">
-              <div class="danger-title">⚠️危险操作</div>
-              <div class="danger-content">
-                <div class="danger-item">
-                  <div class="danger-info">
-                    <h4>删除项目</h4>
-                    <p>一旦你删除项目，所有数据都会被永久删除，无法找回。请谨慎操作。</p>
-                  </div>
-                  <el-button type="danger" plain @click="handleDeleteProject">删除项目</el-button>
-                </div>
+
+              <h4>当前协作者</h4>
+              <div
+                v-for="user in linkUsers"
+                :key="user.id"
+                class="user-item"
+              >
+                <span class="user-email" :title="user.email">{{ user.email }}</span>
+                <el-button
+                  type="danger"
+                  size="small"
+                  @click="handleDeleteLinkUser(user)"
+                  >删除</el-button
+                >
               </div>
             </div>
-          </el-form>
+          </el-tab-pane>
+        </el-tabs>
       </div>
-    </el-drawer>
-
-    <!-- Collaborate Drawer -->
-    <el-drawer
-      v-model="collaborateDrawerVisible"
-      :title="linkUserTitle"
-      size="30%"
-      class="responsive-drawer"
-    >
-      <div class="drawer-content">
-        <div class="search-box">
-          <el-input
-            v-model="searchKeywords"
-            placeholder="输入邮箱搜索用户"
-            class="search-input"
-          ></el-input>
-          <el-button
-            type="primary"
-            @click="handleSearchUser"
-            :loading="searchLoading"
-            >搜索</el-button
-          >
-        </div>
-        <div
-          v-if="searchData.length > 0"
-          class="search-results"
-        >
-          <h4>搜索结果</h4>
-          <div
-            v-for="(user, idx) in searchData"
-            :key="user.id"
-            class="user-item"
-          >
-            <span class="user-email" :title="user.email">{{ user.email }}</span>
-            <el-button
-              type="success"
-              size="small"
-              @click="addLinkUser(idx, user)"
-              >添加</el-button
-            >
-          </div>
-        </div>
-
-        <h4>当前协作者</h4>
-        <div
-          v-for="user in linkUsers"
-          :key="user.id"
-          class="user-item"
-        >
-          <span class="user-email" :title="user.email">{{ user.email }}</span>
-          <el-button
-            type="danger"
-            size="small"
-            @click="handleDeleteLinkUser(user)"
-            >删除</el-button
-          >
-        </div>
-      </div>
-    </el-drawer>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="showSettingsModal = false">{{ modalActiveTab === "settings" ? "取消" : "关闭" }}</el-button>
+          <el-button v-if="modalActiveTab === 'settings'" type="primary" @click="saveProfile">保存</el-button>
+        </span>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -384,7 +403,6 @@ import {
   deleteProjectLinkUser,
   deleteProject,
 } from "../request/http";
-import { ElMessageBox } from "element-plus";
 
 const router = useRouter();
 
@@ -399,8 +417,9 @@ const form = reactive({
   id: "",
 });
 
-// Profile Drawer State
-const profileDrawerVisible = ref(false);
+// Profile Modal State
+const showSettingsModal = ref(false);
+const modalActiveTab = ref("settings");
 const currentProject = ref(null);
 const themes = [
   "vitepress",
@@ -430,14 +449,14 @@ const themes = [
   "greenwillow",
 ].map((e) => ({ value: e, label: e }));
 
-// Collaborate Drawer State
-const collaborateDrawerVisible = ref(false);
-const linkUserTitle = ref("");
 const searchKeywords = ref("");
 const searchLoading = ref(false);
 const searchData = ref([]);
 const linkUsers = ref([]);
 const currentLinkProject = ref(null);
+const showDeleteConfirmInput = ref(false);
+const deleteConfirmInput = ref("");
+const deleteLoading = ref(false);
 
 // Methods
 const getHost = () => {
@@ -534,24 +553,30 @@ const handleBuild = async (project) => {
   }
 };
 
-// Profile Methods
-const handleProfile = async (project) => {
+const openProjectModal = async (project, tab = "settings") => {
   try {
     const data = await queryProjectProfile({ projectId: project.id });
-    console.log("🚀 ~ handleProfile ~ data:", data)
     currentProject.value = {
       features: [],
       themeColor: "#10b981",
       theme: "vitepress",
       ...data.data.hero || {},
       id: project.id,
-      name: project.name, // Ensure name is present
+      name: project.name,
     };
-    console.log("🚀 ~ handleProfile ~ currentProject:", currentProject)
-    profileDrawerVisible.value = true;
+    currentLinkProject.value = project;
+    modalActiveTab.value = tab;
+    if (tab === "collaborate") {
+      await loadLinkUsers(project.id);
+    }
+    showSettingsModal.value = true;
   } catch (e) {
     ElMessage.error("获取项目配置失败");
   }
+};
+
+const handleProfile = async (project) => {
+  await openProjectModal(project, "settings");
 };
 
 const addFeature = () => {
@@ -586,8 +611,7 @@ const saveProfile = async () => {
       profileData: currentProject.value,
     });
     ElMessage.success(`保存 ${currentProject.value.name} 配置成功`);
-    profileDrawerVisible.value = false;
-    // Refresh project list to reflect name changes
+    showSettingsModal.value = false;
     loadProjects();
   } catch (e) {
     console.error(e);
@@ -595,42 +619,60 @@ const saveProfile = async () => {
   }
 };
 
-const handleDeleteProject = () => {
-  if (!currentProject.value) return;
-  
-  ElMessageBox.prompt(
-    `此操作将永久删除项目 ${currentProject.value.name}，请输入项目ID "${currentProject.value.id}" 确认`,
-    '删除确认',
-    {
-      confirmButtonText: '确定删除',
-      cancelButtonText: '取消',
-      inputPattern: new RegExp(`^${currentProject.value.id}$`),
-      inputErrorMessage: '项目ID不匹配',
-      type: 'warning',
-      customClass: 'delete-confirm-box'
-    }
-  ).then(async ({ value }) => {
-    try {
-      await deleteProject({ projectId: currentProject.value.id });
-      ElMessage.success('项目删除成功');
-      profileDrawerVisible.value = false;
-      loadProjects();
-    } catch (e) {
-      ElMessage.error(e.message || '删除失败');
-    }
-  }).catch(() => {
-    // Cancelled
-  });
+const resetDeleteConfirm = () => {
+  showDeleteConfirmInput.value = false;
+  deleteConfirmInput.value = "";
 };
 
-// Collaborate Methods
+const cancelDeleteConfirm = () => {
+  resetDeleteConfirm();
+};
+
+const handleDeleteProject = async () => {
+  if (!currentProject.value) return;
+  if (!showDeleteConfirmInput.value) {
+    showDeleteConfirmInput.value = true;
+    return;
+  }
+  if (deleteConfirmInput.value !== currentProject.value.id) {
+    ElMessage.warning("项目ID不匹配");
+    return;
+  }
+  if (deleteLoading.value) return;
+  deleteLoading.value = true;
+  try {
+    await deleteProject({ projectId: currentProject.value.id });
+    ElMessage.success("项目删除成功");
+    resetDeleteConfirm();
+    showSettingsModal.value = false;
+    loadProjects();
+  } catch (e) {
+    ElMessage.error(e.message || "删除失败");
+  } finally {
+    deleteLoading.value = false;
+  }
+};
+
 const handleCollaborate = async (project) => {
-  currentLinkProject.value = project;
-  linkUserTitle.value = `${project.name} 协作管理页面`;
   searchKeywords.value = "";
   searchData.value = [];
-  collaborateDrawerVisible.value = true;
-  loadLinkUsers(project.id);
+  await openProjectModal(project, "collaborate");
+};
+
+const handleSettingsTabClick = async (tab) => {
+  if (tab.props.name !== "collaborate" || !currentProject.value) return;
+  currentLinkProject.value = {
+    id: currentProject.value.id,
+    name: currentProject.value.name,
+  };
+  await loadLinkUsers(currentProject.value.id);
+};
+
+const handleSettingsModalClosed = () => {
+  modalActiveTab.value = "settings";
+  searchKeywords.value = "";
+  searchData.value = [];
+  resetDeleteConfirm();
 };
 
 const loadLinkUsers = async (projectId) => {
@@ -933,6 +975,7 @@ onMounted(() => {
 
 .danger-zone {
   margin-top: 40px;
+  margin-bottom: 40px;
   border: 1px solid #ffccc7;
   border-radius: 8px;
   overflow: hidden;
@@ -948,7 +991,7 @@ onMounted(() => {
 }
 
 .danger-content {
-  padding: 0 24px;
+  padding: 0 24px 16px;
   background-color: #fff;
 }
 
@@ -957,6 +1000,13 @@ onMounted(() => {
   justify-content: space-between;
   align-items: center;
   padding: 24px 0;
+  gap: 16px;
+}
+
+.danger-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .danger-info h4 {
@@ -972,6 +1022,11 @@ onMounted(() => {
   color: #595959;
 }
 
+.delete-confirm-input {
+  margin-top: 12px;
+  max-width: 420px;
+}
+
 @media (max-width: 768px) {
   .danger-title,
   .danger-content {
@@ -984,8 +1039,12 @@ onMounted(() => {
     align-items: flex-start;
     gap: 16px;
   }
-  
-  .danger-item .el-button {
+
+  .danger-actions {
+    width: 100%;
+  }
+
+  .danger-actions .el-button {
     width: 100%;
   }
 }
@@ -1110,33 +1169,117 @@ onMounted(() => {
 }
 
 /* Project Settings Drawer Header Styles */
-.project-settings-drawer .el-drawer__header {
-  margin-bottom: 0 !important;
-  padding: 20px 24px !important;
-  border-bottom: 1px solid #f0f0f0;
-  background-color: #fafafa;
-}
-
-.custom-drawer-header {
+.custom-modal-header {
   display: flex;
   align-items: baseline;
   gap: 12px;
 }
 
-.drawer-title {
+.modal-title {
   font-size: 18px;
   font-weight: 600;
   color: #333;
   line-height: 1.4;
 }
 
-.drawer-subtitle {
+.modal-subtitle {
   font-size: 14px;
   color: #999;
   font-weight: normal;
 }
 
-.drawer-content-wrapper {
-  padding: 20px 0;
+.modal-content-wrapper {
+  height: 100%;
+  overflow: hidden;
+  padding: 12px 0 0;
+}
+
+.settings-tabs {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.settings-tabs .el-tabs__content {
+  flex: 1;
+  min-height: 0;
+}
+
+.settings-tabs .el-tab-pane {
+  height: 100%;
+}
+
+.tab-panel {
+  height: 100%;
+  overflow-y: auto;
+  padding: 8px 14px 16px 0;
+  box-sizing: border-box;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: #c8c9cc transparent;
+}
+
+.project-settings-modal,
+.project-settings-modal .el-dialog {
+  width: 60% !important;
+  max-width: 960px;
+  height: 80vh;
+  margin: 0 auto !important;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+}
+
+.project-settings-modal .el-dialog__header,
+.project-settings-modal .el-dialog__footer {
+  flex-shrink: 0;
+}
+
+.project-settings-modal .el-dialog__body {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0 24px;
+}
+
+.tab-panel::-webkit-scrollbar {
+  width: 8px;
+}
+
+.tab-panel::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.tab-panel::-webkit-scrollbar-thumb {
+  background: #c8c9cc;
+  border-radius: 4px;
+}
+
+.tab-panel::-webkit-scrollbar-thumb:hover {
+  background: #a8abb2;
+}
+
+@media (max-width: 768px) {
+  .project-settings-modal,
+  .project-settings-modal .el-dialog {
+    width: 92% !important;
+    height: 88vh;
+    max-width: none;
+  }
+
+  .project-settings-modal .el-dialog__body {
+    padding: 0 16px;
+  }
+}
+
+.fade-dialog-enter-active,
+.fade-dialog-leave-active {
+  transition: opacity 0.25s ease;
+}
+
+.fade-dialog-enter-from,
+.fade-dialog-leave-to {
+  opacity: 0;
 }
 </style>
