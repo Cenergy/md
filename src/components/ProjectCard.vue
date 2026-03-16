@@ -15,26 +15,14 @@
 
     <div class="project-body">
       <div class="action-grid" :class="{ 'is-owner': mode === 'owner', 'is-collaborator': mode !== 'owner' }">
-        <template v-if="mode === 'owner'">
-          <div class="action-item action-item-secondary" @click="emit('profile', project)">
-            <i class="iconfont icon-xiugai"></i>
-            <span>设置</span>
-          </div>
-          <div class="action-item action-item-primary" @click="emit('docs', project)">
-            <i class="iconfont icon-jiaocheng"></i>
-            <span>创作</span>
-          </div>
-        </template>
-        <template v-else>
-          <div class="action-item action-item-secondary" @click="emit('profile', project)">
-            <i class="iconfont icon-xiugai"></i>
-            <span>设置</span>
-          </div>
-          <div class="action-item action-item-primary" @click="emit('docs', project)">
-            <i class="iconfont icon-jiaocheng"></i>
-            <span>创作</span>
-          </div>
-        </template>
+        <div class="action-item action-item-secondary" @click="emit('profile', project)">
+          <i class="iconfont icon-xiugai"></i>
+          <span>设置</span>
+        </div>
+        <div class="action-item action-item-primary" @click="emit('docs', project)">
+          <i class="iconfont icon-jiaocheng"></i>
+          <span>创作</span>
+        </div>
       </div>
 
       <div class="build-section">

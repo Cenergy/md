@@ -192,7 +192,11 @@
             <h4>当前协作者</h4>
             <div v-for="user in linkUsers" :key="user.id" class="user-item">
               <span class="user-email" :title="user.email">{{ user.email }}</span>
-              <el-button type="danger" size="small" @click="emit('delete-link-user', user)"
+              <el-button
+                v-if="canEdit || (currentUser && currentUser.email === user.email)"
+                type="danger"
+                size="small"
+                @click="emit('delete-link-user', user)"
                 >{{ canEdit ? "删除" : "退出" }}</el-button
               >
             </div>
@@ -246,6 +250,10 @@ defineProps({
   linkUsers: {
     type: Array,
     default: () => [],
+  },
+  currentUser: {
+    type: Object,
+    default: null,
   },
   showDeleteConfirmInput: {
     type: Boolean,

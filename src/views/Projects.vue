@@ -83,6 +83,7 @@
       :search-loading="searchLoading"
       :search-data="searchData"
       :link-users="linkUsers"
+      :current-user="currentUser"
       :show-delete-confirm-input="showDeleteConfirmInput"
       :delete-loading="deleteLoading"
       @closed="handleSettingsModalClosed"
@@ -121,6 +122,7 @@ import {
   saveProjectLinkUser,
   deleteProjectLinkUser,
   deleteProject,
+  queryUserInfo,
 } from "../request/http";
 
 const router = useRouter();
@@ -131,6 +133,7 @@ const collaborateProjects = ref([]);
 const dialogVisible = ref(false);
 const isEdit = ref(false);
 const saveLoading = ref(false);
+const currentUser = ref(null);
 const form = reactive({
   name: "",
   id: "",
@@ -485,7 +488,7 @@ const handleDeleteLinkUser = async (user) => {
   }
 };
 
-onMounted(() => {
+onMounted(async () => {
   // 检查是否有有效 token
   const token = getToken();
   if (!token) {
@@ -493,6 +496,14 @@ onMounted(() => {
     router.push("/login");
     return;
   }
+  
+  try {
+    const res = await queryUserInfo();
+    currentUser.value = res.userInfo;
+  } catch (e) {
+    console.error("Failed to fetch user info", e);
+  }
+
   loadProjects();
   loadCollaborateProjects();
 });
