@@ -208,7 +208,7 @@ router.get('/project/build', verifyToken, async (req, res) => {
     const { projectId } = req.query;
     console.log(`🚀 Build triggered for: ${projectId || 'auto-detect'}`);
 
-    const scriptPath = path.resolve(__dirname, '../../scripts/build-project.js');
+    const scriptPath = path.resolve(__dirname, '../services/buildProject.js');
     const projectRoot = path.resolve(__dirname, '../../');
 
     try {
