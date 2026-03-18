@@ -42,25 +42,40 @@ const HTML_TAGS = new Set([
   'u', 'ul', 'var', 'video', 'wbr'
 ]);
 
+const BLOCK_TAGS = new Set([
+  'address', 'article', 'aside', 'blockquote', 'details', 'dialog', 'div', 'dl',
+  'fieldset', 'figcaption', 'figure', 'footer', 'form', 'h1', 'h2', 'h3', 'h4',
+  'h5', 'h6', 'header', 'hr', 'li', 'main', 'nav', 'ol', 'p', 'pre', 'section',
+  'summary', 'table', 'tbody', 'td', 'tfoot', 'th', 'thead', 'tr', 'ul'
+]);
+
 function sanitizeContent(content) {
   if (!content) return "";
-  
-  // Split content by code blocks (inline `code` or block ```code```)
-  // The regex captures the delimiters so they are included in the split result
+
+  content = content.replace(/::: swiper([\s\S]*?):::/g, (match, p1) => {
+    return '::: swiper' + p1.replace(/^[ \t]+/gm, '') + ':::';
+  });
+
   const parts = content.split(/(```[\s\S]*?```|`[^`]*`)/g);
   
   return parts.map(part => {
-    // If it starts with ` or ```, it's a code block, return as is
     if (part.startsWith('`')) return part;
-    
-    // Otherwise, check for <TagName...> patterns
-    // Replace < followed by a letter with &lt; IF it's not a known HTML tag
-    return part.replace(/<([a-zA-Z][a-zA-Z0-9\-\.]*)/g, (match, tagName) => {
-      if (HTML_TAGS.has(tagName.toLowerCase())) {
-        return match; // It's a valid HTML tag, keep it
-      }
-      return '&lt;' + tagName; // Escape it
+
+    const normalized = part.replace(/^[ \t]+(?=<\/?[a-zA-Z])/gm, '');
+    const lines = normalized.split(/\r?\n/);
+    const processed = lines.map(line => {
+      const trimmed = line.trimStart();
+      if (trimmed.startsWith('<')) return line;
+      return line.replace(/<([a-zA-Z][a-zA-Z0-9\-\.]*)/g, (match, tagName) => {
+        const lowerTag = tagName.toLowerCase();
+        if (!HTML_TAGS.has(lowerTag) || BLOCK_TAGS.has(lowerTag)) {
+          return '&lt;' + tagName;
+        }
+        return match;
+      });
     });
+
+    return processed.join('\n');
   }).join('');
 }
 
