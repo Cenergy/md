@@ -6,8 +6,19 @@ const { generateId, safeJSONParse } = require('../utils/common');
 const { sendEmail } = require('../utils/email');
 const { projectCreateSchema, projectUpdateSchema, projectProfileSchema, projectLinkSchema } = require('../data/schemas');
 const util = require('util');
-const exec = util.promisify(require('child_process').exec);
+const { execFile } = require('child_process');
 const path = require('path');
+const execFileAsync = util.promisify(execFile);
+const PROJECT_ROOT = path.resolve(__dirname, '../../');
+const BUILD_SCRIPT_PATH = path.resolve(__dirname, '../services/buildProject.js');
+
+function runBuildScript(projectId) {
+    return execFileAsync('node', [BUILD_SCRIPT_PATH], {
+        env: { ...process.env, PROJECT_ID: projectId || '' },
+        cwd: PROJECT_ROOT,
+        maxBuffer: 10 * 1024 * 1024
+    });
+}
 
 // Project Routes
 router.get('/project/list', verifyToken, async (req, res) => {
@@ -208,15 +219,8 @@ router.get('/project/build', verifyToken, async (req, res) => {
     const { projectId } = req.query;
     console.log(`🚀 Build triggered for: ${projectId || 'auto-detect'}`);
 
-    const scriptPath = path.resolve(__dirname, '../services/buildProject.js');
-    const projectRoot = path.resolve(__dirname, '../../');
-
     try {
-        const { stdout } = await exec(`node "${scriptPath}"`, {
-            env: { ...process.env, PROJECT_ID: projectId || '' },
-            cwd: projectRoot,
-            maxBuffer: 10 * 1024 * 1024 // 10MB buffer to prevent overflow
-        });
+        const { stdout } = await runBuildScript(projectId);
 
         console.log('✅ Build completed successfully');
         res.json({ 
