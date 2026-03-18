@@ -256,6 +256,8 @@ import { useRoute } from 'vitepress'
 
 const { Layout } = DefaultTheme
 const route = useRoute()
+const twikooEnvId = ${JSON.stringify(process.env.TWIKOO_ENV_ID || '')}
+const enableTwikoo = twikooEnvId !== ''
 
 const initTheme = () => {
   nextTick(() => {
@@ -268,8 +270,43 @@ const initTheme = () => {
   })
 }
 
+const initTwikoo = () => {
+  if (!enableTwikoo) return
+  nextTick(() => {
+    const container = document.getElementById('twikoo-container')
+    if (!container) return
+    container.innerHTML = ''
+    const runInit = () => {
+      if (window.twikoo) {
+        window.twikoo.init({ envId: twikooEnvId, el: '#twikoo-container' })
+      }
+    }
+    if (window.twikoo) {
+      runInit()
+      return
+    }
+    const existing = document.querySelector('script[data-twikoo]')
+    if (existing) {
+      const timer = setInterval(() => {
+        if (window.twikoo) {
+          clearInterval(timer)
+          runInit()
+        }
+      }, 50)
+      return
+    }
+    const script = document.createElement('script')
+    script.src = 'https://registry.npmmirror.com/twikoo/1.7.3/files/dist/twikoo.min.js'
+    script.async = true
+    script.dataset.twikoo = 'true'
+    script.onload = runInit
+    document.head.appendChild(script)
+  })
+}
+
 onMounted(() => {
   initTheme()
+  initTwikoo()
   // Observer for dynamic content changes
   const observer = new MutationObserver(() => {
     initTheme()
@@ -279,12 +316,19 @@ onMounted(() => {
 
 watch(
   () => route.path,
-  () => initTheme()
+  () => {
+    initTheme()
+    initTwikoo()
+  }
 )
 </script>
 
 <template>
-  <Layout />
+  <Layout>
+    <template #doc-after>
+      <div v-if="enableTwikoo" id="twikoo-container"></div>
+    </template>
+  </Layout>
 </template>
 `;
     fs.writeFileSync(path.join(themeDir, 'Layout.vue'), themeLayoutContent);
