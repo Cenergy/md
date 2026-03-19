@@ -6,6 +6,9 @@ const jwt = require('jsonwebtoken');
 
 const PROJECT_ROOT = path.resolve(__dirname, '../..');
 require('dotenv').config({ path: path.resolve(PROJECT_ROOT, '.env') });
+const THEME_LAYOUT_TEMPLATE_PATH = path.join(__dirname, 'templates', 'vitepress-layout.vue');
+const THEME_TWIKOO_TEMPLATE_PATH = path.join(__dirname, 'templates', 'vitepress-twikoo-comments.vue');
+const TWIKOO_ENV_PLACEHOLDER = '__TWIKOO_ENV_ID__';
 
 const BASE_URL = `http://localhost:${process.env.PORT || 3001}/api`;
 const SECRET_KEY = process.env.SECRET_KEY || 'md-test-secret-key';
@@ -275,88 +278,12 @@ export default defineConfig({
 }
 
 function createThemeLayoutContent() {
-  return `
-<script setup>
-import DefaultTheme from 'vitepress/theme'
-import { onMounted, watch, nextTick } from 'vue'
-import { useRoute } from 'vitepress'
-
-const { Layout } = DefaultTheme
-const route = useRoute()
-const twikooEnvId = ${JSON.stringify(process.env.TWIKOO_ENV_ID || '')}
-const enableTwikoo = twikooEnvId !== ''
-
-const initTheme = () => {
-  nextTick(() => {
-    // 仅给正文区域添加 markdown-body，避免影响导航和侧边栏
-    const doc = document.querySelector('#VPContent')
-    if (doc && !doc.classList.contains('markdown-body')) {
-      doc.classList.add('markdown-body')
-    }
-  })
+  const template = fs.readFileSync(THEME_LAYOUT_TEMPLATE_PATH, 'utf-8');
+  return template.replace(TWIKOO_ENV_PLACEHOLDER, JSON.stringify(process.env.TWIKOO_ENV_ID || ''));
 }
 
-const initTwikoo = () => {
-  if (!enableTwikoo) return
-  nextTick(() => {
-    const container = document.getElementById('twikoo-container')
-    if (!container) return
-    container.innerHTML = ''
-    const runInit = () => {
-      if (window.twikoo) {
-        window.twikoo.init({ envId: twikooEnvId, el: '#twikoo-container' })
-      }
-    }
-    if (window.twikoo) {
-      runInit()
-      return
-    }
-    const existing = document.querySelector('script[data-twikoo]')
-    if (existing) {
-      const timer = setInterval(() => {
-        if (window.twikoo) {
-          clearInterval(timer)
-          runInit()
-        }
-      }, 50)
-      return
-    }
-    const script = document.createElement('script')
-    script.src = 'https://registry.npmmirror.com/twikoo/1.7.3/files/dist/twikoo.min.js'
-    script.async = true
-    script.dataset.twikoo = 'true'
-    script.onload = runInit
-    document.head.appendChild(script)
-  })
-}
-
-onMounted(() => {
-  initTheme()
-  initTwikoo()
-  // 路由切换和动态渲染时持续校准正文容器样式
-  const observer = new MutationObserver(() => {
-    initTheme()
-  })
-  observer.observe(document.body, { childList: true, subtree: true })
-})
-
-watch(
-  () => route.path,
-  () => {
-    initTheme()
-    initTwikoo()
-  }
-)
-</script>
-
-<template>
-  <Layout>
-    <template #doc-after>
-      <div v-if="enableTwikoo" id="twikoo-container"></div>
-    </template>
-  </Layout>
-</template>
-`;
+function createTwikooCommentsContent() {
+  return fs.readFileSync(THEME_TWIKOO_TEMPLATE_PATH, 'utf-8');
 }
 
 function createThemeIndexContent(hasCustomTheme) {
@@ -389,6 +316,7 @@ function setupTheme(themeName) {
   }
 
   fs.writeFileSync(path.join(themeDir, 'Layout.vue'), createThemeLayoutContent());
+  fs.writeFileSync(path.join(themeDir, 'TwikooComments.vue'), createTwikooCommentsContent());
   fs.writeFileSync(path.join(themeDir, 'index.js'), createThemeIndexContent(hasCustomTheme));
 }
 
