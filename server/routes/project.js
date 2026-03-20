@@ -5,20 +5,6 @@ const verifyToken = require('../middleware/auth');
 const { generateId, safeJSONParse } = require('../utils/common');
 const { sendEmail } = require('../utils/email');
 const { projectCreateSchema, projectUpdateSchema, projectProfileSchema, projectLinkSchema } = require('../data/schemas');
-const util = require('util');
-const { execFile } = require('child_process');
-const path = require('path');
-const execFileAsync = util.promisify(execFile);
-const PROJECT_ROOT = path.resolve(__dirname, '../../');
-const BUILD_SCRIPT_PATH = path.resolve(__dirname, '../services/buildProject.js');
-
-function runBuildScript(projectId) {
-    return execFileAsync('node', [BUILD_SCRIPT_PATH], {
-        env: { ...process.env, PROJECT_ID: projectId || '' },
-        cwd: PROJECT_ROOT,
-        maxBuffer: 10 * 1024 * 1024
-    });
-}
 
 // Project Routes
 router.get('/project/list', verifyToken, async (req, res) => {
@@ -214,48 +200,12 @@ router.get('/project_link/delete', verifyToken, async (req, res) => {
     res.json({ ok: true });
 });
 
-// Build
-router.get('/project/build', verifyToken, async (req, res) => {
-    const { projectId } = req.query;
-    console.log(`🚀 Build triggered for: ${projectId || 'auto-detect'}`);
-
-    // 验证用户是否有权操作该项目
-    const project = await prisma.projects.findUnique({
-        where: { id: projectId }
+// Build - 已弃用，请使用 POST /api/build 异步构建
+router.get('/project/build', verifyToken, async (_req, res) => {
+    res.status(410).json({ 
+        ok: false, 
+        message: '此接口已弃用，请使用 POST /api/build 异步构建' 
     });
-    
-    if (!project) {
-        return res.status(404).json({ ok: false, message: '项目不存在' });
-    }
-    
-    // 检查是否是项目所有者或协作者
-    const isOwner = project.owner_id === req.user.id;
-    const isCollaborator = await prisma.project_links.findFirst({
-        where: { project_id: projectId, user_id: req.user.id }
-    });
-    
-    if (!isOwner && !isCollaborator) {
-        return res.status(403).json({ ok: false, message: '无权操作该项目' });
-    }
-
-    try {
-        const { stdout } = await runBuildScript(projectId);
-
-        console.log('✅ Build completed successfully');
-        res.json({ 
-            ok: true, 
-            message: 'Build completed successfully',
-            logs: stdout
-        });
-    } catch (error) {
-        console.error(`❌ Build failed: ${error.message}`);
-        res.status(500).json({ 
-            ok: false, 
-            message: 'Build failed', 
-            error: error.message,
-            logs: error.stdout || error.stderr || 'No logs available'
-        });
-    }
 });
 
 module.exports = router;
