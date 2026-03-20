@@ -4,6 +4,51 @@ const path = require('path');
 const os = require('os');
 
 let isProcessing = false;
+const taskSubscribers = new Map();
+
+function isFinalStatus(status) {
+    return status === 'COMPLETED' || status === 'FAILED';
+}
+
+function subscribeBuildTask(taskId, res) {
+    if (!taskSubscribers.has(taskId)) {
+        taskSubscribers.set(taskId, new Set());
+    }
+    taskSubscribers.get(taskId).add(res);
+}
+
+function unsubscribeBuildTask(taskId, res) {
+    if (!taskSubscribers.has(taskId)) {
+        return;
+    }
+    const subscribers = taskSubscribers.get(taskId);
+    subscribers.delete(res);
+    if (subscribers.size === 0) {
+        taskSubscribers.delete(taskId);
+    }
+}
+
+function broadcastBuildTaskUpdate(task) {
+    const subscribers = taskSubscribers.get(task.id);
+    if (!subscribers || subscribers.size === 0) {
+        return;
+    }
+
+    const payload = JSON.stringify({ success: true, task });
+    for (const res of subscribers) {
+        res.write(`data: ${payload}\n\n`);
+        if (typeof res.flush === 'function') {
+            res.flush();
+        }
+    }
+
+    if (isFinalStatus(task.status)) {
+        for (const res of subscribers) {
+            res.end();
+        }
+        taskSubscribers.delete(task.id);
+    }
+}
 
 /**
  * Build Worker
@@ -48,10 +93,11 @@ async function processTask(task) {
 
     try {
         // Update status to PROCESSING
-        await prisma.build_tasks.update({
+        const processingTask = await prisma.build_tasks.update({
             where: { id: task.id },
             data: { status: 'PROCESSING' }
         });
+        broadcastBuildTaskUpdate(processingTask);
 
         // Prepare environment variables
         const env = { ...process.env };
@@ -98,22 +144,24 @@ async function processTask(task) {
 
                 try {
                     if (code !== 0) {
-                        await prisma.build_tasks.update({
+                        const failedTask = await prisma.build_tasks.update({
                             where: { id: task.id },
                             data: { 
                                 status: 'FAILED',
                                 output: output + `\n\nExit Code: ${code}`
                             }
                         });
+                        broadcastBuildTaskUpdate(failedTask);
                         console.error(`[Worker] Task #${task.id} FAILED (Exit Code: ${code}).`);
                     } else {
-                        await prisma.build_tasks.update({
+                        const completedTask = await prisma.build_tasks.update({
                             where: { id: task.id },
                             data: { 
                                 status: 'COMPLETED',
                                 output: output
                             }
                         });
+                        broadcastBuildTaskUpdate(completedTask);
                         console.log(`[Worker] Task #${task.id} COMPLETED.`);
                     }
                 } catch (dbError) {
@@ -138,10 +186,11 @@ async function processTask(task) {
         console.error(`[Worker] Unexpected error processing task #${task.id}:`, e);
         // Try to mark as failed if possible
         try {
-            await prisma.build_tasks.update({
+            const failedTask = await prisma.build_tasks.update({
                 where: { id: task.id },
                 data: { status: 'FAILED', output: `Unexpected Worker Error: ${e.message}` }
             });
+            broadcastBuildTaskUpdate(failedTask);
         } catch (dbError) {
             // ignore
         }
@@ -150,4 +199,4 @@ async function processTask(task) {
     }
 }
 
-module.exports = { startBuildWorker, triggerBuildCheck };
+module.exports = { startBuildWorker, triggerBuildCheck, subscribeBuildTask, unsubscribeBuildTask, isFinalStatus };

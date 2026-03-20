@@ -101,7 +101,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, reactive } from "vue";
+import { ref, onMounted, onBeforeUnmount, reactive } from "vue";
 import Header from "@/components/Header.vue";
 import ProjectCard from "@/components/ProjectCard.vue";
 import ProjectSettingsModal from "@/components/ProjectSettingsModal.vue";
@@ -181,6 +181,7 @@ const currentLinkProject = ref(null);
 const showDeleteConfirmInput = ref(false);
 const deleteConfirmInput = ref("");
 const deleteLoading = ref(false);
+const activeBuildStreams = new Map();
 
 // Methods
 const getHost = () => {
@@ -197,6 +198,80 @@ const formatProjectURL = (project) => {
 
 const isOwnerProject = (projectId) => {
   return projects.value.some((item) => item.id === projectId);
+};
+
+const closeBuildStream = (taskId) => {
+  const stream = activeBuildStreams.get(taskId);
+  if (stream) {
+    stream.close();
+    activeBuildStreams.delete(taskId);
+  }
+};
+
+const stopBuildLoading = (project) => {
+  project.loading = false;
+};
+
+const handleBuildTaskStatus = (project, taskId, task) => {
+  if (task.status === "COMPLETED") {
+    ElMessage.success(`${project.name} 编译成功`);
+    stopBuildLoading(project);
+    closeBuildStream(taskId);
+    return true;
+  }
+  if (task.status === "FAILED") {
+    ElMessage.error(`${project.name} 编译失败`);
+    stopBuildLoading(project);
+    closeBuildStream(taskId);
+    return true;
+  }
+  return false;
+};
+
+const subscribeBuildTask = (project, taskId, retryCount = 0) => {
+  const token = getToken();
+  if (!token) {
+    ElMessage.error("登录状态失效，请重新登录");
+    stopBuildLoading(project);
+    return;
+  }
+
+  closeBuildStream(taskId);
+  const stream = new EventSource(`/api/build/${taskId}/stream?token=${encodeURIComponent(token)}`);
+  activeBuildStreams.set(taskId, stream);
+
+  stream.onmessage = (event) => {
+    try {
+      const payload = JSON.parse(event.data);
+      const task = payload.task;
+      handleBuildTaskStatus(project, taskId, task);
+    } catch (e) {
+      closeBuildStream(taskId);
+      stopBuildLoading(project);
+      ElMessage.error("构建状态解析失败");
+    }
+  };
+
+  stream.onerror = async () => {
+    closeBuildStream(taskId);
+    try {
+      const { task } = await getBuildStatus(taskId);
+      if (handleBuildTaskStatus(project, taskId, task)) {
+        return;
+      }
+      if (retryCount < 5) {
+        setTimeout(() => {
+          subscribeBuildTask(project, taskId, retryCount + 1);
+        }, 1500);
+      } else {
+        stopBuildLoading(project);
+        ElMessage.error("构建状态连接中断，请稍后重试");
+      }
+    } catch (e) {
+      stopBuildLoading(project);
+      ElMessage.error("查询构建状态失败");
+    }
+  };
 };
 
 const loadProjects = async () => {
@@ -271,7 +346,6 @@ const handleBuild = async (project) => {
   project.loading = true;
   
   try {
-    // 1. 创建构建任务
     const result = await buildProject({ projectId: project.id });
     const taskId = result.taskId;
     
@@ -280,36 +354,7 @@ const handleBuild = async (project) => {
     }
     
     ElMessage.info(`${project.name} 已加入构建队列...`);
-    
-    // 2. 轮询状态
-    const pollStatus = async () => {
-      try {
-        const { task } = await getBuildStatus(taskId);
-        
-        if (task.status === 'PENDING') {
-          // 等待中，继续轮询
-          setTimeout(pollStatus, 2000);
-        } else if (task.status === 'PROCESSING') {
-          // 构建中，继续轮询
-          setTimeout(pollStatus, 2000);
-        } else if (task.status === 'COMPLETED') {
-          // 构建成功
-          ElMessage.success(`${project.name} 编译成功`);
-          project.loading = false;
-        } else if (task.status === 'FAILED') {
-          // 构建失败
-          ElMessage.error(`${project.name} 编译失败`);
-          project.loading = false;
-        }
-      } catch (e) {
-        ElMessage.error('查询构建状态失败');
-        project.loading = false;
-      }
-    };
-    
-    // 开始轮询
-    pollStatus();
-    
+    subscribeBuildTask(project, taskId);
   } catch (e) {
     ElMessage.error(e.message || "创建构建任务失败");
     project.loading = false;
@@ -542,6 +587,13 @@ onMounted(async () => {
 
   loadProjects();
   loadCollaborateProjects();
+});
+
+onBeforeUnmount(() => {
+  for (const [taskId, stream] of activeBuildStreams.entries()) {
+    stream.close();
+    activeBuildStreams.delete(taskId);
+  }
 });
 </script>
 
