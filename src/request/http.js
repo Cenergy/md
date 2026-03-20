@@ -422,13 +422,27 @@ export async function updateProject({ id, name, token }) {
 // }
 export async function buildProject({ projectId, token }) {
   try {
-    // Use the new queue-based build system
     const response = await post("/api/build", {
       projectId: resolveProjectId(projectId),
     });
     return response;
   } catch (error) {
     console.error("Project build failed:", error);
+    throw error;
+  }
+}
+
+/**
+ * 查询构建任务状态
+ * @param {number} taskId - 任务ID
+ * @returns {object} - { success: true, task: { id, status, output, ... } }
+ */
+export async function getBuildStatus(taskId) {
+  try {
+    const response = await get(`/api/build/${taskId}`);
+    return response;
+  } catch (error) {
+    console.error("Build status query failed:", error);
     throw error;
   }
 }

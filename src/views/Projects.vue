@@ -115,6 +115,7 @@ import {
   saveProject,
   updateProject,
   buildProject,
+  getBuildStatus,
   queryProjectProfile,
   saveProjectProfile,
   searchUser,
@@ -268,14 +269,49 @@ const handleDocs = (project) => {
 const handleBuild = async (project) => {
   if (project.loading) return;
   project.loading = true;
-  const startTime = Date.now();
+  
   try {
-    await buildProject({ projectId: project.id });
-    const duration = (Date.now() - startTime) / 1000;
-    ElMessage.success(`${project.name} 编译成功, 耗时:${duration}s`);
+    // 1. 创建构建任务
+    const result = await buildProject({ projectId: project.id });
+    const taskId = result.taskId;
+    
+    if (!taskId) {
+      throw new Error('未能获取任务ID');
+    }
+    
+    ElMessage.info(`${project.name} 已加入构建队列...`);
+    
+    // 2. 轮询状态
+    const pollStatus = async () => {
+      try {
+        const { task } = await getBuildStatus(taskId);
+        
+        if (task.status === 'PENDING') {
+          // 等待中，继续轮询
+          setTimeout(pollStatus, 2000);
+        } else if (task.status === 'PROCESSING') {
+          // 构建中，继续轮询
+          setTimeout(pollStatus, 2000);
+        } else if (task.status === 'COMPLETED') {
+          // 构建成功
+          ElMessage.success(`${project.name} 编译成功`);
+          project.loading = false;
+        } else if (task.status === 'FAILED') {
+          // 构建失败
+          ElMessage.error(`${project.name} 编译失败`);
+          project.loading = false;
+        }
+      } catch (e) {
+        ElMessage.error('查询构建状态失败');
+        project.loading = false;
+      }
+    };
+    
+    // 开始轮询
+    pollStatus();
+    
   } catch (e) {
-    ElMessage.error(e.message || "编译失败");
-  } finally {
+    ElMessage.error(e.message || "创建构建任务失败");
     project.loading = false;
   }
 };

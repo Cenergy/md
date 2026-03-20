@@ -219,6 +219,25 @@ router.get('/project/build', verifyToken, async (req, res) => {
     const { projectId } = req.query;
     console.log(`🚀 Build triggered for: ${projectId || 'auto-detect'}`);
 
+    // 验证用户是否有权操作该项目
+    const project = await prisma.projects.findUnique({
+        where: { id: projectId }
+    });
+    
+    if (!project) {
+        return res.status(404).json({ ok: false, message: '项目不存在' });
+    }
+    
+    // 检查是否是项目所有者或协作者
+    const isOwner = project.owner_id === req.user.id;
+    const isCollaborator = await prisma.project_links.findFirst({
+        where: { project_id: projectId, user_id: req.user.id }
+    });
+    
+    if (!isOwner && !isCollaborator) {
+        return res.status(403).json({ ok: false, message: '无权操作该项目' });
+    }
+
     try {
         const { stdout } = await runBuildScript(projectId);
 

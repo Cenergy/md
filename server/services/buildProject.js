@@ -1,8 +1,7 @@
-const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
-const jwt = require('jsonwebtoken');
+const prisma = require('../utils/prisma');
 
 const PROJECT_ROOT = path.resolve(__dirname, '../..');
 require('dotenv').config({ path: path.resolve(PROJECT_ROOT, '.env') });
@@ -10,14 +9,7 @@ const THEME_LAYOUT_TEMPLATE_PATH = path.join(__dirname, 'templates', 'vitepress-
 const THEME_TWIKOO_TEMPLATE_PATH = path.join(__dirname, 'templates', 'vitepress-twikoo-comments.vue');
 const TWIKOO_ENV_PLACEHOLDER = '__TWIKOO_ENV_ID__';
 
-const BASE_URL = `http://localhost:${process.env.PORT || 3001}/api`;
-const SECRET_KEY = process.env.SECRET_KEY || 'md-test-secret-key';
 const PROJECT_ID = process.env.PROJECT_ID;
-const TOKEN = jwt.sign(
-  { id: 1, email: 'system@build', name: 'System Build' },
-  SECRET_KEY,
-  { expiresIn: '1h' }
-);
 
 const HTML_TAGS = new Set([
   'a', 'abbr', 'address', 'area', 'article', 'aside', 'audio', 'b', 'base', 'bdi', 'bdo',
@@ -133,37 +125,79 @@ function sanitizeContent(content) {
     .join('');
 }
 
-async function fetchApi(endpoint, params) {
-  try {
-    const response = await axios.get(`${BASE_URL}${endpoint}`, {
-      params: { ...params, projectId: PROJECT_ID },
-      headers: { token: TOKEN }
-    });
-    return response.data.data;
-  } catch (error) {
-    console.error(`Failed to fetch ${endpoint}:`, error.message);
-    return null;
-  }
-}
-
+/**
+ * 直接从数据库获取项目信息
+ */
 async function fetchProject() {
-  const project = await fetchApi('/project/query', {});
-  return project || { name: 'My Project' };
+  const project = await prisma.projects.findUnique({
+    where: { id: PROJECT_ID }
+  });
+  if (!project) return { name: 'My Project' };
+  
+  // 解析 hero 字段
+  let hero = {};
+  try {
+    hero = JSON.parse(project.hero || '{}');
+  } catch (e) {}
+  
+  return { ...project, hero };
 }
 
+/**
+ * 直接从数据库获取菜单列表
+ */
 async function fetchMenus() {
-  const menus = await fetchApi('/menu/list', {});
+  const menus = await prisma.menus.findMany({
+    where: { project_id: PROJECT_ID },
+    orderBy: { sort_order: 'asc' }
+  });
   return menus || [];
 }
 
+/**
+ * 直接从数据库获取侧边栏项（带层级结构）
+ */
 async function fetchSliders(menuLink) {
-  const sliders = await fetchApi('/slider/list', { link: menuLink });
+  const sliders = await prisma.sliders.findMany({
+    where: {
+      project_id: PROJECT_ID,
+      menu_link: menuLink,
+      parent_id: null
+    },
+    orderBy: { sort_order: 'asc' }
+  });
+  
+  // 构建层级结构
+  for (const slider of sliders) {
+    if (slider.is_group) {
+      slider.children = await prisma.sliders.findMany({
+        where: {
+          project_id: PROJECT_ID,
+          parent_id: slider.id
+        },
+        orderBy: { sort_order: 'asc' }
+      });
+      slider.group = true;
+    } else {
+      slider.group = false;
+      slider.children = [];
+    }
+  }
+  
   return sliders || [];
 }
 
-async function fetchDoc(menuLink, itemLink, itemName) {
-  const doc = await fetchApi('/slider/item/list', { link: menuLink, item: itemLink, name: itemName });
-  return doc || '';
+/**
+ * 直接从数据库获取文档内容
+ */
+async function fetchDoc(itemLink) {
+  const slider = await prisma.sliders.findFirst({
+    where: {
+      project_id: PROJECT_ID,
+      link: itemLink
+    }
+  });
+  return slider ? slider.content : '';
 }
 
 function buildSidebarLink(parentDir, fileName) {
@@ -197,7 +231,7 @@ async function processSliderItems(items, menuLink, parentDir) {
 
     const fileName = `${safeName}.md`;
     const filePath = path.join(parentDir, fileName);
-    const rawDocContent = await fetchDoc(menuLink, item.link, item.name);
+    const rawDocContent = await fetchDoc(item.link);
     fs.writeFileSync(filePath, sanitizeContent(rawDocContent));
 
     sidebarItems.push({
