@@ -5,11 +5,13 @@
     <MenuBar
       :project-name="projectName"
       :menus="menus"
+      :is-building="isBuilding"
       v-model:hide-header="hideHeader"
       v-model:hide-links-panel="hideLinksPanel"
       @menu-click="menuClick"
       @add-menu="dialog = true"
       @menu-drop="menuDrop"
+      @save-build="saveAndBuild"
     />
 
     <div class="content flex" ref="contentRef">
@@ -175,6 +177,8 @@ import {
   saveDoc as apiSaveDoc,
   querySliderList,
   uploadImageFile,
+  buildProject,
+  getBuildStatus,
 } from "@/request/http";
 import { getEditor } from "@/utils/editor";
 
@@ -187,6 +191,10 @@ import { MenuBar, LeftNav, EditorPanel, UploadPanel } from "@/components/editor"
 const route = useRoute();
 const router = useRouter();
 const { toClipboard } = useClipboard();
+
+// Build task SSE streams
+const activeBuildStreams = new Map();
+const isBuilding = ref(false);
 
 // Refs
 const contentRef = ref(null);
@@ -636,6 +644,98 @@ const saveDoc = () => {
   });
 };
 
+// Build task subscription helpers
+const closeBuildStream = (taskId) => {
+  const stream = activeBuildStreams.get(taskId);
+  if (stream) {
+    stream.close();
+    activeBuildStreams.delete(taskId);
+  }
+};
+
+const handleBuildTaskStatus = (taskId, task) => {
+  if (task.status === "COMPLETED") {
+    success('编译成功！');
+    isBuilding.value = false;
+    closeBuildStream(taskId);
+    return true;
+  }
+  if (task.status === "FAILED") {
+    error('编译失败');
+    isBuilding.value = false;
+    closeBuildStream(taskId);
+    return true;
+  }
+  return false;
+};
+
+const subscribeBuildTask = (taskId, retryCount = 0) => {
+  const token = getToken();
+  if (!token) {
+    error("登录状态失效，请重新登录");
+    isBuilding.value = false;
+    return;
+  }
+
+  closeBuildStream(taskId);
+  const stream = new EventSource(`/api/build/${taskId}/stream?token=${encodeURIComponent(token)}`);
+  activeBuildStreams.set(taskId, stream);
+
+  stream.onmessage = (event) => {
+    try {
+      const payload = JSON.parse(event.data);
+      const task = payload.task;
+      handleBuildTaskStatus(taskId, task);
+    } catch (e) {
+      closeBuildStream(taskId);
+      isBuilding.value = false;
+      error("构建状态解析失败");
+    }
+  };
+
+  stream.onerror = async () => {
+    closeBuildStream(taskId);
+    try {
+      const { task } = await getBuildStatus(taskId);
+      if (handleBuildTaskStatus(taskId, task)) {
+        return;
+      }
+      if (retryCount < 5) {
+        setTimeout(() => {
+          subscribeBuildTask(taskId, retryCount + 1);
+        }, 1500);
+      } else {
+        isBuilding.value = false;
+        error("构建状态连接中断，请稍后重试");
+      }
+    } catch (e) {
+      isBuilding.value = false;
+      error("查询构建状态失败");
+    }
+  };
+};
+
+const saveAndBuild = async () => {
+  if (isBuilding.value) return;
+  isBuilding.value = true;
+  
+  try {
+    await saveDoc();
+    info('已加入构建队列...');
+    const result = await buildProject({ projectId: projectId.value, token: getToken() });
+    const taskId = result.taskId;
+    
+    if (!taskId) {
+      throw new Error('未能获取任务ID');
+    }
+    
+    subscribeBuildTask(taskId);
+  } catch (e) {
+    isBuilding.value = false;
+    error('保存编译失败: ' + (e.message || '未知错误'));
+  }
+};
+
 const openUploadPanel = () => {
   showUploadPanel.value = !showUploadPanel.value;
 };
@@ -778,6 +878,11 @@ onBeforeRouteLeave((to, from) => {
 
 onBeforeUnmount(() => {
   window.removeEventListener("beforeunload", beforeUnloadListener);
+  // Close all build task SSE streams
+  for (const [taskId, stream] of activeBuildStreams.entries()) {
+    stream.close();
+    activeBuildStreams.delete(taskId);
+  }
 });
 </script>
 
