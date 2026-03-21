@@ -1,56 +1,57 @@
 <template>
-  <div
-    class="shopcar"
-    :class="{ open: visible }"
-    v-show="visible"
-    ref="panelRef"
-  >
-    <div class="shopcar-title">
-      <span class="close-btn" @click="$emit('update:visible', false)">
-        <i class="close-btn-icon iconfont icon-guanbianniu"></i>
-      </span>
-    </div>
-    
-    <el-upload
-      class="upload-demo"
-      drag
-      action="#"
-      multiple
-      :http-request="handleUploadRequest"
-      v-model:file-list="fileList"
-      :on-success="handleUploadSuccess"
-      :on-error="handleUploadError"
+  <div>
+    <div
+      class="shopcar"
+      :class="{ open: visible }"
+      v-show="visible"
+      ref="panelRef"
     >
-      <i class="iconfont icon-shangchuan" style="font-size: 48px; color: #c0c4cc;"></i>
-      <div class="el-upload__text">
-        Drop file here or <em>click to upload</em>
+      <div class="shopcar-title">
+        <span class="close-btn" @click="$emit('update:visible', false)">
+          <i class="close-btn-icon iconfont icon-guanbianniu"></i>
+        </span>
       </div>
-      <template #file="{ file }">
-        <div class="file-item-row" :style="getFileBackgroundStyle(file)" @click="handlePreview(file)">
-          <span class="file-name">{{ file.name }}</span>
-          <div class="file-actions">
-            <el-button 
-              v-if="file.status === 'success'" 
-              type="success" 
-              size="small" 
-              circle 
-              @click.stop="handleCopyFile(file)"
-            >
-              <i class="iconfont icon-fuzhi1"></i>
-            </el-button>
-            <el-button 
-              type="danger" 
-              size="small" 
-              circle 
-              @click.stop="handleDeleteFile(file)"
-            >
-              <i class="iconfont icon-shanchu"></i>
-            </el-button>
-          </div>
+      
+      <el-upload
+        class="upload-demo"
+        drag
+        action="#"
+        multiple
+        :http-request="handleUploadRequest"
+        v-model:file-list="fileList"
+        :on-success="handleUploadSuccess"
+        :on-error="handleUploadError"
+      >
+        <i class="iconfont icon-shangchuan" style="font-size: 48px; color: #c0c4cc;"></i>
+        <div class="el-upload__text">
+          Drop file here or <em>click to upload</em>
         </div>
-      </template>
-    </el-upload>
-    
+        <template #file="{ file }">
+          <div class="file-item-row" :style="getFileBackgroundStyle(file)" @click="handlePreview(file)">
+            <span class="file-name">{{ file.name }}</span>
+            <div class="file-actions">
+              <el-button 
+                v-if="file.status === 'success'" 
+                type="success" 
+                size="small" 
+                circle 
+                @click.stop="copyUploadFile(file)"
+              >
+                <i class="iconfont icon-fuzhi1"></i>
+              </el-button>
+              <el-button 
+                type="danger" 
+                size="small" 
+                circle 
+                @click.stop="deleteUploadFile(file)"
+              >
+                <i class="iconfont icon-shanchu"></i>
+              </el-button>
+            </div>
+          </div>
+        </template>
+      </el-upload>
+    </div>
     <el-dialog v-model="previewVisible" append-to-body>
       <img :src="previewUrl" style="width: 100%" />
     </el-dialog>
@@ -58,7 +59,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
+import { ref } from 'vue';
 import { ElMessage } from 'element-plus';
 import { uploadImageFile } from '@/request/http';
 import { getToken, getHost } from '@/utils';
@@ -148,7 +149,7 @@ const handleUploadError = (err) => {
   error('上传失败: ' + (err.message || '未知错误'));
 };
 
-const handleCopyFile = async (file) => {
+const copyUploadFile = async (file) => {
   if (!file.url && !file.response?.url) {
     warn('文件链接无效');
     return;
@@ -168,22 +169,15 @@ const handleCopyFile = async (file) => {
   }
 };
 
-const handleDeleteFile = (file) => {
+const deleteUploadFile = (file) => {
   const index = fileList.value.indexOf(file);
   if (index !== -1) {
     fileList.value.splice(index, 1);
   }
 };
-
-// Clear file list when panel closes
-watch(() => props.visible, (newVal) => {
-  if (!newVal) {
-    // Optional: clear files when closing
-  }
-});
 </script>
 
-<style scoped>
+<style>
 .shopcar {
   position: fixed;
   right: 0;
@@ -233,5 +227,19 @@ watch(() => props.visible, (newVal) => {
 .file-actions {
   display: flex;
   gap: 5px;
+}
+
+.drag-zone {
+  border: 2px dashed #ccc;
+  border-radius: 4px;
+  padding: 20px;
+  text-align: center;
+  margin-bottom: 20px;
+  color: #666;
+}
+
+.shopcar-list {
+  flex: 1;
+  overflow-y: auto;
 }
 </style>

@@ -12,6 +12,7 @@ import 'viewerjs/dist/viewer.min.css';
 import 'swiper/css/bundle';
 import 'x-data-spreadsheet/dist/xspreadsheet.css';
 import 'mdpress-monaco-editor/dist/mdpress-monaco-editor.css';
+import '@/assets/css/editor-iconfont.css'; // Editor toolbar icons
 
 // Monaco Environment Setup
 const workers = {

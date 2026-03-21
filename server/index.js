@@ -29,6 +29,7 @@ const cspDirectives = {
         "'self'",
         "'unsafe-inline'", // Required for Vue/VitePress dynamic styles
         "https://fonts.googleapis.com",
+        "https://at.alicdn.com", // Required for iconfont CSS
     ],
     fontSrc: [
         "'self'",
