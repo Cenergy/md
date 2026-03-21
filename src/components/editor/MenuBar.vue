@@ -65,41 +65,92 @@ const onDrop = (dropResult) => {
 
 <style scoped>
 .menu-container {
-  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  padding: 6px 16px;
   background: #fff;
   border-bottom: 1px solid #e5e7eb;
+  height: 36px;
 }
 
 .menu-panel {
+  display: flex;
   align-items: center;
 }
 
 .project-text {
   font-weight: 600;
-  font-size: 16px;
+  font-size: 14px;
   color: #1f2937;
-  margin-right: 20px;
+  margin-right: 16px;
+  white-space: nowrap;
 }
 
 .item {
-  padding: 8px 16px;
-  margin-right: 8px;
-  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  margin-right: 4px;
+  border-radius: 3px;
   cursor: pointer;
   transition: all 0.2s;
   background: #f3f4f6;
+  font-size: 13px;
+  height: 22px;
+  white-space: nowrap;
 }
 
 .item:hover {
-  background: #e5e7eb;
+  background: #dbeafe;
+  color: #2563eb;
 }
 
 .item.active {
-  background: #10b981;
+  background: #3b82f6;
   color: #fff;
 }
 
 .draggable-item {
   cursor: grab;
+  display: flex;
+  align-items: center;
+  height: 22px;
+}
+
+.left-action .el-button {
+  padding: 0 8px;
+  font-size: 12px;
+  height: 22px;
+  line-height: 20px;
+}
+
+.right-action {
+  display: flex;
+  align-items: center;
+}
+
+.right-action .el-checkbox {
+  font-size: 12px;
+  height: 22px;
+  line-height: 20px;
+}
+
+.right-action .el-checkbox.is-bordered {
+  padding: 0 8px;
+  height: 22px;
+  line-height: 20px;
+}
+
+/* Override smooth-dnd styles */
+:deep(.smooth-dnd-container) {
+  display: flex;
+  align-items: center;
+  min-height: 0 !important;
+}
+
+:deep(.smooth-dnd-draggable-wrapper) {
+  display: flex;
+  align-items: center;
+  height: 22px;
 }
 </style>
