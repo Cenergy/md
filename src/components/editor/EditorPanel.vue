@@ -33,7 +33,7 @@
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount, watch, nextTick } from 'vue';
-import { loadMonaco, createEditor, getEditor, destroyEditor } from '@/utils/editor';
+import { createEditor, getEditor, destroyEditor } from '@/utils/editor';
 import { loadEditorPlugins } from '@/utils/lazy-loader';
 
 const props = defineProps({
@@ -72,6 +72,14 @@ const props = defineProps({
   getLeftNav: {
     type: Function,
     default: null
+  },
+  warn: {
+    type: Function,
+    default: () => {}
+  },
+  info: {
+    type: Function,
+    default: () => {}
   }
 });
 
@@ -80,16 +88,17 @@ const emit = defineEmits(['import', 'open-upload', 'save', 'copy', 'editor-ready
 const panelRef = ref(null);
 const editorContainer = ref(null);
 let isSettingValue = false;
+let editorInitialized = false;
 
 const initEditor = async () => {
-  if (!editorContainer.value) return;
+  if (!editorContainer.value || editorInitialized) return;
   
   await loadEditorPlugins();
   
   createEditor(editorContainer.value, {
     theme: props.theme,
-    warn: (msg) => console.warn(msg),
-    info: (msg) => console.log(msg),
+    warn: props.warn,
+    info: props.info,
     uploadFile: props.uploadFile,
     saveDoc: props.saveDoc,
     importMd: props.importMd,
@@ -103,6 +112,7 @@ const initEditor = async () => {
           emit('content-change');
         }
       });
+      editorInitialized = true;
       emit('editor-ready');
     }
   });
@@ -139,6 +149,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   destroyEditor();
+  editorInitialized = false;
 });
 
 defineExpose({
@@ -149,88 +160,6 @@ defineExpose({
 });
 </script>
 
-<style scoped>
-.right-nav {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.tools {
-  padding: 10px;
-  border-bottom: 1px solid #e5e7eb;
-  background: #fff;
-}
-
-.edit-container {
-  flex: 1;
-  overflow: hidden;
-}
-
-.edit-panel {
-  flex: 1;
-  height: 100%;
-}
-
-.editor.panel {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.editor-desc.panel {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #9ca3af;
-  font-size: 14px;
-}
-
-.menuurls {
-  width: 260px;
-  flex-shrink: 0;
-  border-left: 1px solid #e5e7eb;
-  background: #f9fafb;
-  display: flex;
-  flex-direction: column;
-}
-
-.menuurls-header {
-  padding: 10px;
-  border-bottom: 1px solid #e5e7eb;
-  font-weight: 600;
-  font-size: 13px;
-  color: #374151;
-}
-
-.menuurls-list {
-  flex: 1;
-  overflow-y: auto;
-  padding: 10px;
-}
-
-.menuurls-list .row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 0;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.url-label {
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 12px;
-  color: #6b7280;
-  margin-right: 8px;
-}
-
-#editor {
-  display: flex;
-  flex-direction: column;
-}
+<style>
+/* Styles are defined in global CSS: src/assets/css/edit.css */
 </style>
