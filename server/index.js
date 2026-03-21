@@ -16,9 +16,50 @@ const app = express();
 const PORT = config.port;
 
 // Middleware
+// Content Security Policy Configuration
+const cspDirectives = {
+    defaultSrc: ["'self'"],
+    scriptSrc: [
+        "'self'",
+        "'unsafe-inline'", // Required for Vite HMR and Monaco Editor
+        "'unsafe-eval'",   // Required for Monaco Editor
+        "blob:",           // Required for Monaco Editor web workers
+    ],
+    styleSrc: [
+        "'self'",
+        "'unsafe-inline'", // Required for Vue/VitePress dynamic styles
+        "https://fonts.googleapis.com",
+    ],
+    fontSrc: [
+        "'self'",
+        "https://fonts.gstatic.com",
+        "https://at.alicdn.com", // Required for iconfont CDN
+        "data:", // Required for icon fonts
+    ],
+    imgSrc: [
+        "'self'",
+        "data:",
+        "blob:",
+        "https:", // Allow external images
+    ],
+    connectSrc: [
+        "'self'",
+        "https:", // Allow API connections
+        "blob:",
+    ],
+    workerSrc: [
+        "'self'",
+        "blob:", // Required for Monaco Editor web workers
+    ],
+    frameSrc: ["'self'"],
+    objectSrc: ["'none'"],
+};
+
 app.use(helmet({
-    contentSecurityPolicy: false, 
-    crossOriginEmbedderPolicy: false
+    contentSecurityPolicy: {
+        directives: cspDirectives,
+    },
+    crossOriginEmbedderPolicy: false // Required for Monaco Editor
 }));
 app.use(cors());
 app.use(compression()); // Compress all routes

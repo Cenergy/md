@@ -2,166 +2,52 @@
   <div class="main">
     <Header :show="!hideHeader" />
 
-    <div class="menu-container flex">
-      <div class="project-text menu-panel">{{ projectName }}</div>
-      <div class="menu-panel flex">
-        <Container @drop="menuDrop" orientation="horizontal" class="flex">
-          <Draggable v-for="(menu, index) in menus" :key="index">
-            <el-tooltip content="可以拖拽来调节菜单顺序" placement="top">
-              <div
-                class="item draggable-item"
-                :class="{ active: menu.isActive }"
-                @click="menuClick(menu)"
-              >
-                {{ menu.name }}
-              </div>
-            </el-tooltip>
-          </Draggable>
-        </Container>
-      </div>
-      <div class="menu-panel flex" style="align-items: center; flex: 1; padding-right: 20px; justify-content: space-between">
-        <div class="left-action">
-          <el-button type="primary" size="mini" @click="dialog = true" plain>
-            <i class="iconfont icon-tianjia"></i> +菜单
-          </el-button>
-        </div>
-        <div class="right-action flex" style="align-items: center">
-          <div style="width: 1px; height: 16px; background: #e5e7eb; margin: 0 10px"></div>
-          <el-checkbox v-model="hideHeader" size="mini" border>隐藏头部</el-checkbox>
-          <el-checkbox v-model="hideLinksPanel" size="mini" border>隐藏侧边</el-checkbox>
-        </div>
-      </div>
+    <MenuBar
+      :project-name="projectName"
+      :menus="menus"
+      v-model:hide-header="hideHeader"
+      v-model:hide-links-panel="hideLinksPanel"
+      @menu-click="menuClick"
+      @add-menu="dialog = true"
+      @menu-drop="menuDrop"
+    />
+
+    <div class="content flex" ref="contentRef">
+      <LeftNav
+        ref="leftNavRef"
+        :sliders="sliders"
+        :current-link="currentLink"
+        v-model:collapsed="isCollapsed"
+        @doc-click="docItemClick"
+        @edit-doc="editDocItem"
+        @add-doc="toggleSliderDialog"
+        @add-child-doc="groupAddDocItem"
+        @copy="copyValue"
+        @slider-drop="sliderDrop"
+        @slider-item-drop="sliderItemDrop"
+      />
+
+      <EditorPanel
+        ref="editorPanelRef"
+        :editor-visible="editorShow"
+        :hide-links-panel="hideLinksPanel"
+        :slider-u-r-l-s="sliderURLS"
+        :theme="hero.theme || 'serene-rose'"
+        :upload-file="uploadFile"
+        :save-doc="saveDoc"
+        :import-md="importMd"
+        :open-upload-panel="openUploadPanel"
+        :get-left-nav="() => leftNavRef?.getElement()"
+        @import="importMd"
+        @open-upload="openUploadPanel"
+        @save="saveDoc"
+        @copy="copyValue"
+        @editor-ready="onEditorReady"
+        @content-change="isDirty = true"
+      />
     </div>
 
-    <div
-      class="content flex"
-      ref="contentRef"
-    >
-      <div class="left-nav animate__animated" :class="{ collapsed: isCollapsed }" ref="leftnav">
-        <div class="left-nav-header">
-          <div class="nav-toggle" @click="toggleLeftNav" :title="isCollapsed ? '展开侧边栏' : '收起侧边栏'">
-            <i class="iconfont" style="font-style: normal; font-size: 16px;" v-html="isCollapsed ? '&#10095;' : '&#10094;'"></i>
-          </div>
-          <el-button
-            type="primary"
-            size="mini"
-            @click.stop="toggleSliderDialog"
-            plain
-            v-if="!isCollapsed"
-            style="flex: 1; margin: 0 10px;"
-          >
-            <i class="iconfont icon-tianjia"></i> +文档
-          </el-button>
-        </div>
-        <div class="nav-content">
-          <div class="slider-content">
-            <Container @drop="sliderDrop" class="smooth-dnd-container vertical">
-              <Draggable v-for="(slider, index) in sliders" :key="index">
-                <div
-                  class="slider-item"
-                  :class="{ active: slider.isActive, group: slider.group }"
-                  @click="docItemClick(slider)"
-                >
-                  <div class="slider-header">
-                    <i
-                      class="column-drag-handle iconfont icon-tuozhuaicaidandaohang"
-                    ></i>
-                    <button class="btn" @click.stop="editDocItem(slider)">
-                      <i class="iconfont icon-xiugai"></i>
-                    </button>
-                    <span :class="{ label: slider.group }">{{
-                      slider.name
-                    }}</span>
-                    <button
-                      class="btn"
-                      v-if="slider.group"
-                      @click.stop="groupAddDocItem(slider)"
-                      style="margin-left: 5px"
-                    >
-                      <i class="iconfont icon-tianjia"></i>+
-                    </button>
-                  </div>
-                  <!-- Simplified group handling -->
-                  <div v-if="slider.group" class="group-children">
-                    <Container
-                      @drop="(e) => sliderItemDrop(e, slider)"
-                      :min-height="10"
-                    >
-                      <Draggable
-                        v-for="(child, cIndex) in slider.children || []"
-                        :key="cIndex"
-                      >
-                        <div
-                          class="slider-item child-item"
-                          :class="{ active: child.isActive }"
-                          @click.stop="docItemClick(child)"
-                        >
-                          <div class="slider-header">
-                            <i
-                              class="column-drag-handle iconfont icon-tuozhuaicaidandaohang"
-                            ></i>
-                            <button class="btn" @click.stop="editDocItem(child)">
-                              <i class="iconfont icon-xiugai"></i>
-                            </button>
-                            <span>{{ child.name }}</span>
-                          </div>
-                        </div>
-                      </Draggable>
-                    </Container>
-                  </div>
-                </div>
-              </Draggable>
-            </Container>
-          </div>
-        </div>
-        <div class="left-nav-footer">
-          <div class="link-info" v-if="currentLink">
-            <el-button type="text" size="mini" @click="copyValue(currentLink)" class="copy-btn" title="点击复制">
-              <i class="iconfont icon-fuzhi1"></i>
-            </el-button>
-            <span class="link-text" :title="currentLink">{{ currentLink }}</span>
-          </div>
-          <div class="link-info empty" v-else>
-            <span class="placeholder">暂无文档链接</span>
-          </div>
-        </div>
-      </div>
-
-      <div
-        class="right-nav"
-        ref="editpanel"
-      >
-        <div class="tools">
-          <el-button size="mini" @click="importMd">导入Markdown</el-button>
-          <el-button size="mini" @click="openUploadPanel">托管附件</el-button>
-          <el-button size="mini" @click="saveDoc">保存文档</el-button>
-        </div>
-        <div class="edit-container flex" style="flex: 1; overflow: hidden">
-          <div class="edit-panel flex" style="flex: 1; height: 100%">
-            <div id="editor" ref="editorContainer" class="editor panel" v-show="editorShow"></div>
-            <div class="editor-desc panel" v-show="!editorShow">
-              点击左侧的列表项进行文档编辑
-            </div>
-          </div>
-          <div
-            class="menuurls"
-            v-show="!hideLinksPanel"
-            style="width: 260px; flex-shrink: 0"
-          >
-            <div class="menuurls-header">
-              <i class="iconfont icon-link"></i> 相对目录参考
-            </div>
-            <div class="menuurls-list">
-              <div class="row" v-for="url in sliderURLS" :key="url.url">
-                <div class="url-label" :title="url.url">{{ url.label }}</div>
-                <el-button type="primary" link size="small" @click="copyValue(url.url)">复制</el-button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
+    <!-- Add Menu Dialog -->
     <el-dialog
       v-model="dialog"
       title="添加菜单"
@@ -204,6 +90,7 @@
       </template>
     </el-dialog>
 
+    <!-- Add Doc Dialog -->
     <el-dialog
       v-model="docDialog"
       title="添加文档"
@@ -245,6 +132,7 @@
       </template>
     </el-dialog>
 
+    <!-- Edit Doc Dialog -->
     <el-dialog
       v-model="docEditDialog"
       title="修改文档"
@@ -267,69 +155,15 @@
       </template>
     </el-dialog>
 
-    <!-- Upload Panel (Shopcar) -->
-    <div
-      class="shopcar"
-      :class="{ open: showUploadPanel }"
-      v-show="showUploadPanel"
-      ref="shopcar"
-    >
-      <div class="shopcar-title">
-        <span class="close-btn" @click="showUploadPanel = false"
-          ><i class="close-btn-icon iconfont icon-guanbianniu"></i
-        ></span>
-      </div>
-      
-      <el-upload
-        class="upload-demo"
-        drag
-        action="#"
-        multiple
-        :http-request="handleUploadRequest"
-        v-model:file-list="uploadFiles"
-        :on-success="handleUploadSuccess"
-        :on-error="handleUploadError"
-      >
-        <i class="iconfont icon-shangchuan" style="font-size: 48px; color: #c0c4cc;"></i>
-        <div class="el-upload__text">
-          Drop file here or <em>click to upload</em>
-        </div>
-        <template #file="{ file }">
-          <div class="file-item-row" :style="getFileBackgroundStyle(file)" @click="handlePreview(file)">
-            <span class="file-name">{{ file.name }}</span>
-            <div class="file-actions">
-              <el-button 
-                v-if="file.status === 'success'" 
-                type="success" 
-                size="small" 
-                circle 
-                @click.stop="copyUploadFile(file)"
-              >
-                <i class="iconfont icon-fuzhi1"></i>
-              </el-button>
-              <el-button 
-                type="danger" 
-                size="small" 
-                circle 
-                @click.stop="deleteUploadFile(file)"
-              >
-                <i class="iconfont icon-shanchu"></i>
-              </el-button>
-            </div>
-          </div>
-        </template>
-      </el-upload>
-    </div>
-    <el-dialog v-model="previewDialogVisible" append-to-body>
-      <img :src="previewImageUrl" style="width: 100%" />
-    </el-dialog>
+    <!-- Upload Panel -->
+    <UploadPanel v-model:visible="showUploadPanel" @upload-success="onUploadSuccess" />
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, onBeforeUnmount } from "vue";
+import { ref, onMounted, onBeforeUnmount } from "vue";
 import { useRoute, useRouter, onBeforeRouteLeave } from "vue-router";
-import { getToken, wrapUrl, getHost } from "@/utils";
+import { getToken, getHost } from "@/utils";
 import {
   validateToken,
   queryProject,
@@ -343,25 +177,23 @@ import {
   querySliderList,
   uploadImageFile,
 } from "@/request/http";
-import {
-  loadMonaco,
-  createEditor,
-  getEditor,
-  destroyEditor
-} from "@/utils/editor";
 
 import { ElMessage, ElLoading, ElMessageBox } from "element-plus";
 import { pinyin } from "pinyin-pro";
 import useClipboard from "vue-clipboard3";
 import Header from "@/components/Header.vue";
-import { loadEditorPlugins } from "@/utils/lazy-loader";
+import { MenuBar, LeftNav, EditorPanel, UploadPanel } from "@/components/editor";
 
 const route = useRoute();
 const router = useRouter();
 const { toClipboard } = useClipboard();
 
+// Refs
+const contentRef = ref(null);
+const leftNavRef = ref(null);
+const editorPanelRef = ref(null);
+
 // State
-const editorContainer = ref(null);
 const hideHeader = ref(true);
 const hideLinksPanel = ref(true);
 const dialog = ref(false);
@@ -386,37 +218,16 @@ const docTypes = [
 const docTypeDisable = ref(false);
 const currentGroup = ref(null);
 const currentDoc = ref(null);
-const editorShow = ref(true);
+const editorShow = ref(false);
 const uploading = ref(false);
-const uploadFileURL = ref("");
 const sliderURLS = ref([]);
 const showUploadPanel = ref(false);
-const uploadFiles = ref([]);
 const docEditDialog = ref(false);
 const docEditData = ref(null);
 const docEditTitle = ref("");
 const isCollapsed = ref(false);
-
-const toggleLeftNav = () => {
-  isCollapsed.value = !isCollapsed.value;
-};
-
-const handleResize = () => {
-  if (window.innerWidth < 900) {
-    isCollapsed.value = true;
-  } else {
-    isCollapsed.value = false;
-  }
-};
 const isLogin = ref(false);
 const isDirty = ref(false);
-const previewDialogVisible = ref(false);
-const previewImageUrl = ref("");
-let isSettingValue = false;
-
-const contentRef = ref(null);
-const leftnav = ref(null);
-const shopcar = ref(null);
 
 // Helpers
 const info = (msg) => ElMessage.info(msg);
@@ -424,6 +235,7 @@ const warn = (msg) => ElMessage.warning(msg);
 const success = (msg) => ElMessage.success(msg);
 const error = (msg) => ElMessage.error(msg);
 
+// User validation
 const userValidate = () => {
   isLogin.value = false;
   validateToken(getToken())
@@ -435,11 +247,11 @@ const userValidate = () => {
     });
 };
 
+// Project
 const getProject = () => {
   if (route.query.name) {
     projectName.value = route.query.name;
   }
-
   queryProject({ projectId: projectId.value, token: getToken() }).then(
     (res) => {
       if (res && res.name) {
@@ -450,6 +262,7 @@ const getProject = () => {
   );
 };
 
+// Menu operations
 const menuDrop = (dropResult) => {
   const { removedIndex, addedIndex } = dropResult;
   if (removedIndex === null || addedIndex === null) return;
@@ -465,31 +278,21 @@ const menuDrop = (dropResult) => {
   });
 };
 
-const loadMockMenus = () => {
-  menus.value = [
-    { name: "开始", link: "kaishi", isActive: true },
-    { name: "开发计划", link: "kaifajihua", isActive: false },
-    { name: "API", link: "api", isActive: false },
-    { name: "样式", link: "yangshi", isActive: false },
-    { name: "博客", link: "boke", isActive: false },
-    { name: "插件", link: "chajian", isActive: false },
-    { name: "关于", link: "guanyu", isActive: false },
-  ];
-  // Select the first mock menu
-  menuClick(menus.value[0]);
-};
-
 const getMenus = () => {
   queryMenu({ projectId: projectId.value, token: getToken() })
     .then((res) => {
       menus.value = res || [];
       if (menus.value.length > 0) {
-        // Automatically select the first menu if available
         menuClick(menus.value[0]);
       }
     })
     .catch(() => {
-      loadMockMenus();
+      // Fallback mock data
+      menus.value = [
+        { name: "开始", link: "kaishi", isActive: true },
+        { name: "开发计划", link: "kaifajihua", isActive: false },
+      ];
+      menuClick(menus.value[0]);
     });
 };
 
@@ -566,7 +369,7 @@ const addMenu = () => {
     name: menuName.value,
     link: menuLink.value,
   })
-    .then((res) => {
+    .then(() => {
       saveButtonDisabled.value = false;
       success(`添加菜单(${menuName.value})成功`);
       _reset();
@@ -607,8 +410,6 @@ const menuClick = (menu) => {
 };
 
 const _saveSliders = () => {
-  console.log("🚀 ~ currentMenu:", currentMenu.value);
-  console.log("🚀 ~ sliders:", sliders.value);
   return new Promise((resolve, reject) => {
     if (!currentMenu.value) {
       warn("请先选择一个菜单");
@@ -620,9 +421,7 @@ const _saveSliders = () => {
       link: currentMenu.value.link,
       data: sliders.value,
     })
-      .then((res) => {
-        resolve();
-      })
+      .then(() => resolve())
       .catch((err) => reject(err));
   });
 };
@@ -758,9 +557,7 @@ const checkSave = (next, onCancel) => {
       }
     )
       .then(() => {
-        saveDoc().then(() => {
-          next();
-        });
+        saveDoc().then(() => next());
       })
       .catch((action) => {
         if (action === 'cancel') {
@@ -799,14 +596,10 @@ const docItemClick = (slider) => {
       item: slider.link,
       name: slider.name,
     }).then((res) => {
-        console.log("🚀 ~ docItemClick ~ hero:", hero.value)
-
-      if (getEditor()) {
-          if (hero.value.theme) getEditor().setTheme(hero.value.theme);
-          isSettingValue = true;
-          getEditor().setValue(res);
-          isSettingValue = false;
-          isDirty.value = false;
+      if (editorPanelRef.value) {
+        if (hero.value.theme) editorPanelRef.value.setTheme(hero.value.theme);
+        editorPanelRef.value.setValue(res);
+        isDirty.value = false;
       }
     });
   });
@@ -814,14 +607,16 @@ const docItemClick = (slider) => {
 
 const saveDoc = () => {
   if (!currentMenu.value || !currentDoc.value) return Promise.resolve();
-  if (!getEditor()) return Promise.resolve();
+  if (!editorPanelRef.value) return Promise.resolve();
+  
+  const content = editorPanelRef.value.getValue();
   return apiSaveDoc({
     projectId: projectId.value,
     token: getToken(),
     link: currentMenu.value.link,
     item: currentDoc.value.link,
-    data: getEditor().getValue(),
-  }).then((res) => {
+    data: content,
+  }).then(() => {
     success(`(${currentMenu.value.name}/${currentDoc.value.name})文档保存成功`);
     isDirty.value = false;
   });
@@ -838,7 +633,6 @@ const uploadFile = (file, cb) => {
   fd.append("token", getToken());
   uploadImageFile(fd)
     .then((res) => {
-      console.log("🚀 ~ res:", res);
       if (res && (res.fileName || res.url)) {
         let url = res.fileName || res.url;
         if (!url && res.fileName) {
@@ -851,98 +645,14 @@ const uploadFile = (file, cb) => {
       }
       uploading.value = false;
     })
-    .catch((err) => {
-      console.error(err);
+    .catch(() => {
       uploading.value = false;
       error("上传失败");
     });
 };
 
-const handleUploadRequest = (options) => {
-  const { file, onSuccess, onError } = options;
-  uploading.value = true;
-  let fd = new FormData();
-  fd.append("avatar", file);
-  fd.append("token", getToken());
-  
-  uploadImageFile(fd)
-    .then((res) => {
-      if (res && (res.fileName || res.url)) {
-        let url = res.fileName || res.url;
-        if (!url && res.fileName) {
-          let t = getHost();
-          url = `${t}/uploads/${res.fileName}`;
-        }
-        onSuccess({ url: url });
-      } else {
-        onError(new Error("Unknown response format"));
-      }
-      uploading.value = false;
-    })
-    .catch((err) => {
-      onError(err);
-      uploading.value = false;
-    });
-};
-
-const getFileBackgroundStyle = (file) => {
-  const url = file.url || (file.response && file.response.url);
-  if (url && /\.(jpg|jpeg|png|gif|bmp|webp|svg)$/i.test(file.name)) {
-    return {
-      backgroundImage: `url(${url})`,
-      backgroundSize: "cover",
-      backgroundPosition: "center",
-      color: "#fff",
-      textShadow: "1px 1px 2px rgba(0,0,0,0.8)",
-      padding: "10px",
-      borderRadius: "4px",
-      cursor: "pointer",
-    };
-  }
-  return {};
-};
-
-const handlePreview = (file) => {
-  const url = file.url || (file.response && file.response.url);
-  if (url && /\.(jpg|jpeg|png|gif|bmp|webp|svg)$/i.test(file.name)) {
-    previewImageUrl.value = url;
-    previewDialogVisible.value = true;
-  }
-};
-
-const handleUploadSuccess = (response, file, fileList) => {
-  if (response && response.url) {
-    file.url = response.url;
-    success("上传成功");
-  }
-};
-
-const handleUploadError = (err, file, fileList) => {
-  error("上传失败: " + (err.message || "未知错误"));
-};
-
-const copyUploadFile = (file) => {
-  if (!file.url && !file.response?.url) {
-    warn("文件链接无效");
-    return;
-  }
-  // Element Plus file object structure compatibility
-  const url = file.url || file.response?.url;
-  const prefixURL = "";
-  // Check type from file.raw or file.name extension
-  const isImg = /\.(jpg|jpeg|png|gif|bmp|webp|svg)$/i.test(file.name);
-  const name = file.name || "file";
-  const text = isImg
-    ? `![${name}](${prefixURL}${url})`
-    : `[${name}](${prefixURL}${url})`;
-  copyValue(text);
-};
-
-const deleteUploadFile = (file) => {
-  const index = uploadFiles.value.indexOf(file);
-  if (index !== -1) {
-    uploadFiles.value.splice(index, 1);
-  }
+const onUploadSuccess = ({ file, url }) => {
+  console.log('Upload success:', file.name, url);
 };
 
 const importMd = () => {
@@ -954,7 +664,9 @@ const importMd = () => {
       let file = input.files[0];
       let reader = new FileReader();
       reader.onload = () => {
-        if (getEditor() && reader.result) getEditor().setValue(reader.result);
+        if (editorPanelRef.value && reader.result) {
+          editorPanelRef.value.setValue(reader.result);
+        }
       };
       reader.readAsText(file);
     } else {
@@ -964,14 +676,13 @@ const importMd = () => {
   input.click();
 };
 
-const copyValue = (text) => {
-  toClipboard(text)
-    .then(() => {
-      success(`复制 ${text} 成功`);
-    })
-    .catch(() => {
-      error(`复制 ${text} 失败`);
-    });
+const copyValue = async (text) => {
+  try {
+    await toClipboard(text);
+    success(`复制 ${text} 成功`);
+  } catch {
+    error(`复制 ${text} 失败`);
+  }
 };
 
 const sliderDrop = (dropResult) => {
@@ -986,7 +697,7 @@ const sliderDrop = (dropResult) => {
   });
 };
 
-const sliderItemDrop = (dropResult, slider) => {
+const sliderItemDrop = ({ dropResult, slider }) => {
   const { removedIndex, addedIndex } = dropResult;
   if (removedIndex === null || addedIndex === null) return;
   const children = slider.children || [];
@@ -999,10 +710,12 @@ const sliderItemDrop = (dropResult, slider) => {
   });
 };
 
+const onEditorReady = () => {
+  console.log('Editor ready');
+};
+
 // Lifecycle
 onMounted(async () => {
-  handleResize();
-  window.addEventListener("resize", handleResize);
   const loading = ElLoading.service({
     lock: true,
     text: "Initializing Editor...",
@@ -1010,8 +723,6 @@ onMounted(async () => {
   });
 
   try {
-    await loadEditorPlugins();
-
     userValidate();
     const p = route.query.p;
     if (p) {
@@ -1019,32 +730,7 @@ onMounted(async () => {
       getProject();
       getMenus();
     } else {
-      // Local fallback
       getMenus();
-    }
-
-    
-
-    // Init MDEditor
-    if (editorContainer.value) {
-      createEditor(editorContainer.value, {
-        theme: hero.value.theme || 'serene-rose',
-        warn: warn,
-        info: info,
-        uploadFile: uploadFile,
-        saveDoc: saveDoc,
-        importMd: importMd,
-        openUploadPanel: openUploadPanel,
-        getLeftNav: () => leftnav.value
-      }, () => {
-        const mEditor = getEditor();
-        // Dirty check listener
-        mEditor.editor.onDidChangeModelContent(() => {
-          if (!isSettingValue) {
-            isDirty.value = true;
-          }
-        });
-      });
     }
 
     getAllSliders();
@@ -1076,9 +762,7 @@ onBeforeRouteLeave((to, from) => {
 });
 
 onBeforeUnmount(() => {
-  window.removeEventListener("resize", handleResize);
   window.removeEventListener("beforeunload", beforeUnloadListener);
-  destroyEditor();
 });
 </script>
 
@@ -1086,7 +770,7 @@ onBeforeUnmount(() => {
 .markdown-body>*:first-child {
     margin-top: 0 !important;
 }
-/* Add any necessary global styles or overrides here */
+
 .main {
   height: 100%;
   width: 100%;
@@ -1095,14 +779,12 @@ onBeforeUnmount(() => {
   flex-direction: column;
 }
 
-/* Ensure content fills remaining vertical space */
 .content {
   flex: 1;
-  min-height: 0; /* Critical for nested scroll containers in flex column */
+  min-height: 0;
   overflow: hidden;
 }
 
-/* Prevent header/menu from shrinking */
 .header,
 .menu-container {
   flex-shrink: 0;
@@ -1111,98 +793,10 @@ onBeforeUnmount(() => {
 .flex {
   display: flex;
 }
-.hidden {
-  display: none;
-}
-.slider-header {
-  display: flex;
-  align-items: center;
-}
-.slider-item.group {
-  border-top: 1px solid rgba(60, 60, 67, 0.12);
-  margin-top: 12px;
-  padding-top: 10px;
-}
-.group-children {
-  padding-left: 20px;
-}
-.slider-item .label {
-  font-weight: 700;
-  color: rgba(60, 60, 67);
-}
-.slider-item.active span {
-  color: #10b981;
-}
-.column-drag-handle {
-  margin-right: 5px;
-  cursor: grab;
-}
-.slider-item .btn {
-  margin-right: 5px;
-}
-.shopcar {
-  position: fixed;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  width: 300px;
-  background-color: white;
-  box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
-  z-index: 2001;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  transform: translateX(100%);
-  transition: transform 0.3s ease-in-out;
-}
-.shopcar.open {
-  transform: translateX(0);
-}
-.shopcar-title {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 20px;
-}
-.close-btn {
-  cursor: pointer;
-  font-size: 20px;
-}
-.drag-zone {
-  border: 2px dashed #ccc;
-  border-radius: 4px;
-  padding: 20px;
-  text-align: center;
-  margin-bottom: 20px;
-  color: #666;
-}
-.shopcar-list {
-  flex: 1;
-  overflow-y: auto;
-}
 
-.file-item-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  padding: 5px 0;
-}
-
-.file-name {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 180px;
-}
-
-.file-actions {
-  display: flex;
-  gap: 5px;
-}
-
-/* Global styles for responsive dialog - copied from Projects.vue */
+/* Global styles for responsive dialog */
 .responsive-dialog {
-  width: 30% !important; /* Default desktop width */
+  width: 30% !important;
 }
 
 @media (max-width: 768px) {
@@ -1211,7 +805,6 @@ onBeforeUnmount(() => {
     margin-top: 20vh !important;
   }
   
-  /* Stack label and input on mobile */
   .responsive-dialog .el-form-item {
     display: block !important;
     margin-bottom: 20px;
@@ -1230,10 +823,5 @@ onBeforeUnmount(() => {
     margin-left: 0 !important;
     display: block !important;
   }
-}
-
-#editor {
-  display: flex;
-  flex-direction: column;
 }
 </style>

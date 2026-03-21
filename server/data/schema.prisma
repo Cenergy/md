@@ -14,6 +14,8 @@ model menus {
   link       String?
   sort_order Int?
   projects   projects? @relation(fields: [project_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([project_id])
 }
 
 model build_tasks {
@@ -23,6 +25,9 @@ model build_tasks {
   output     String?
   created_at DateTime  @default(now())
   updated_at DateTime  @updatedAt
+
+  @@index([status])
+  @@index([project_id])
 }
 
 model project_links {
@@ -31,6 +36,10 @@ model project_links {
   user_id    Int?
   email      String?
   projects   projects? @relation(fields: [project_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([project_id])
+  @@index([email])
+  @@index([user_id])
 }
 
 model projects {
@@ -43,6 +52,8 @@ model projects {
   project_links project_links[]
   users         users?          @relation(fields: [owner_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   sliders       sliders[]
+
+  @@index([owner_id])
 }
 
 model sliders {
@@ -56,6 +67,11 @@ model sliders {
   sort_order Int?
   content    String?
   projects   projects? @relation(fields: [project_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([project_id])
+  @@index([menu_link])
+  @@index([parent_id])
+  @@index([project_id, menu_link])
 }
 
 model users {
@@ -67,10 +83,14 @@ model users {
   created_at DateTime?  @default(now())
   status     Int?       @default(1)
   projects   projects[]
+
+  @@index([email])
 }
 
 model verify_codes {
   email      String    @id
   code       String?
   expires_at DateTime?
+
+  @@index([email, expires_at])
 }

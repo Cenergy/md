@@ -30,6 +30,7 @@ npm run dev
   用于生产环境或版本控制的数据库结构变更：
   ```bash
   npx prisma migrate dev
+  npx prisma db push
   ```
 
 - **可视化管理数据库**
