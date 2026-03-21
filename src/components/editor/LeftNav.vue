@@ -259,7 +259,7 @@ defineExpose({
 }
 
 .left-nav-footer {
-  padding: 10px;
+  padding: 6px 10px;
   border-top: 1px solid #e5e7eb;
   background: #f9fafb;
 }
@@ -269,6 +269,7 @@ defineExpose({
   align-items: center;
   font-size: 12px;
   color: #6b7280;
+  height: 18px;
 }
 
 .link-text {
