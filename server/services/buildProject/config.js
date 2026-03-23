@@ -31,7 +31,7 @@ const BASE_URL = `http://localhost:${process.env.PORT || 3001}/api`;
 // 模板路径
 const TEMPLATES_DIR = path.resolve(__dirname, '../templates');
 const THEME_LAYOUT_TEMPLATE = path.join(TEMPLATES_DIR, 'vitepress-layout.vue');
-const THEME_TWIKOO_TEMPLATE = path.join(TEMPLATES_DIR, 'vitepress-twikoo-comments.vue');
+const THEME_TWIKOO_TEMPLATE = path.join(TEMPLATES_DIR, 'Twikoo.vue');
 const TWIKOO_ENV_PLACEHOLDER = '__TWIKOO_ENV_ID__';
 
 // HTML标签集合

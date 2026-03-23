@@ -41,6 +41,7 @@
     "sqlite": "^5.1.1",
     "sqlite3": "^5.1.7",
     "swiper": "^10.0.0",
+    "twikoo": "^1.7.3",
     "viewerjs": "^1.11.7",
     "vue": "^3.3.4",
     "vue-clipboard3": "^2.0.0",

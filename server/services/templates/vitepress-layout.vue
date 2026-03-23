@@ -2,7 +2,7 @@
 import DefaultTheme from 'vitepress/theme'
 import { onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useRoute } from 'vitepress'
-import TwikooComments from './TwikooComments.vue'
+import Twikoo from './Twikoo.vue'
 
 const { Layout } = DefaultTheme
 const route = useRoute()
@@ -44,7 +44,7 @@ watch(
 <template>
   <Layout>
     <template #doc-after>
-      <TwikooComments v-if="enableTwikoo" :key="route.path" :env-id="twikooEnvId" :path="route.path" />
+      <Twikoo v-if="enableTwikoo" :env-id="twikooEnvId" />
     </template>
   </Layout>
 </template>
