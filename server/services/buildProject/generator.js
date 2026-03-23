@@ -124,7 +124,7 @@ function setupTheme(themeName, vitepressDir, projectRoot) {
   }
 
   fs.writeFileSync(path.join(themeDir, 'Layout.vue'), createThemeLayoutContent());
-  fs.writeFileSync(path.join(themeDir, 'TwikooComments.vue'), createTwikooCommentsContent());
+  fs.writeFileSync(path.join(themeDir, 'Twikoo.vue'), createTwikooCommentsContent());
   fs.writeFileSync(path.join(themeDir, 'index.js'), createThemeIndexContent(hasCustomTheme));
 }
 

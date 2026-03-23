@@ -6,7 +6,7 @@ const prisma = require('../utils/prisma');
 const PROJECT_ROOT = path.resolve(__dirname, '../..');
 require('dotenv').config({ path: path.resolve(PROJECT_ROOT, '.env') });
 const THEME_LAYOUT_TEMPLATE_PATH = path.join(__dirname, 'templates', 'vitepress-layout.vue');
-const THEME_TWIKOO_TEMPLATE_PATH = path.join(__dirname, 'templates', 'vitepress-twikoo-comments.vue');
+const THEME_TWIKOO_TEMPLATE_PATH = path.join(__dirname, 'templates', 'Twikoo.vue');
 const TWIKOO_ENV_PLACEHOLDER = '__TWIKOO_ENV_ID__';
 
 const PROJECT_ID = process.env.PROJECT_ID;
@@ -350,7 +350,7 @@ function setupTheme(themeName) {
   }
 
   fs.writeFileSync(path.join(themeDir, 'Layout.vue'), createThemeLayoutContent());
-  fs.writeFileSync(path.join(themeDir, 'TwikooComments.vue'), createTwikooCommentsContent());
+  fs.writeFileSync(path.join(themeDir, 'Twikoo.vue'), createTwikooCommentsContent());
   fs.writeFileSync(path.join(themeDir, 'index.js'), createThemeIndexContent(hasCustomTheme));
 }
 
