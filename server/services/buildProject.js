@@ -10,6 +10,11 @@ const THEME_TWIKOO_TEMPLATE_PATH = path.join(__dirname, 'templates', 'Twikoo.vue
 const TWIKOO_ENV_PLACEHOLDER = '__TWIKOO_ENV_ID__';
 
 const PROJECT_ID = process.env.PROJECT_ID;
+const TWIKOO_ENV_ID = (process.env.TWIKOO_ENV_ID || '').trim();
+
+if (!TWIKOO_ENV_ID) {
+  console.warn('Warning: TWIKOO_ENV_ID is empty, comments will be disabled in generated docs.');
+}
 
 const HTML_TAGS = new Set([
   'a', 'abbr', 'address', 'area', 'article', 'aside', 'audio', 'b', 'base', 'bdi', 'bdo',
@@ -313,7 +318,7 @@ export default defineConfig({
 
 function createThemeLayoutContent() {
   const template = fs.readFileSync(THEME_LAYOUT_TEMPLATE_PATH, 'utf-8');
-  return template.replace(TWIKOO_ENV_PLACEHOLDER, JSON.stringify(process.env.TWIKOO_ENV_ID || ''));
+  return template.replace(TWIKOO_ENV_PLACEHOLDER, JSON.stringify(TWIKOO_ENV_ID));
 }
 
 function createTwikooCommentsContent() {

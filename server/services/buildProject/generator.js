@@ -7,6 +7,11 @@ const {
   TWIKOO_ENV_PLACEHOLDER 
 } = require('./config');
 const { ensureDir, removeFileIfExists, toPosixPath } = require('./utils');
+const TWIKOO_ENV_ID = (process.env.TWIKOO_ENV_ID || '').trim();
+
+if (!TWIKOO_ENV_ID) {
+  console.warn('Warning: TWIKOO_ENV_ID is empty, comments will be disabled in generated docs.');
+}
 
 // 侧边栏链接构建
 function buildSidebarLink(projectSourceDir, parentDir, fileName) {
@@ -86,7 +91,7 @@ export default defineConfig({
 // 主题文件生成
 function createThemeLayoutContent() {
   const template = fs.readFileSync(THEME_LAYOUT_TEMPLATE, 'utf-8');
-  return template.replace(TWIKOO_ENV_PLACEHOLDER, JSON.stringify(process.env.TWIKOO_ENV_ID || ''));
+  return template.replace(TWIKOO_ENV_PLACEHOLDER, JSON.stringify(TWIKOO_ENV_ID));
 }
 
 function createTwikooCommentsContent() {
