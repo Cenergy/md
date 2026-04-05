@@ -45,8 +45,9 @@ const cspDirectives = {
     ],
     connectSrc: [
         "'self'",
-        "https:", // Allow API connections
+        "https:",
         "blob:",
+        "ws://localhost:*",
     ],
     workerSrc: [
         "'self'",
@@ -63,7 +64,14 @@ app.use(helmet({
     crossOriginEmbedderPolicy: false // Required for Monaco Editor
 }));
 app.use(cors());
-app.use(compression()); // Compress all routes
+app.use(compression({
+    filter: (req, res) => {
+        if (req.path.includes('/sse/')) {
+            return false;
+        }
+        return compression.filter(req, res);
+    }
+}));
 app.use(morgan('dev', {
     // Skip logging for non-API requests (frontend assets) to reduce noise
     // But always log errors (status >= 400)
@@ -106,6 +114,7 @@ const menuRoutes = require('./routes/menu');
 const sliderRoutes = require('./routes/slider');
 const fileRoutes = require('./routes/file');
 const buildRoutes = require('./routes/build');
+const mobileRoutes = require('./routes/mobile');
 const { startBuildWorker } = require('./services/buildWorker');
 
 app.use('/api', authRoutes);
@@ -115,6 +124,7 @@ app.use('/api', menuRoutes);
 app.use('/api', sliderRoutes);
 app.use('/api', fileRoutes);
 app.use('/api', buildRoutes);
+app.use('/api/mobile', mobileRoutes);
 
 // API 404 Handler (must be after all API routes)
 app.use('/api/*', notFoundHandler);
