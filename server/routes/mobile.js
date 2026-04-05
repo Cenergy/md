@@ -1,5 +1,4 @@
 const express = require('express');
-const QRCode = require('qrcode');
 
 const router = express.Router();
 
@@ -10,40 +9,27 @@ const config = {
 const sessions = new Map();
 const sseClients = new Map();
 
-router.get('/qrcode', async (req, res) => {
-  const sessionId = 'test-session-001';
-  const host = req.get('host');
-  const protocol = req.protocol;
-  const mobileUrl = `${protocol}://${host}/#/mobile/${sessionId}`;
+router.post('/session', (req, res) => {
+  const { sessionId } = req.body;
   
-  try {
-    const qrDataUrl = await QRCode.toDataURL(mobileUrl, {
-      width: 200,
-      margin: 2,
-    });
-    
-    sessions.set(sessionId, {
-      createdAt: Date.now(),
-      connected: false,
-      mobileConnections: 0,
-    });
-    
-    setTimeout(() => {
-      if (sessions.has(sessionId) && !sessions.get(sessionId).connected) {
-        sessions.delete(sessionId);
-        sseClients.delete(sessionId);
-      }
-    }, 5 * 60 * 1000);
-    
-    res.json({
-      ok: true,
-      sessionId,
-      qrDataUrl,
-      mobileUrl,
-    });
-  } catch (err) {
-    res.status(500).json({ ok: false, message: 'Failed to generate QR code' });
+  if (!sessionId) {
+    return res.status(400).json({ ok: false, message: 'sessionId is required' });
   }
+  
+  sessions.set(sessionId, {
+    createdAt: Date.now(),
+    connected: false,
+    mobileConnections: 0,
+  });
+  
+  setTimeout(() => {
+    if (sessions.has(sessionId) && !sessions.get(sessionId).connected) {
+      sessions.delete(sessionId);
+      sseClients.delete(sessionId);
+    }
+  }, 5 * 60 * 1000);
+  
+  res.json({ ok: true, sessionId });
 });
 
 router.get('/sse/:sessionId', (req, res) => {
