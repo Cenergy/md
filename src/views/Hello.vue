@@ -1129,12 +1129,20 @@ const openMobilePage = () => {
 
 const initQRCode = async () => {
   try {
-    const response = await axios.get('/api/mobile/qrcode')
-    if (response.data.ok) {
-      qrDataUrl.value = response.data.qrDataUrl
-      sessionId.value = response.data.sessionId
-      initSSE()
-    }
+    sessionId.value = crypto.randomUUID()
+    
+    const host = window.location.host
+    const protocol = window.location.protocol
+    const mobileUrl = `${protocol}//${host}/#/mobile/${sessionId.value}`
+    
+    const QRCode = (await import('qrcode')).default
+    qrDataUrl.value = await QRCode.toDataURL(mobileUrl, {
+      width: 200,
+      margin: 2,
+    })
+    
+    await axios.post('/api/mobile/session', { sessionId: sessionId.value })
+    initSSE()
   } catch (error) {
     console.error('Failed to generate QR code:', error)
   }
