@@ -45,6 +45,16 @@ const routes = [
     path: '/start',
     name: 'Start',
     component: () => import('../views/Start.vue')
+  },
+  {
+    path: '/hello',
+    name: 'Hello',
+    component: () => import('../views/Hello.vue')
+  },
+  {
+    path: '/mobile/:sessionId',
+    name: 'MobileChat',
+    component: () => import('../views/MobileChat.vue')
   }
 ] 
 
