@@ -292,15 +292,126 @@ features:
 ---`;
 }
 
+// 第三方 CDN 资源配置
+const THIRD_PARTY_SCRIPTS = [
+  { tag: 'script', src: 'https://mirrors.sustech.edu.cn/cdnjs/ajax/libs/raphael/2.3.0/raphael.min.js' },
+  { tag: 'script', src: 'https://mirrors.sustech.edu.cn/cdnjs/ajax/libs/flowchart/1.17.1/flowchart.min.js' },
+  { tag: 'script', src: 'https://mirrors.sustech.edu.cn/cdnjs/ajax/libs/viewerjs/1.11.5/viewer.min.js' },
+  { tag: 'script', src: 'https://mirrors.sustech.edu.cn/cdnjs/ajax/libs/xlsx/0.18.5/xlsx.full.min.js' },
+  { tag: 'link', rel: 'stylesheet', href: 'https://mirrors.sustech.edu.cn/cdnjs/ajax/libs/KaTeX/0.16.9/katex.min.css' },
+  { tag: 'script', src: 'https://mirrors.sustech.edu.cn/cdnjs/ajax/libs/KaTeX/0.16.9/katex.min.js' },
+  { tag: 'script', src: 'https://mirrors.sustech.edu.cn/cdnjs/ajax/libs/mermaid/10.6.1/mermaid.min.js' },
+  { tag: 'script', src: 'https://mirrors.sustech.edu.cn/cdnjs/ajax/libs/plantuml-encoder/1.4.0/plantuml-encoder.min.js' },
+];
+
+// 生成 head 配置
+function generateHeadConfig() {
+  const head = THIRD_PARTY_SCRIPTS.map(item => {
+    if (item.tag === 'script') {
+      return ['script', { src: item.src }];
+    } else if (item.tag === 'link') {
+      return ['link', { rel: item.rel, href: item.href }];
+    }
+    return null;
+  }).filter(Boolean);
+  return JSON.stringify(head, null, 2);
+}
+
+// 生成 markdown-it 插件文件
+function generateMarkdownPluginsFile() {
+  return `// 自定义 markdown-it 插件
+import container from 'markdown-it-container'
+
+// 通用 container 渲染函数
+function createContainerRender(className) {
+  return (tokens, idx) => {
+    if (tokens[idx].nesting === 1) {
+      return \`<div class="\${className}"><pre class="source" style="display:none">\`
+    } else {
+      return '</pre></div>\\n'
+    }
+  }
+}
+
+// Flowchart 插件
+function flowchartPlugin(md) {
+  md.use(container, 'flowchart', {
+    validate: (params) => params.trim().match(/^flowchart\\s*$/),
+    render: createContainerRender('flowchart-container'),
+    marker: ':'
+  })
+}
+
+// Mermaid 插件  
+function mermaidPlugin(md) {
+  md.use(container, 'mermaid', {
+    validate: (params) => params.trim().match(/^mermaid\\s*$/),
+    render: createContainerRender('mermaid-container'),
+    marker: ':'
+  })
+}
+
+// KaTeX 块级插件
+function katexPlugin(md) {
+  md.use(container, 'katex', {
+    validate: (params) => params.trim() === 'katex',
+    render: createContainerRender('katex-container'),
+    marker: ':'
+  })
+}
+
+// Swiper 插件
+function swiperPlugin(md) {
+  md.use(container, 'swiper', {
+    validate: (params) => params.trim() === 'swiper',
+    render: (tokens, idx) => {
+      if (tokens[idx].nesting === 1) {
+        return '<div class="swiper-content">\\n'
+      } else {
+        return '</div>\\n'
+      }
+    },
+    marker: ':'
+  })
+}
+
+// Qrcode 插件
+function qrcodePlugin(md) {
+  md.use(container, 'qrcode', {
+    validate: (params) => params.trim() === 'qrcode',
+    render: createContainerRender('qrcode-container'),
+    marker: ':'
+  })
+}
+
+export function setupMarkdownPlugins(md) {
+  flowchartPlugin(md)
+  mermaidPlugin(md)
+  katexPlugin(md)
+  swiperPlugin(md)
+  qrcodePlugin(md)
+}
+`;
+}
+
 function generateVitePressConfig(projectName, navItems, sidebarMap) {
   return `
 import { defineConfig } from 'vitepress'
+import { setupMarkdownPlugins } from './markdown-plugins.mjs'
 
 export default defineConfig({
   title: "${projectName}",
   description: "Documentation for ${projectName}",
   base: '/p/${PROJECT_ID}/',
   outDir: '${toPosixPath(buildPaths.projectOutDir)}',
+  
+  head: ${generateHeadConfig()},
+  
+  markdown: {
+    config: (md) => {
+      setupMarkdownPlugins(md)
+    }
+  },
   
   themeConfig: {
     nav: ${JSON.stringify(navItems, null, 2)},
@@ -410,6 +521,14 @@ function toNavigationAndSidebar(menuResults) {
 function writeVitePressConfig(projectName, nav, sidebar) {
   ensureDir(buildPaths.vitepressDir);
   removeFileIfExists(path.join(buildPaths.vitepressDir, 'config.js'));
+  
+  // 生成 markdown 插件文件
+  fs.writeFileSync(
+    path.join(buildPaths.vitepressDir, 'markdown-plugins.mjs'),
+    generateMarkdownPluginsFile()
+  );
+  
+  // 生成配置文件
   fs.writeFileSync(
     path.join(buildPaths.vitepressDir, 'config.mjs'),
     generateVitePressConfig(projectName, nav, sidebar)
