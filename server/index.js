@@ -24,17 +24,21 @@ const cspDirectives = {
         "'unsafe-inline'", // Required for Vite HMR and Monaco Editor
         "'unsafe-eval'",   // Required for Monaco Editor
         "blob:",           // Required for Monaco Editor web workers
+        "https://mirrors.sustech.edu.cn", // CDN for third-party libraries (flowchart, mermaid, katex, etc.)
+        "https://cdnjs.cloudflare.com", // CDN for plantuml-encoder
     ],
     styleSrc: [
         "'self'",
         "'unsafe-inline'", // Required for Vue/VitePress dynamic styles
         "https://fonts.googleapis.com",
         "https://at.alicdn.com", // Required for iconfont CSS
+        "https://mirrors.sustech.edu.cn", // CDN for third-party libraries (katex CSS, etc.)
     ],
     fontSrc: [
         "'self'",
         "https://fonts.gstatic.com",
         "https://at.alicdn.com", // Required for iconfont CDN
+        "https://mirrors.sustech.edu.cn", // CDN fonts
         "data:", // Required for icon fonts
     ],
     imgSrc: [
@@ -42,6 +46,7 @@ const cspDirectives = {
         "data:",
         "blob:",
         "https:", // Allow external images
+        "https://www.plantuml.com", // PlantUML diagram server
     ],
     connectSrc: [
         "'self'",
