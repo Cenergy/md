@@ -55,6 +55,11 @@ const routes = [
     path: '/mobile/:sessionId',
     name: 'MobileChat',
     component: () => import('../views/MobileChat.vue')
+  },
+  {
+    path: '/voice-input',
+    name: 'VoiceInput',
+    component: () => import('../views/VoiceInput.vue')
   }
 ] 
 

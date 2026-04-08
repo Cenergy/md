@@ -53,6 +53,7 @@ const cspDirectives = {
         "https:",
         "blob:",
         "ws://localhost:*",
+        "wss://asr.cloud.tencent.com",
     ],
     workerSrc: [
         "'self'",
@@ -120,6 +121,7 @@ const sliderRoutes = require('./routes/slider');
 const fileRoutes = require('./routes/file');
 const buildRoutes = require('./routes/build');
 const mobileRoutes = require('./routes/mobile');
+const voiceRoutes = require('./routes/voice');
 const { startBuildWorker } = require('./services/buildWorker');
 
 app.use('/api', authRoutes);
@@ -130,6 +132,7 @@ app.use('/api', sliderRoutes);
 app.use('/api', fileRoutes);
 app.use('/api', buildRoutes);
 app.use('/api/mobile', mobileRoutes);
+app.use('/api/voice', voiceRoutes);
 
 // API 404 Handler (must be after all API routes)
 app.use('/api/*', notFoundHandler);
