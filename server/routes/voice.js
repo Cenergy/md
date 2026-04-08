@@ -3,10 +3,10 @@ const crypto = require('crypto');
 
 const router = express.Router();
 
-// 腾讯云语音识别配置
-const TENCENT_APP_ID = '你的AppId';
-const TENCENT_SECRET_ID = '你的SecretId';
-const TENCENT_SECRET_KEY = '你的SecretKey';
+// 腾讯云语音识别配置（从环境变量读取）
+const TENCENT_APP_ID = process.env.TENCENT_APP_ID || '你的AppId';
+const TENCENT_SECRET_ID = process.env.TENCENT_SECRET_ID || '';
+const TENCENT_SECRET_KEY = process.env.TENCENT_SECRET_KEY || '';
 
 /**
  * 生成腾讯云实时语音识别签名 URL
