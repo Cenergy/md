@@ -69,12 +69,16 @@ import Header from '@/components/Header.vue'
 
 .home {
   padding-top: 60px; /* Space for fixed header */
-  background: linear-gradient(135deg, rgba(22, 93, 255, 0.05) 0%, rgba(224, 242, 254, 0.5) 100%);
+  background: linear-gradient(135deg, rgba(24, 144, 255, 0.05) 0%, rgba(224, 242, 254, 0.5) 100%);
   min-height: 500px;
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
+}
+
+html.dark .home {
+  background: linear-gradient(135deg, rgba(64, 169, 255, 0.08) 0%, rgba(29, 30, 34, 0.8) 100%);
 }
 
 .container {
@@ -116,14 +120,15 @@ import Header from '@/components/Header.vue'
   background-color: var(--primary-color);
   color: white;
   border: 2px solid var(--primary-color);
-  box-shadow: 0 4px 6px -1px rgba(22, 93, 255, 0.3);
+  box-shadow: 0 4px 6px -1px rgba(24, 144, 255, 0.3);
 }
 
 .btn-white:hover {
-  background-color: #1352e2;
-  border-color: #1352e2;
+  background-color: var(--primary-color);
+  filter: brightness(1.1);
+  border-color: var(--primary-color);
   transform: translateY(-2px);
-  box-shadow: 0 6px 10px -1px rgba(22, 93, 255, 0.4);
+  box-shadow: 0 6px 10px -1px rgba(24, 144, 255, 0.4);
 }
 
 .btn-white span {
@@ -132,7 +137,7 @@ import Header from '@/components/Header.vue'
 
 .features-section {
   padding: 80px 0;
-  background-color: #fff;
+  background-color: var(--card-bg);
 }
 
 .features {
@@ -145,14 +150,14 @@ import Header from '@/components/Header.vue'
 .features .item {
   padding: 30px;
   border-radius: 16px;
-  background: #fff;
+  background: var(--card-bg);
   box-shadow: var(--box-shadow);
   transition: all 0.3s ease;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  border: 1px solid #f3f4f6;
+  border: 1px solid var(--border-color);
 }
 
 .features .item:hover {
@@ -164,12 +169,16 @@ import Header from '@/components/Header.vue'
   width: 80px;
   height: 80px;
   border-radius: 50%;
-  background: rgba(22, 93, 255, 0.1);
+  background: rgba(24, 144, 255, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 20px;
   color: var(--primary-color);
+}
+
+html.dark .icon-wrapper {
+  background: rgba(64, 169, 255, 0.15);
 }
 
 .features .item .iconfont {

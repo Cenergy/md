@@ -65,14 +65,14 @@ import Header from "@/components/Header.vue";
 /* Copied and adapted from public/index-3018ea7565.css */
 .news {
     padding: 10px;
-    border-bottom: 1px solid #f3f3f3;
+    border-bottom: 1px solid var(--border-color);
 }
 
 .home {
-  margin-top: -60px;
-  padding-top: 100px;
-  height: 400px;
-  background: #10b98117;
+    margin-top: -60px;
+    padding-top: 100px;
+    height: 400px;
+    background: rgba(var(--primary-color-rgb), 0.08);
   /* background-image: url(../img/bg2.png);  -- Assuming image might be missing or needs correct path */
   background-size: cover;
 }

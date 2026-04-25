@@ -163,8 +163,8 @@ const submitInfo = async () => {
     background-size: cover;
     width: 100%;
     min-height: 100vh; /* Ensure full height */
-    --color: #E1E1E1;
-    background-color: #f3f3f3;
+    --color: var(--border-color);
+    background-color: var(--bg-color);
     background-image: linear-gradient(0deg, transparent 24%, var(--color) 25%, var(--color) 26%, transparent 27%, transparent 74%, var(--color) 75%, var(--color) 76%, transparent 77%, transparent), linear-gradient(90deg, transparent 24%, var(--color) 25%, var(--color) 26%, transparent 27%, transparent 74%, var(--color) 75%, var(--color) 76%, transparent 77%, transparent);
     background-size: 55px 55px;
     /* Reset margin/padding for the page wrapper if needed, though scoped handles class */
@@ -193,7 +193,7 @@ const submitInfo = async () => {
     text-decoration: none;
     font-size: 24px;
     font-weight: bold;
-    color: #333;
+    color: var(--text-color);
 }
 
 .main {
@@ -214,7 +214,7 @@ button {
     min-height: 420px;
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
     border-radius: 12px;
-    background: #fff;
+    background: var(--card-bg);
     padding: 20px;
     box-sizing: border-box;
     display: flex;
@@ -234,7 +234,7 @@ button {
     font-size: 24px;
     padding: 20px 0;
     font-weight: 700;
-    color: #333;
+    color: var(--text-color);
 }
 
 .login-form {
@@ -258,13 +258,13 @@ button {
 .label {
     margin-bottom: 6px;
     font-weight: 500;
-    color: #606266;
+    color: var(--text-secondary);
     font-size: 14px;
 }
 
 input.value {
     height: 40px;
-    border: 1px solid #dcdfe6;
+    border: 1px solid var(--border-color);
     border-radius: 4px;
     width: 100%;
     padding: 0 12px;
@@ -273,12 +273,13 @@ input.value {
     transition: all 0.2s;
     outline: none;
     box-shadow: none;
-    color: #333;
+    color: var(--text-color);
+    background: var(--input-bg);
 }
 
 input.value:focus {
-    border-color: #409eff;
-    box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
 }
 
 .login-btn {
@@ -321,12 +322,12 @@ input.value:focus {
 
 .login-btn {
     align-items: center;
-    background-color: #409eff;
+    background-color: var(--primary-color);
     border: none;
     border-radius: .25rem;
     box-shadow: rgba(0, 0, 0, .02) 0 1px 3px 0;
     box-sizing: border-box;
-    color: #fff;
+    color: var(--btn-primary-text);
     cursor: pointer;
     display: inline-flex;
     font-family: system-ui, -apple-system, system-ui, "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -346,8 +347,9 @@ input.value:focus {
 .login-btn:hover {
     border-color: rgba(0, 0, 0, .15);
     box-shadow: rgba(0, 0, 0, .1) 0 4px 12px;
-    background-color: #66b1ff;
-    color: #fff;
+    background-color: var(--primary-color);
+    filter: brightness(1.1);
+    color: var(--btn-primary-text);
 }
 
 .login-btn:hover {
@@ -355,10 +357,11 @@ input.value:focus {
 }
 
 .login-btn:active {
-    background-color: #3a8ee6;
+    background-color: var(--primary-color);
+    filter: brightness(0.9);
     border-color: rgba(0, 0, 0, .15);
     box-shadow: rgba(0, 0, 0, .06) 0 2px 4px;
-    color: #fff;
+    color: var(--btn-primary-text);
     transform: translateY(0);
 }
 
@@ -367,12 +370,12 @@ input.value:focus {
     border: none;
     box-shadow: 1px 1px 2px 0 rgb(0, 0, 0, .2);
     outline: 0;
-    color: #696969;
+    color: var(--text-secondary);
 }
 
 .input:invalid {
     animation: justshake .3s forwards;
-    color: red;
+    color: var(--danger-color);
 }
 
 @keyframes justshake {
@@ -388,11 +391,11 @@ input.value:focus {
     align-items: center;
     margin-top: 20px;
     font-size: 14px;
-    color: #606266;
+    color: var(--text-secondary);
 }
 
 .switch-mode .link {
-    color: #409eff;
+    color: var(--primary-color);
     cursor: pointer;
     margin-left: 8px;
     font-weight: 500;

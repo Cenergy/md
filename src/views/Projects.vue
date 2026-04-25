@@ -600,7 +600,7 @@ onBeforeUnmount(() => {
 <style scoped>
 /* Reuse styles from index.css and project.css conceptually, or just basic Element Plus + Flex */
 .projects-page {
-  background-color: #f5f7f9;
+  background-color: var(--bg-color);
   /* Ensure scrollability */
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;

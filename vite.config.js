@@ -15,6 +15,7 @@ export default defineConfig({
   },
   server: {
     port: 3000,
+    https: true,
     allowedHosts: ["note.gishai.top"],
     proxy: {
       "/api": {

@@ -8,7 +8,7 @@
       <!-- 录音状态指示 -->
       <div class="recording-indicator" :class="{ active: isRecording }">
         <div class="pulse-ring" v-if="isRecording"></div>
-        <el-icon :size="48" :color="isRecording ? '#f56c6c' : '#909399'">
+        <el-icon :size="48" :color="isRecording ? 'var(--danger-color)' : 'var(--text-secondary)'">
           <Microphone />
         </el-icon>
         <span class="recording-text">{{ recordingStatusText }}</span>
@@ -296,7 +296,7 @@ onUnmounted(() => {
 <style scoped>
 .voice-input-page {
   min-height: 100vh;
-  background: #f5f7fa;
+  background: var(--bg-color);
   padding: 20px;
   box-sizing: border-box;
 }
@@ -308,7 +308,7 @@ onUnmounted(() => {
 
 .voice-header h2 {
   margin: 0;
-  color: #303133;
+  color: var(--text-color);
   font-size: 22px;
 }
 
@@ -330,7 +330,7 @@ onUnmounted(() => {
   width: 160px;
   height: 160px;
   border-radius: 50%;
-  background: #fff;
+  background: var(--card-bg);
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
   position: relative;
   transition: all 0.3s;
@@ -345,7 +345,7 @@ onUnmounted(() => {
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  border: 3px solid #f56c6c;
+  border: 3px solid var(--danger-color);
   animation: pulse 1.5s ease-out infinite;
 }
 
@@ -357,18 +357,18 @@ onUnmounted(() => {
 .recording-text {
   margin-top: 10px;
   font-size: 14px;
-  color: #909399;
+  color: var(--text-secondary);
 }
 
 .recording-indicator.active .recording-text {
-  color: #f56c6c;
+  color: var(--danger-color);
 }
 
 .recording-time {
   margin-top: 4px;
   font-size: 20px;
   font-weight: bold;
-  color: #f56c6c;
+  color: var(--danger-color);
   font-variant-numeric: tabular-nums;
 }
 

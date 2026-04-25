@@ -189,7 +189,7 @@
               {{ field.label }}
             </el-tag>
           </div>
-          <div style="margin-top: 5px; color: #909399; font-size: 12px">
+          <div style="margin-top: 5px; color: var(--text-secondary); font-size: 12px">
             点击字段标签可插入到短信内容中，字段变量将根据每个重点防护对象的实际数据进行替换
           </div>
         </el-form-item>
@@ -219,7 +219,7 @@
         <el-form-item label="内容预览" v-if="batchSmsContent && checkedReservoirCodes.length > 0">
           <div class="preview-container">
             <div v-if="getSelectedSingleReservoirData()" class="preview-item">
-              <div style="color: #606266; line-height: 1.5">
+              <div style="color: var(--text-secondary); line-height: 1.5">
                 【深圳市光明区水务局】水务防汛{{ getPreviewContent(getSelectedSingleReservoirData()!) }}
               </div>
             </div>
@@ -1187,22 +1187,22 @@ onUnmounted(() => {
 
 <style scoped>
 .chat-container {
-  --border-color: #e4e7ed;
-  --border-color-light: #ebeef5;
-  --border-active: #409eff;
-  --text-primary: #303133;
-  --text-secondary: #909399;
-  --text-white: #fff;
-  --text-placeholder: #c0c4cc;
-  --bg-card: #fff;
-  --bg-secondary: #f5f7fa;
-  --bg-tertiary: #e4e7ed;
-  --bg-hover: #f5f7fa;
-  --bg-input: #fff;
-  --accent-color: #409eff;
-  --success-color: #67c23a;
-  --scrollbar-thumb: rgba(0, 0, 0, 0.2);
-  --scrollbar-track: rgba(0, 0, 0, 0.05);
+  --border-color: var(--border-color, #e4e7ed);
+  --border-color-light: var(--border-color, #ebeef5);
+  --border-active: var(--primary-color, #409eff);
+  --text-primary: var(--text-color, #303133);
+  --text-secondary: var(--text-secondary, #909399);
+  --text-white: var(--btn-primary-text, #fff);
+  --text-placeholder: var(--text-secondary, #c0c4cc);
+  --bg-card: var(--card-bg, #fff);
+  --bg-secondary: var(--hover-bg, #f5f7fa);
+  --bg-tertiary: var(--border-color, #e4e7ed);
+  --bg-hover: var(--hover-bg, #f5f7fa);
+  --bg-input: var(--input-bg, #fff);
+  --accent-color: var(--primary-color, #409eff);
+  --success-color: var(--success-color, #67c23a);
+  --scrollbar-thumb: var(--scrollbar-thumb, rgba(0, 0, 0, 0.2));
+  --scrollbar-track: var(--scrollbar-track, rgba(0, 0, 0, 0.05));
 }
 
 * {
@@ -1264,11 +1264,11 @@ onUnmounted(() => {
 }
 
 .user-message .message-avatar {
-  background-color: #409eff;
+  background-color: var(--accent-color);
 }
 
 .ai-message .message-avatar {
-  background-color: #19c37d;
+  background-color: var(--success-color);
 }
 
 .message-content {
@@ -1282,7 +1282,7 @@ onUnmounted(() => {
 }
 
 .user-message .message-content {
-  background-color: #409eff;
+  background-color: var(--accent-color);
   color: var(--text-white);
   border-top-right-radius: 2px;
 }
@@ -1513,7 +1513,7 @@ onUnmounted(() => {
   background: rgba(103, 194, 58, 0.1);
   border-radius: 8px;
   margin: 20px 0;
-  color: #67c23a;
+  color: var(--success-color);
   font-size: 16px;
 }
 </style>

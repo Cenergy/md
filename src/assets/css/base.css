@@ -1,17 +1,127 @@
+/* ========== 浅色主题（默认备选） ========== */
 :root {
-  --primary-color: #409eff;
+  /* 主色 */
+  --primary-color: #1890FF;
+  --primary-color-rgb: 24, 144, 255;
+  /* 页面背景 */
+  --bg-color: #F2F3F5;
+  /* 卡片/容器底色 */
+  --card-bg: #FFFFFF;
+  /* 文字主色 */
+  --text-color: #333333;
+  /* 文字次要色 */
+  --text-secondary: #666666;
+  /* 边框/分割线 */
+  --border-color: #E5E6EB;
+  /* 次要色 */
   --secondary-color: #6B7280;
-  --success-color: #10b981;
-  --text-color: #333;
-  --bg-color: #f5f7f9;
-  --card-bg: #fff;
-  --border-radius: 8px;
+
+  /* 全局通用状态色 */
+  --success-color: #52C41A;
+  --warning-color: #FAAD14;
+  --danger-color: #F56C6C;
+  --disabled-color: #666973;
+
+  /* 全局基础规范 */
+  --border-radius: 6px;
+  --inner-padding: 16px;
+  --line-height-base: 1.5;
   --box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-  
-  /* Element Plus Overrides */
+
+  /* 表格 - 浅色模式 */
+  --table-header-bg: #F5F7FA;
+  --table-header-text: #333333;
+  --table-row-bg: #FFFFFF;
+  --table-row-stripe: #FAFAFA;
+  --table-row-hover: #ECF5FF;
+  --table-row-min-height: 48px;
+
+  /* 按钮 */
+  --btn-primary-bg: var(--primary-color);
+  --btn-primary-text: #FFFFFF;
+  --btn-secondary-border: var(--border-color);
+  --btn-secondary-text: var(--text-secondary);
+  --btn-text-color: var(--primary-color);
+
+  /* 表单 */
+  --input-border: var(--border-color);
+  --input-focus-border: var(--primary-color);
+  --input-error-border: var(--danger-color);
+  --input-bg: var(--card-bg);
+
+  /* 滚动条 */
+  --scrollbar-track: rgba(0, 0, 0, 0.06);
+  --scrollbar-thumb: rgba(0, 0, 0, 0.12);
+
+  /* 悬浮背景 */
+  --hover-bg: #F5F7FA;
+
+  /* Element Plus 覆写 */
   --el-color-primary: var(--primary-color);
   --el-color-success: var(--success-color);
   --el-border-radius-base: var(--border-radius);
+}
+
+/* ========== 深色主题（系统默认） ========== */
+html.dark {
+  --primary-color: #40A9FF;
+  --primary-color-rgb: 64, 169, 255;
+  --bg-color: #1D1E22;
+  --card-bg: #2A2C32;
+  --text-color: #E5E6EB;
+  --text-secondary: #A3A6AD;
+  --border-color: #44474E;
+  --secondary-color: #A3A6AD;
+
+  /* 全局通用状态色（深浅共用，但可按需覆盖） */
+  --success-color: #52C41A;
+  --warning-color: #FAAD14;
+  --danger-color: #F56C6C;
+  --disabled-color: #666973;
+
+  --box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+
+  /* 表格 - 深色模式 */
+  --table-header-bg: #33353B;
+  --table-header-text: #E5E6EB;
+  --table-row-bg: #2A2C32;
+  --table-row-stripe: #31333A;
+  --table-row-hover: #293B52;
+
+  /* 按钮 */
+  --btn-primary-bg: var(--primary-color);
+  --btn-primary-text: #FFFFFF;
+  --btn-secondary-border: var(--border-color);
+  --btn-secondary-text: var(--text-secondary);
+  --btn-text-color: var(--primary-color);
+
+  /* 表单 */
+  --input-bg: var(--card-bg);
+
+  /* 滚动条 */
+  --scrollbar-track: rgba(255, 255, 255, 0.06);
+  --scrollbar-thumb: rgba(255, 255, 255, 0.15);
+
+  /* 悬浮背景 */
+  --hover-bg: #33353B;
+
+  /* Element Plus 暗色覆写 */
+  --el-bg-color: #1D1E22;
+  --el-bg-color-overlay: #2A2C32;
+  --el-bg-color-page: #1D1E22;
+  --el-text-color-primary: #E5E6EB;
+  --el-text-color-regular: #C9CDD4;
+  --el-text-color-secondary: #A3A6AD;
+  --el-text-color-placeholder: #6B6E75;
+  --el-border-color: #44474E;
+  --el-border-color-light: #3A3D44;
+  --el-border-color-lighter: #33353B;
+  --el-fill-color: #2A2C32;
+  --el-fill-color-light: #31333A;
+  --el-fill-color-lighter: #33353B;
+  --el-fill-color-blank: #2A2C32;
+  --el-mask-color: rgba(0, 0, 0, 0.6);
+  --el-color-primary: #40A9FF;
 }
 
 ::-webkit-scrollbar {
@@ -20,13 +130,13 @@
 }
 ::-webkit-scrollbar-track {
   border-radius: 3px;
-  background: rgba(0, 0, 0, 0.06);
-  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.08);
+  background: var(--scrollbar-track);
+  box-shadow: inset 0 0 5px var(--scrollbar-track);
 }
 ::-webkit-scrollbar-thumb {
   border-radius: 3px;
-  background: rgba(0, 0, 0, 0.12);
-  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+  background: var(--scrollbar-thumb);
+  box-shadow: inset 0 0 10px var(--scrollbar-thumb);
 }
 ::-moz-scrollbar {
   width: 6px;
@@ -34,13 +144,13 @@
 }
 ::-moz-scrollbar-track {
   border-radius: 3px;
-  background: rgba(0, 0, 0, 0.06);
-  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.08);
+  background: var(--scrollbar-track);
+  box-shadow: inset 0 0 5px var(--scrollbar-track);
 }
 ::-moz-scrollbar-thumb {
   border-radius: 3px;
-  background: rgba(0, 0, 0, 0.12);
-  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+  background: var(--scrollbar-thumb);
+  box-shadow: inset 0 0 10px var(--scrollbar-thumb);
 }
 @keyframes fadeInRight {
   0% {
@@ -102,6 +212,7 @@ html {
   margin: 0;
   font-size: 0.95em;
   color: var(--text-color);
+  background-color: var(--bg-color);
   font-family:
     "Chinese Quotes",
     "Inter var",
@@ -130,28 +241,28 @@ html {
 }
 button {
   padding: 8px 16px;
-  background: #fff;
-  border: 1px solid #e1dada;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
   cursor: pointer;
-  color: #646464;
+  color: var(--text-secondary);
   border-radius: var(--border-radius);
   transition: all 0.3s ease;
 }
 button:hover {
-  background-color: #f9f9f9;
+  background-color: var(--hover-bg);
   border-color: var(--primary-color);
   color: var(--primary-color);
 }
 a {
   text-decoration: none;
-  color: rgba(60, 60, 67);
+  color: var(--text-color);
   transition: color 0.3s ease;
 }
 a:hover {
   color: var(--primary-color);
 }
 .red {
-  color: #ff00009c;
+  color: var(--danger-color);
 }
 .green {
   color: var(--primary-color);
@@ -160,7 +271,7 @@ a:hover {
   cursor: pointer;
 }
 .close-btn-icon {
-  color: red;
+  color: var(--danger-color);
   font-size: 22px;
 }
 .container {
@@ -204,14 +315,15 @@ img {
 
 /* Modern Button Styles */
 .btn-primary {
-  background-color: var(--primary-color);
-  color: white;
+  background-color: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
   border: none;
 }
 .btn-primary:hover {
-  background-color: #1352e2; /* slightly darker shade */
-  color: white;
-  box-shadow: 0 4px 12px rgba(22, 93, 255, 0.3);
+  background-color: var(--primary-color);
+  filter: brightness(1.1);
+  color: var(--btn-primary-text);
+  box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
 }
 /* Card Modernization */
 .modern-card {
@@ -222,7 +334,7 @@ img {
 }
 .modern-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.15), 0 4px 6px -2px rgba(0, 0, 0, 0.08);
 }
 .users .item .iconfont {
   font-size: 22px;
@@ -235,17 +347,17 @@ a.active {
   -webkit-background-clip: text;
   -moz-background-clip: text;
   background-clip: text;
-  color: #10b981;
+  color: var(--success-color);
 }
 .shopcar {
   width: 400px;
   position: fixed;
   z-index: 30000;
-  background: #fff;
+  background: var(--card-bg);
   right: -1000px;
   bottom: 0;
   height: 100%;
-  border: 1px solid #dfdede;
+  border: 1px solid var(--border-color);
 }
 .icon-gouwuchekong {
   cursor: pointer;
@@ -256,15 +368,15 @@ a.active {
   position: relative;
   left: 28px;
   top: -22px;
-  background: red;
+  background: var(--danger-color);
   border-radius: 999px;
   font-size: 12px;
   font-weight: 1000;
-  color: #000;
+  color: var(--btn-primary-text);
   min-width: 40px;
   height: 40px;
   padding: 0 4px;
-  background-image: linear-gradient(to right, #4222f1 0, #ed3ea4 100%);
+  background-image: linear-gradient(to right, var(--primary-color) 0, var(--danger-color) 100%);
   -webkit-background-clip: text;
   -moz-background-clip: text;
   background-clip: text;
@@ -285,12 +397,12 @@ a.active {
   scrollbar-width: thin;
 }
 .shopcar-icon {
-  border: 1px dashed #dfdfdf;
+  border: 1px dashed var(--border-color);
   margin: 5px;
   float: left;
   padding: 2px;
-  background-image: linear-gradient(#f3f3f3 1px, transparent 1px),
-    linear-gradient(90deg, #f3f3f3 1px, transparent 1px);
+  background-image: linear-gradient(var(--border-color) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border-color) 1px, transparent 1px);
   background-size: 10px 10px;
 }
 .shopcar-icon img {
@@ -299,7 +411,7 @@ a.active {
 }
 .shopcar-icon button {
   border: 0;
-  color: red;
+  color: var(--danger-color);
 }
 .juanzeng {
   width: 400px;
@@ -310,11 +422,11 @@ a.active {
   top: -150%;
   margin-left: -200px;
   margin-top: -300px;
-  background-color: #000;
+  background-color: var(--text-color);
 }
 .juanzeng .title {
   height: 40px;
-  color: #fff;
+  color: var(--card-bg);
   font-size: 14px;
   line-height: 40px;
 }
@@ -333,7 +445,7 @@ a.active {
 }
 .bottom .links a {
   margin-right: 10px;
-  color: #958e8e;
+  color: var(--text-secondary);
 }
 .bottom .links a:hover {
   text-decoration: underline;

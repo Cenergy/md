@@ -15,6 +15,9 @@
       </div>
       
       <div class="users flex">
+        <div class="item theme-toggle" @click="toggleTheme" :title="isDark ? '切换浅色模式' : '切换深色模式'">
+          <i :class="isDark ? 'iconfont icon-heisemoshi' : 'iconfont icon-pifuzhuti-xianxing'"></i>
+        </div>
         <div class="item green"><router-link to="/user"><i class="iconfont icon-ziyuanxhdpi"></i></router-link></div>
       </div>
 
@@ -40,6 +43,7 @@
 
 <script setup>
 import { ref } from 'vue'
+import { useTheme } from '@/composables/useTheme'
 
 defineProps({
   show: {
@@ -47,6 +51,8 @@ defineProps({
     default: true
   }
 })
+
+const { isDark, toggleTheme } = useTheme()
 
 const isMenuOpen = ref(false)
 
@@ -61,7 +67,7 @@ const closeMenu = () => {
 
 <style scoped>
 .header {
-  background: #fff;
+  background: var(--card-bg);
   box-shadow: var(--box-shadow);
   height: 60px;
   line-height: 60px;
@@ -94,10 +100,9 @@ const closeMenu = () => {
 
 .header .logo a {
   font-size: 24px;
-  color: var(--text-color);
   text-decoration: none;
   font-weight: bold;
-  background-image: linear-gradient(to right, var(--primary-color) 0, #141414 100%);
+  background-image: linear-gradient(to right, var(--primary-color) 0, var(--text-color) 100%);
   -webkit-background-clip: text;
   -moz-background-clip: text;
   background-clip: text;
@@ -155,13 +160,23 @@ const closeMenu = () => {
   margin-left: 20px;
 }
 
+.users .item.theme-toggle {
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: color 0.3s;
+}
+
+.users .item.theme-toggle:hover {
+  color: var(--primary-color);
+}
+
 /* Mobile Menu Styles */
 .mobile-menu {
   position: absolute;
   top: 60px;
   left: 0;
   width: 100%;
-  background: white;
+  background: var(--card-bg);
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   padding: 10px 0;
   display: flex;
@@ -171,7 +186,7 @@ const closeMenu = () => {
 .mobile-menu .item {
   padding: 10px 20px;
   text-align: center;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .mobile-menu .item:last-child {

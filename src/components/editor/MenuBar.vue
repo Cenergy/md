@@ -26,7 +26,7 @@
         <el-button type="success" size="mini" :loading="isBuilding" @click="$emit('save-build')" plain>
           <template v-if="!isBuilding"><i class="iconfont icon-fabu"></i> 保存编译</template>
         </el-button>
-        <div style="width: 1px; height: 16px; background: #e5e7eb; margin: 0 10px"></div>
+        <div style="width: 1px; height: 16px; background: var(--border-color); margin: 0 10px"></div>
         <el-checkbox :model-value="hideHeader" @update:model-value="$emit('update:hideHeader', $event)" size="mini" border>隐藏头部</el-checkbox>
         <el-checkbox :model-value="hideLinksPanel" @update:model-value="$emit('update:hideLinksPanel', $event)" size="mini" border>隐藏侧边</el-checkbox>
       </div>

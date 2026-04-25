@@ -1,6 +1,7 @@
 import { createApp } from 'vue'
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
+import 'element-plus/theme-chalk/dark/css-vars.css'
 import App from './App.vue'
 import router from './router'
 
@@ -10,6 +11,12 @@ import '@/assets/css/base.css'
 import '@/assets/css/edit.css'
 import '@/assets/css/editor.css'
 import '@/assets/css/message.css'
+
+// Theme
+import { useTheme } from '@/composables/useTheme'
+
+const { initTheme } = useTheme()
+initTheme()
 
 const app = createApp(App)
 

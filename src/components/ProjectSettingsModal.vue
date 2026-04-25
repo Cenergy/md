@@ -70,7 +70,7 @@
                     v-for="(feature, index) in currentProject.features"
                     :key="index"
                     class="item"
-                    style="margin-bottom: 10px; border: 1px solid #eee; padding: 10px"
+                    style="margin-bottom: 10px; border: 1px solid var(--border-color); padding: 10px"
                   >
                     <el-row :gutter="10" style="margin-bottom: 5px">
                       <el-col :span="3" :xs="24" class="mobile-label">标题</el-col>
@@ -301,13 +301,13 @@ const emit = defineEmits([
 .modal-title {
   font-size: 18px;
   font-weight: 600;
-  color: #333;
+  color: var(--text-color);
   line-height: 1.4;
 }
 
 .modal-subtitle {
   font-size: 14px;
-  color: #999;
+  color: var(--text-secondary);
   font-weight: normal;
 }
 
@@ -339,7 +339,7 @@ const emit = defineEmits([
   box-sizing: border-box;
   scrollbar-gutter: stable;
   scrollbar-width: thin;
-  scrollbar-color: #c8c9cc transparent;
+  scrollbar-color: var(--scrollbar-thumb) transparent;
 }
 
 .search-box {
@@ -354,7 +354,7 @@ const emit = defineEmits([
 
 .search-results {
   margin-bottom: 20px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--border-color);
   padding-bottom: 10px;
 }
 
@@ -364,13 +364,13 @@ const emit = defineEmits([
   align-items: center;
   margin-bottom: 8px;
   padding: 8px;
-  background-color: #f9f9f9;
+  background-color: var(--hover-bg);
   border-radius: 4px;
   transition: background-color 0.2s;
 }
 
 .user-item:hover {
-  background-color: #f0f2f5;
+  background-color: var(--bg-color);
 }
 
 .user-email {
@@ -380,29 +380,29 @@ const emit = defineEmits([
   white-space: nowrap;
   margin-right: 10px;
   font-size: 14px;
-  color: #606266;
+  color: var(--text-secondary);
 }
 
 .danger-zone {
   margin-top: 40px;
   margin-bottom: 40px;
-  border: 1px solid #ffccc7;
+  border: 1px solid var(--danger-color);
   border-radius: 8px;
   overflow: hidden;
 }
 
 .danger-title {
   padding: 12px 24px;
-  background-color: #fff1f0;
-  border-bottom: 1px solid #ffccc7;
+  background-color: rgba(var(--primary-color-rgb), 0.06);
+  border-bottom: 1px solid var(--danger-color);
   font-size: 14px;
   font-weight: 600;
-  color: #cf1322;
+  color: var(--danger-color);
 }
 
 .danger-content {
   padding: 0 24px 16px;
-  background-color: #fff;
+  background-color: var(--card-bg);
 }
 
 .danger-item {
@@ -423,13 +423,13 @@ const emit = defineEmits([
   margin: 0 0 4px 0;
   font-size: 14px;
   font-weight: 600;
-  color: #262626;
+  color: var(--text-color);
 }
 
 .danger-info p {
   margin: 0;
   font-size: 14px;
-  color: #595959;
+  color: var(--text-secondary);
 }
 
 .delete-confirm-input {
@@ -470,12 +470,12 @@ const emit = defineEmits([
 }
 
 .tab-panel::-webkit-scrollbar-thumb {
-  background: #c8c9cc;
+  background: var(--scrollbar-thumb);
   border-radius: 4px;
 }
 
 .tab-panel::-webkit-scrollbar-thumb:hover {
-  background: #a8abb2;
+  background: var(--text-secondary);
 }
 
 @media (max-width: 768px) {
@@ -493,7 +493,7 @@ const emit = defineEmits([
   .mobile-label {
     margin-bottom: 5px;
     font-weight: bold;
-    color: #606266;
+    color: var(--text-secondary);
     font-size: 14px;
     line-height: 20px;
   }

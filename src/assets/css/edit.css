@@ -13,13 +13,13 @@ body {
   box-shadow:
     0 19px 38px rgba(0, 0, 0, 0.1),
     0 15px 12px transparent;
-  background-color: #fff;
+  background-color: var(--card-bg);
 }
 .main {
   height: 100%;
 }
 .project-text {
-  background-image: linear-gradient(to right, #10b981 0, #141414 100%);
+  background-image: linear-gradient(to right, var(--primary-color) 0, var(--text-color) 100%);
   -webkit-background-clip: text;
   -moz-background-clip: text;
   background-clip: text;
@@ -31,7 +31,7 @@ body {
   padding-left: 20px !important;
 }
 .menu-container {
-  border-bottom: 1px solid #e5e2e2;
+  border-bottom: 1px solid var(--border-color);
 }
 .menu-panel {
   padding: 0;
@@ -44,10 +44,10 @@ body {
   cursor: pointer;
 }
 .menu-panel .item:hover {
-  color: #10b981;
+  color: var(--primary-color);
 }
 .menu-panel .active {
-  color: #10b981;
+  color: var(--primary-color);
 }
 .content {
   /* height handled by flex in Editor.vue */
@@ -59,13 +59,13 @@ body {
 .left-nav {
   width: 300px;
   height: 100%;
-  background-color: #f6f6f7;
+  background-color: var(--bg-color);
   display: flex;
   flex-direction: column;
   transition: width 0.3s ease;
   overflow: hidden;
   flex-shrink: 0;
-  border-right: 1px solid #e5e7eb;
+  border-right: 1px solid var(--border-color);
 }
 .left-nav.collapsed {
   width: 40px;
@@ -74,8 +74,8 @@ body {
   height: 36px;
   display: flex;
   align-items: center;
-  border-bottom: 1px solid #e5e7eb;
-  background-color: #fff;
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--card-bg);
   padding: 0 5px;
 }
 .nav-toggle {
@@ -85,13 +85,13 @@ body {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: #909399;
-  background-color: #fff;
+  color: var(--text-secondary);
+  background-color: var(--card-bg);
   transition: all 0.3s;
 }
 .nav-toggle:hover {
-  background-color: #f5f7fa;
-  color: #409eff;
+  background-color: var(--hover-bg);
+  color: var(--primary-color);
 }
 .nav-content {
   flex: 1;
@@ -101,8 +101,8 @@ body {
   min-height: 0;
 }
 .left-nav-footer {
-  border-top: 1px solid #e5e7eb;
-  background-color: #fafafa;
+  border-top: 1px solid var(--border-color);
+  background-color: var(--hover-bg);
 }
 .left-nav.collapsed .left-nav-footer {
   padding: 0;
@@ -112,7 +112,7 @@ body {
   align-items: center;
   gap: 6px;
   font-size: 12px;
-  color: #606266;
+  color: var(--text-secondary);
   height: 40px;
   padding: 0 10px;
 }
@@ -138,7 +138,7 @@ body {
 }
 .link-info.empty {
   justify-content: center;
-  color: #909399;
+  color: var(--text-secondary);
 }
 .link-text {
   flex: 1;
@@ -149,10 +149,10 @@ body {
 .copy-btn {
   padding: 0;
   min-height: auto;
-  color: #909399;
+  color: var(--text-secondary);
 }
 .copy-btn:hover {
-  color: #409eff;
+  color: var(--primary-color);
 }
 .left-nav-float {
   position: absolute;
@@ -169,23 +169,23 @@ body {
 .slider-content {
   padding-left: 20px;
   font-weight: 500;
-  color: rgba(60, 60, 67, 0.75);
+  color: var(--text-secondary);
   font-size: 14px;
   flex: 1;
   overflow: auto;
 }
 .slider-content .group {
-  border-top: 1px solid rgba(60, 60, 67, 0.12);
+  border-top: 1px solid var(--border-color);
   margin-top: 12px;
   padding: 10px 0;
 }
 .slider-content .group .label {
   font-weight: 700;
-  color: rgba(60, 60, 67);
+  color: var(--text-color);
 }
 .slider-content .btn {
   padding: 1px 3px;
-  background-color: #d1d1d1;
+  background-color: var(--border-color);
 }
 .slider-content .btn i {
   font-size: 10px;
@@ -201,7 +201,7 @@ body {
   cursor: pointer;
 }
 .slider-item span.active {
-  color: #10b981;
+  color: var(--success-color);
 }
 .tools {
   padding: 2px 0;
@@ -223,11 +223,11 @@ body {
 }
 .editor-desc {
   font-size: 50px;
-  color: gray;
+  color: var(--text-secondary);
   text-align: center;
   padding-top: 200px;
-  background-image: linear-gradient(#f3f3f3 1px, transparent 1px),
-    linear-gradient(90deg, #f3f3f3 1px, transparent 1px);
+  background-image: linear-gradient(var(--border-color) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border-color) 1px, transparent 1px);
   background-size: 10px 10px;
 }
 .edit-panel .panel {
@@ -238,17 +238,17 @@ body {
   height: 100%;
   padding: 0;
   font-size: 13px;
-  background-color: #fff;
-  border-left: 1px solid #e6e6e6;
+  background-color: var(--card-bg);
+  border-left: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
 }
 .menuurls-header {
   padding: 10px 15px;
   font-weight: bold;
-  border-bottom: 1px solid #eee;
-  color: #333;
-  background-color: #fafafa;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-color);
+  background-color: var(--hover-bg);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -260,7 +260,7 @@ body {
 }
 .menuurls .row {
   padding: 8px 15px;
-  color: #606266;
+  color: var(--text-secondary);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -268,8 +268,8 @@ body {
   cursor: pointer;
 }
 .menuurls .row:hover {
-  background: #ecf5ff;
-  color: #409eff;
+  background: var(--table-row-hover);
+  color: var(--primary-color);
 }
 .menuurls .url-label {
   flex: 1;
@@ -280,10 +280,10 @@ body {
 }
 .drag-zone {
   height: 140px;
-  background-image: linear-gradient(#f3f3f3 1px, transparent 1px),
-    linear-gradient(90deg, #f3f3f3 1px, transparent 1px);
+  background-image: linear-gradient(var(--border-color) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border-color) 1px, transparent 1px);
   background-size: 10px 10px;
-  border: 1px dashed #efefef;
+  border: 1px dashed var(--border-color);
 }
 .shopcar-content {
   height: calc(100% - 240px);
@@ -298,17 +298,17 @@ body {
 }
 .shopcar-content .row {
   padding: 2px;
-  color: gray;
-  border-bottom: 1px solid #f1f1f1;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-color);
 }
 .shopcar-content .row:hover {
-  background: #000;
-  color: #fff;
+  background: var(--primary-color);
+  color: var(--btn-primary-text);
 }
 iframe {
   width: 100%;
   height: 300px;
-  border: 1px dashed #fff;
+  border: 1px dashed var(--border-color);
 }
 .majoricon {
   color: red !important;
@@ -317,8 +317,8 @@ iframe {
   cursor: move;
 }
 .slider-draging {
-  background-color: #134fcf12;
-  border: 1px dashed #d7d7d7;
+  background-color: rgba(var(--primary-color-rgb), 0.08);
+  border: 1px dashed var(--border-color);
 }
 .mdeditor-scrolltop,
 .mdeditor-tools .item {

@@ -1,7 +1,7 @@
 <template>
   <div class="mobile-chat">
     <div v-if="error" class="error-container">
-      <el-icon :size="60" color="#f56c6c"><CircleClose /></el-icon>
+      <el-icon :size="60" color="var(--danger-color)"><CircleClose /></el-icon>
       <p class="error-message">{{ error }}</p>
       <el-button type="primary" @click="connect">重新连接</el-button>
     </div>
@@ -145,7 +145,7 @@ window.addEventListener('beforeunload', disconnect)
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background: #f5f7fa;
+  background: var(--bg-color);
 }
 
 .error-container {
@@ -160,7 +160,7 @@ window.addEventListener('beforeunload', disconnect)
 
 .error-message {
   font-size: 16px;
-  color: #f56c6c;
+  color: var(--danger-color);
   text-align: center;
 }
 
@@ -171,7 +171,7 @@ window.addEventListener('beforeunload', disconnect)
   align-items: center;
   justify-content: center;
   gap: 20px;
-  color: #909399;
+  color: var(--text-secondary);
 }
 
 .chat-interface {
@@ -184,8 +184,8 @@ window.addEventListener('beforeunload', disconnect)
   height: 50px;
   line-height: 50px;
   padding: 0 15px;
-  background: #409eff;
-  color: #fff;
+  background: var(--primary-color);
+  color: var(--btn-primary-text);
   font-size: 16px;
   font-weight: bold;
 }
@@ -219,22 +219,22 @@ window.addEventListener('beforeunload', disconnect)
 }
 
 .user-message .message-content {
-  background: #409eff;
-  color: #fff;
+  background: var(--primary-color);
+  color: var(--btn-primary-text);
   border-bottom-right-radius: 2px;
 }
 
 .ai-message .message-content {
-  background: #fff;
-  color: #303133;
-  border: 1px solid #e4e7ed;
+  background: var(--card-bg);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
   border-bottom-left-radius: 2px;
 }
 
 .input-area {
   padding: 10px;
-  background: #fff;
-  border-top: 1px solid #e4e7ed;
+  background: var(--card-bg);
+  border-top: 1px solid var(--border-color);
 }
 
 .chat-input {

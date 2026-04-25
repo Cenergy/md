@@ -151,12 +151,12 @@ onMounted(async () => {
 
 <style scoped>
 .user-page {
-    background-color: #f5f7f9;
+    background-color: var(--bg-color);
     min-height: 100vh;
 }
 
 .header {
-    background: #fff;
+    background: var(--card-bg);
     box-shadow: 0 1px 4px rgba(0,21,41,.08);
     height: 60px;
     line-height: 60px;
@@ -176,7 +176,7 @@ onMounted(async () => {
 
 .header .logo a {
     font-size: 24px;
-    color: #333;
+    color: var(--text-color);
     text-decoration: none;
     font-weight: bold;
     margin-right: 40px;
@@ -187,7 +187,7 @@ onMounted(async () => {
 }
 
 .header .menu .item a {
-    color: #666;
+    color: var(--text-secondary);
     text-decoration: none;
     font-size: 16px;
 }
@@ -219,11 +219,11 @@ onMounted(async () => {
 
 .el-card__header {
     padding: 18px 20px;
-    border-bottom: 1px solid #ebeef5;
-    background-color: #fff;
+    border-bottom: 1px solid var(--border-color);
+    background-color: var(--card-bg);
     font-size: 16px;
     font-weight: 600;
-    color: #303133;
+    color: var(--text-color);
 }
 
 .userinfo .item {
@@ -238,7 +238,7 @@ onMounted(async () => {
 .userinfo .item .label {
     width: 100px;
     font-weight: 500;
-    color: #606266;
+    color: var(--text-secondary);
     flex-shrink: 0;
 }
 

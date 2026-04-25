@@ -22,7 +22,7 @@
         :on-success="handleUploadSuccess"
         :on-error="handleUploadError"
       >
-        <i class="iconfont icon-shangchuan" style="font-size: 48px; color: #c0c4cc;"></i>
+        <i class="iconfont icon-shangchuan" style="font-size: 48px; color: var(--text-secondary);"></i>
         <div class="el-upload__text">
           Drop file here or <em>click to upload</em>
         </div>
@@ -120,7 +120,7 @@ const getFileBackgroundStyle = (file) => {
       backgroundImage: `url(${url})`,
       backgroundSize: 'cover',
       backgroundPosition: 'center',
-      color: '#fff',
+      color: 'var(--btn-primary-text)',
       textShadow: '1px 1px 2px rgba(0,0,0,0.8)',
       padding: '10px',
       borderRadius: '4px',
@@ -184,7 +184,7 @@ const deleteUploadFile = (file) => {
   top: 0;
   bottom: 0;
   width: 300px;
-  background-color: white;
+  background-color: var(--card-bg);
   box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
   z-index: 2001;
   padding: 20px;
@@ -230,12 +230,12 @@ const deleteUploadFile = (file) => {
 }
 
 .drag-zone {
-  border: 2px dashed #ccc;
+  border: 2px dashed var(--border-color);
   border-radius: 4px;
   padding: 20px;
   text-align: center;
   margin-bottom: 20px;
-  color: #666;
+  color: var(--text-secondary);
 }
 
 .shopcar-list {

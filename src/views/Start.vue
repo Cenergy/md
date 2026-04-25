@@ -345,17 +345,17 @@ import Header from "@/components/Header.vue";
 .start-card {
   border-radius: 12px;
   transition: all 0.3s ease;
-  border: 1px solid #f0f0f0;
+  border: 1px solid var(--border-color);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   overflow: hidden;
-  background: #fff;
+  background: var(--card-bg);
   height: 100%;
 }
 
 .start-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
-  border-color: rgba(64, 158, 255, 0.2);
+  border-color: rgba(24, 144, 255, 0.2);
 }
 
 .card-header {
@@ -363,7 +363,7 @@ import Header from "@/components/Header.vue";
   align-items: center;
   font-size: 16px;
   font-weight: 600;
-  color: #333;
+  color: var(--text-color);
 }
 
 .card-header i {
@@ -374,7 +374,7 @@ import Header from "@/components/Header.vue";
 
 .card-body {
   font-size: 14px;
-  color: #666;
+  color: var(--text-secondary);
   line-height: 1.6;
 }
 
@@ -393,7 +393,7 @@ import Header from "@/components/Header.vue";
 }
 
 .warning-section {
-  background-color: #fef0f0;
+  background-color: rgba(245, 108, 108, 0.08);
   padding: 12px;
   border-radius: 6px;
   margin-top: 12px;
@@ -401,13 +401,13 @@ import Header from "@/components/Header.vue";
 }
 
 .warning-title {
-  color: #f56c6c;
+  color: var(--danger-color);
   font-weight: bold;
   margin-bottom: 8px;
 }
 
 .warning-list {
-  color: #f56c6c;
+  color: var(--danger-color);
   margin: 0;
 }
 

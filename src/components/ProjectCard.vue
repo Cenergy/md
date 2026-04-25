@@ -70,10 +70,10 @@ const emit = defineEmits(["profile", "docs", "build"]);
 .project-card {
   border-radius: 12px;
   transition: all 0.3s ease;
-  border: 1px solid #f0f0f0;
+  border: 1px solid var(--border-color);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   overflow: hidden;
-  background: #fff;
+  background: var(--card-bg);
   display: flex;
   flex-direction: column;
   min-width: 0;
@@ -82,16 +82,16 @@ const emit = defineEmits(["profile", "docs", "build"]);
 .project-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
-  border-color: rgba(22, 93, 255, 0.2);
+  border-color: rgba(var(--primary-color-rgb), 0.2);
 }
 
 .project-header {
   padding: 16px 20px;
-  border-bottom: 1px solid #f5f5f5;
+  border-bottom: 1px solid var(--border-color);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #fafafa;
+  background-color: var(--hover-bg);
 }
 
 .project-title {
@@ -120,9 +120,9 @@ const emit = defineEmits(["profile", "docs", "build"]);
 
 .project-index {
   font-size: 14px;
-  color: #999;
+  color: var(--text-secondary);
   font-family: monospace;
-  background: #f0f0f0;
+  background: var(--hover-bg);
   padding: 2px 8px;
   border-radius: 4px;
   flex-shrink: 0;
@@ -130,7 +130,7 @@ const emit = defineEmits(["profile", "docs", "build"]);
 
 .project-tag {
   font-size: 12px;
-  color: #fff;
+  color: var(--btn-primary-text);
   background: var(--success-color);
   padding: 2px 8px;
   border-radius: 4px;
@@ -167,36 +167,36 @@ const emit = defineEmits(["profile", "docs", "build"]);
   cursor: pointer;
   transition: all 0.2s;
   color: var(--secondary-color);
-  background: #f9f9f9;
+  background: var(--hover-bg);
 }
 
 .action-item:hover {
-  background: #eef2ff;
+  background: rgba(var(--primary-color-rgb), 0.08);
   color: var(--primary-color);
 }
 
 .action-item-secondary {
-  background: #f7f8fa;
-  border: 1px solid #ebeef5;
-  color: #606266;
+  background: var(--hover-bg);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
 }
 
 .action-item-secondary:hover {
-  background: #f2f3f5;
-  border-color: #dcdfe6;
-  color: #409eff;
+  background: var(--bg-color);
+  border-color: var(--border-color);
+  color: var(--primary-color);
 }
 
 .action-item-primary {
-  background: rgba(64, 158, 255, 0.1);
-  border: 1px solid rgba(64, 158, 255, 0.28);
-  color: #2f76d2;
+  background: rgba(var(--primary-color-rgb), 0.1);
+  border: 1px solid rgba(var(--primary-color-rgb), 0.28);
+  color: var(--primary-color);
 }
 
 .action-item-primary:hover {
-  background: rgba(64, 158, 255, 0.16);
-  border-color: rgba(64, 158, 255, 0.4);
-  color: #1f5fb8;
+  background: rgba(var(--primary-color-rgb), 0.16);
+  border-color: rgba(var(--primary-color-rgb), 0.4);
+  color: var(--primary-color);
 }
 
 .action-item .iconfont {
@@ -217,18 +217,18 @@ const emit = defineEmits(["profile", "docs", "build"]);
   height: 40px;
   font-size: 15px;
   font-weight: 500;
-  box-shadow: 0 4px 6px rgba(64, 158, 255, 0.2);
+  box-shadow: 0 4px 6px rgba(var(--primary-color-rgb), 0.2);
 }
 
 .project-footer {
   padding: 12px 20px;
-  border-top: 1px solid #f5f5f5;
+  border-top: 1px solid var(--border-color);
   display: flex;
   justify-content: space-between;
   align-items: center;
   font-size: 12px;
-  color: #999;
-  background: #fafafa;
+  color: var(--text-secondary);
+  background: var(--hover-bg);
 }
 
 .project-id {

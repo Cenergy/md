@@ -74,7 +74,7 @@
           style="width: 100%"
           size="small"
           border
-          :header-cell-style="{ background: '#f5f7fa', color: '#606266' }"
+          :header-cell-style="{ background: 'var(--table-header-bg)', color: 'var(--table-header-text)' }"
         >
           <el-table-column prop="name" label="菜单名称" width="120" />
           <el-table-column prop="link" label="菜单链接地址" />
