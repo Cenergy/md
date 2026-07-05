@@ -320,15 +320,8 @@ iframe {
   background-color: rgba(var(--primary-color-rgb), 0.08);
   border: 1px dashed var(--border-color);
 }
-.mdeditor-scrolltop,
-.mdeditor-tools .item {
-  line-height: 1;
-}
 .el-checkbox {
   margin-right: 20px;
-}
-.mdeditor-preview {
-  line-height: 1.2;
 }
 .editordialog {
   line-height: 34px;

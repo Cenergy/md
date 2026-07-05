@@ -7,7 +7,27 @@
     </div>
     <div class="edit-container flex" style="flex: 1; overflow: hidden">
       <div class="edit-panel flex" style="flex: 1; height: 100%">
-        <div id="editor" ref="editorContainer" class="editor panel" v-show="editorVisible"></div>
+        <div class="editor panel" v-show="editorVisible" style="height: 100%; width: 100%">
+          <MdEditor
+            ref="editorRef"
+            v-model="editorText"
+            :theme="darkMode ? 'dark' : 'light'"
+            previewTheme="default"
+            codeTheme="atom-one"
+            :toolbars="toolbars"
+            :footers="footers"
+            :on-upload-img="handleUploadImg"
+            :preview-only="false"
+            :no-mermaid="false"
+            :no-katex="false"
+            :no-prettier="false"
+            :show-code-row-number="true"
+            :scroll-auto="true"
+            style="height: 100%"
+            @on-save="onSave"
+            @on-change="onChange"
+          />
+        </div>
         <div class="editor-desc panel" v-show="!editorVisible">
           点击左侧的列表项进行文档编辑
         </div>
@@ -32,9 +52,10 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount, watch, nextTick } from 'vue';
-import { createEditor, getEditor, destroyEditor } from '@/utils/editor';
-import { loadEditorPlugins } from '@/utils/lazy-loader';
+import { ref, onMounted, watch, shallowRef } from 'vue';
+import { MdEditor, allToolbar, allFooter } from 'md-editor-v3';
+import 'md-editor-v3/lib/style.css';
+import { useTheme } from '@/composables/useTheme';
 
 const props = defineProps({
   editorVisible: {
@@ -86,76 +107,84 @@ const props = defineProps({
 const emit = defineEmits(['import', 'open-upload', 'save', 'copy', 'editor-ready', 'content-change']);
 
 const panelRef = ref(null);
-const editorContainer = ref(null);
-let isSettingValue = false;
-let editorInitialized = false;
+const editorRef = shallowRef(null);
+const editorText = ref('');
+const isSettingValue = ref(false);
 
-const initEditor = async () => {
-  if (!editorContainer.value || editorInitialized) return;
-  
-  await loadEditorPlugins();
-  
-  createEditor(editorContainer.value, {
-    theme: props.theme,
-    warn: props.warn,
-    info: props.info,
-    uploadFile: props.uploadFile,
-    saveDoc: props.saveDoc,
-    importMd: props.importMd,
-    openUploadPanel: props.openUploadPanel,
-    getLeftNav: props.getLeftNav
-  }, () => {
-    const editor = getEditor();
-    if (editor) {
-      editor.editor.onDidChangeModelContent(() => {
-        if (!isSettingValue) {
-          emit('content-change');
-        }
-      });
-      editorInitialized = true;
-      emit('editor-ready');
+// 暗黑模式（md-editor-v3 只支持 light/dark 两种基础主题）
+const { isDark } = useTheme();
+
+const toolbars = allToolbar;
+const footers = allFooter;
+
+const handleUploadImg = async (files, callback) => {
+  if (!props.uploadFile) {
+    callback([]);
+    return;
+  }
+  const urls = [];
+  for (const file of files) {
+    if (file.size > 20 * 1024 * 1024) {
+      if (props.warn) props.warn(`文件 ${file.name} 超过 20M，跳过上传`);
+      continue;
     }
+    const url = await new Promise((resolve) => {
+      props.uploadFile(file, (u) => resolve(u));
+    });
+    if (url) urls.push(url);
+  }
+  callback(urls);
+};
+
+const onSave = () => {
+  // MdEditor 自带保存按钮（Ctrl+S / 工具栏保存）触发
+  if (props.saveDoc) props.saveDoc();
+};
+
+const onChange = () => {
+  if (!isSettingValue.value) {
+    emit('content-change');
+  }
+};
+
+watch(editorText, () => {
+  if (!isSettingValue.value) {
+    emit('content-change');
+  }
+});
+
+// 暴露给父组件的方法（保持与旧 API 兼容）
+const setValue = (value) => {
+  isSettingValue.value = true;
+  editorText.value = value ?? '';
+  // 下一帧释放，避免触发 content-change
+  requestAnimationFrame(() => {
+    isSettingValue.value = false;
   });
 };
 
-const setValue = (value) => {
-  const editor = getEditor();
-  if (editor) {
-    isSettingValue = true;
-    editor.setValue(value);
-    isSettingValue = false;
-  }
-};
-
 const getValue = () => {
-  const editor = getEditor();
-  return editor ? editor.getValue() : '';
+  return editorText.value;
 };
 
-const setTheme = (theme) => {
-  const editor = getEditor();
-  if (editor) {
-    editor.setTheme(theme);
-  }
+const setTheme = (_theme) => {
+  // 旧版本主题名（如 serene-rose）无法直接映射到 md-editor-v3
+  // md-editor-v3 主题由 light/dark 控制，预览主题由 previewTheme 控制
+  // 这里保留接口兼容，实际主题切换由 darkMode 控制
 };
 
-watch(() => props.theme, (newTheme) => {
-  setTheme(newTheme);
-});
+// 父组件可能通过 ref 获取编辑器实例做高级操作
+const getEditorInstance = () => editorRef.value;
 
 onMounted(() => {
-  initEditor();
-});
-
-onBeforeUnmount(() => {
-  destroyEditor();
-  editorInitialized = false;
+  emit('editor-ready');
 });
 
 defineExpose({
   setValue,
   getValue,
   setTheme,
+  getEditor: getEditorInstance,
   getElement: () => panelRef.value
 });
 </script>

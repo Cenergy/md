@@ -180,8 +180,6 @@ import {
   buildProject,
   getBuildStatus,
 } from "@/request/http";
-import { getEditor } from "@/utils/editor";
-
 import { ElMessage, ElLoading, ElMessageBox } from "element-plus";
 import { pinyin } from "pinyin-pro";
 import useClipboard from "vue-clipboard3";
