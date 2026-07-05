@@ -12,7 +12,6 @@ export default defineConfig({
   },
   server: {
     port: 3000,
-    https: true,
     allowedHosts: ["note.gishai.top"],
     proxy: {
       "/api": {
@@ -22,6 +21,21 @@ export default defineConfig({
         changeOrigin: true,
         secure: false,
       }
+    },
+  },
+  build: {
+    chunkSizeWarningLimit: 600,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Vue 核心
+          'vue-vendor': ['vue', 'vue-router'],
+          // UI 框架
+          'element-plus': ['element-plus'],
+          // Markdown 编辑器（含 mermaid/katex/highlight.js，体积较大）
+          'md-editor': ['md-editor-v3'],
+        },
+      },
     },
   },
 });
